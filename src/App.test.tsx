@@ -20,6 +20,7 @@ beforeEach(() => {
 afterEach(() => {
   cleanup()
   vi.useRealTimers()
+  vi.restoreAllMocks()
 })
 
 describe('App', () => {
@@ -76,6 +77,51 @@ describe('App', () => {
     expect(screen.getByRole('button', { name: /back home/i })).toBeInTheDocument()
 
     await userEvent.click(screen.getByRole('button', { name: /back home/i }))
+    expect(screen.getByTestId('study-now')).toBeInTheDocument()
+  })
+
+  it('shows the placement result screen — with the real router above it — before Home appears, then Continue reaches Home', async () => {
+    // Regression test for the bug where App.tsx (which routes on the store's
+    // `placed` flag) rendered Home the instant the last placement answer
+    // flipped `placed`, before Placement's own result screen ever committed.
+    // Placement.test.tsx renders <Placement /> standalone, with no router
+    // above it to steal the screen — it could never have caught this. This
+    // test renders the real <App />, so it would have failed against the old
+    // "finishPlacement then show result" ordering.
+    //
+    // Same deterministic-shuffle trick as Placement.test.tsx: buildPlacementTest
+    // shuffles with Fisher-Yates (j = floor(rand() * (i + 1))); rand() just
+    // under 1 makes j === i every time, so the correct answer always lands at
+    // options[0] and clicking the last option is always a distractor.
+    vi.spyOn(Math, 'random').mockReturnValue(0.999999)
+    useStore.setState({ profileName: 'Ana', placed: false })
+    render(<App />)
+
+    for (let i = 0; i < 20; i++) {
+      const options = screen.queryAllByTestId('placement-option')
+      if (options.length > 0) {
+        await userEvent.click(options[options.length - 1])
+        continue
+      }
+      const input = screen.queryByRole('textbox')
+      if (input) {
+        await userEvent.type(input, 'zzzz')
+        await userEvent.click(screen.getByRole('button', { name: /next|finish/i }))
+        continue
+      }
+      break
+    }
+
+    // The result screen must be visible now — and Home must NOT be — before
+    // she has tapped anything past the last question.
+    expect(screen.getByText(/you're at a1/i)).toBeInTheDocument()
+    expect(screen.queryByTestId('study-now')).not.toBeInTheDocument()
+    expect(useStore.getState().placed).toBe(false)
+
+    await userEvent.click(screen.getByRole('button', { name: /continue|start/i }))
+
+    expect(useStore.getState().placed).toBe(true)
+    expect(screen.getByText(/kia ora, ana/i)).toBeInTheDocument()
     expect(screen.getByTestId('study-now')).toBeInTheDocument()
   })
 

@@ -53,6 +53,11 @@ describe('Placement', () => {
   it('places a learner who answers everything wrong at A1', async () => {
     render(<Placement onDone={vi.fn()} />)
     await answerAllWrong()
+    // The store is now written on Continue, not the instant the last
+    // question is answered — that's the whole point of the fix (Placement's
+    // own result screen has to get a chance to render first). So the store
+    // assertion moves to after the Continue tap.
+    await userEvent.click(screen.getByRole('button', { name: /continue|start/i }))
     expect(useStore.getState().placed).toBe(true)
     expect(useStore.getState().cefrLevel).toBe(1)
     expect(useStore.getState().unlockedLevel).toBe(1)
@@ -61,6 +66,7 @@ describe('Placement', () => {
   it('seeds nothing below level 1', async () => {
     render(<Placement onDone={vi.fn()} />)
     await answerAllWrong()
+    await userEvent.click(screen.getByRole('button', { name: /continue|start/i }))
     expect(Object.keys(useStore.getState().cards)).toHaveLength(0)
   })
 

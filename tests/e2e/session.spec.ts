@@ -33,22 +33,12 @@ test('first run: name, placement, home, a session, and progress that survives re
     }
     break
   }
-  // The brief expected a placement-result screen ("You're at X — let's
-  // build from here") with its own Continue button, reachable after the
-  // last question. In the shipped app that screen is unreachable: the last
-  // question's handler calls both finishPlacement() (which flips the
-  // store's `placed` flag, read by App.tsx) and setStartLevel() (Placement's
-  // own local state) in the same synchronous handler. React batches both
-  // updates into one re-render, and App.tsx's `if (!placed) return
-  // <Placement/>` already reads placed=true in that render, so it renders
-  // Home instead of Placement — Placement (and its Continue screen) never
-  // gets to commit its own updated view. Confirmed with a standalone
-  // Playwright script that walked the flow question-by-question and logged
-  // the DOM after the last answer: it landed on Home immediately, with no
-  // Continue button ever appearing. This is a real product bug (dead code
-  // in src/screens/Placement.tsx, reported rather than patched per this
-  // task's constraints) — the test selector is fixed here to match what the
-  // app actually does: continue straight to Home with no extra click.
+  // Placement result screen — Placement now computes the result locally and
+  // only writes to the store (which App.tsx routes on) when Continue is
+  // tapped, so this screen actually gets to render before Home does.
+  await expect(page.getByText(/you're at a1/i)).toBeVisible()
+  await expect(page.getByTestId('study-now')).toHaveCount(0)
+  await page.getByRole('button', { name: /continue|start/i }).click()
 
   // Home
   await expect(page.getByText(/kia ora, ana/i)).toBeVisible()

@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import type { FormEvent } from 'react'
-import type { Card as CardModel, Level } from '../types'
+import type { Card as CardModel, CardState, Level } from '../types'
 import { buildPlacementTest, scorePlacement, seedKnownCards } from '../core/placement'
 import type { PlacementQuestion } from '../core/placement'
 import { looseMatch } from '../core/text'
@@ -39,7 +39,19 @@ export function Placement({ onDone }: PlacementProps) {
   const [index, setIndex] = useState(0)
   const [typedValue, setTypedValue] = useState('')
   const [answered, setAnswered] = useState(false)
-  const [startLevel, setStartLevel] = useState<Level | null>(null)
+  // Held locally until Continue is tapped: computing this does NOT write to
+  // the store. If it did, App.tsx (which routes on the store's `placed`
+  // flag) would stop rendering Placement the instant this state updates,
+  // before this component ever got to show its own result screen.
+  const [result, setResult] = useState<{
+    startLevel: Level
+    seeded: Record<string, CardState>
+    now: number
+  } | null>(null)
+  // Guards the Continue button the same way `answered` guards each question:
+  // a second tap (e.g. a double-click landing before the store update
+  // unmounts this screen) must not call finishPlacement twice.
+  const submittedRef = useRef(false)
 
   const question = questions[index]
 
@@ -63,8 +75,7 @@ export function Placement({ onDone }: PlacementProps) {
       .filter(d => d.level < placedLevel)
       .flatMap(d => d.cards.map(c => c.id))
     const seeded = seedKnownCards(belowIds, now, Math.random)
-    finishPlacement(placedLevel, seeded, now)
-    setStartLevel(placedLevel)
+    setResult({ startLevel: placedLevel, seeded, now })
   }
 
   function handleTypedSubmit(e: FormEvent<HTMLFormElement>) {
@@ -73,14 +84,24 @@ export function Placement({ onDone }: PlacementProps) {
     finish(looseMatch(typedValue, question.answer))
   }
 
-  if (startLevel !== null) {
+  // The store write and the App-level navigation it causes (App routes on
+  // `placed`) now happen together, on Continue — so nothing can render
+  // between them and steal this screen before she sees her result.
+  function handleContinue() {
+    if (submittedRef.current || !result) return
+    submittedRef.current = true
+    finishPlacement(result.startLevel, result.seeded, result.now)
+    onDone()
+  }
+
+  if (result !== null) {
     return (
       <div className="flex flex-col items-center gap-6 pt-16 text-center">
         <p className="text-2xl">🥝</p>
         <p className="text-xl font-extrabold text-ink">
-          You're at {LEVEL_NAMES[startLevel]} — let's build from here 🥝
+          You're at {LEVEL_NAMES[result.startLevel]} — let's build from here 🥝
         </p>
-        <Button variant="primary" onClick={onDone}>
+        <Button variant="primary" onClick={handleContinue}>
           Continue
         </Button>
       </div>
