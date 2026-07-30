@@ -12,12 +12,18 @@ function sliceArrayLiteral(source, declaration) {
   const open = source.indexOf('[', start)
   let depth = 0
   let inString = null
+  let escaped = false
   let i = open
   for (; i < source.length; i++) {
     const ch = source[i]
-    const prev = source[i - 1]
     if (inString) {
-      if (ch === inString && prev !== '\\') inString = null
+      if (escaped) {
+        escaped = false
+      } else if (ch === '\\') {
+        escaped = true
+      } else if (ch === inString) {
+        inString = null
+      }
       continue
     }
     if (ch === '"' || ch === "'" || ch === '`') { inString = ch; continue }
