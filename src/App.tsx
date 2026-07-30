@@ -10,6 +10,8 @@ import { Session } from './screens/Session'
 import { Dashboard } from './screens/Dashboard'
 import { ConjugationTable } from './screens/ConjugationTable'
 import { Shadowing } from './screens/Shadowing'
+import { Plan } from './screens/Plan'
+import { Dialogues } from './screens/Dialogues'
 
 export type Screen =
   | 'home' | 'name' | 'placement' | 'session' | 'dashboard'
@@ -38,6 +40,11 @@ function Done({ onBack }: { onBack: () => void }) {
 export default function App() {
   const [screen, setScreen] = useState<Screen>('home')
   const [studyDeckId, setStudyDeckId] = useState<string | undefined>(undefined)
+  // Set only when Shadowing was opened from one specific dialogue (via its
+  // "Shadow this" button). Any other way of reaching Shadowing — Home's
+  // Explore row included — clears it, so that entry point keeps its mixed
+  // practice set rather than accidentally reusing a stale scope.
+  const [shadowDialogueId, setShadowDialogueId] = useState<string | undefined>(undefined)
 
   const profileName = useStore(s => s.profileName)
   const placed = useStore(s => s.placed)
@@ -59,6 +66,28 @@ export default function App() {
     setScreen('session')
   }
 
+  // Home's nav row (Progress/Plan/Dialogues/Shadowing/Settings) is a plain
+  // "go to this screen" jump — it never carries a dialogue scope.
+  function handleNavigate(next: Screen) {
+    setShadowDialogueId(undefined)
+    setScreen(next)
+  }
+
+  function handleShadowFromDialogue(dialogueId: string) {
+    setShadowDialogueId(dialogueId)
+    setScreen('shadowing')
+  }
+
+  // She got to Shadowing either from Home's Explore row (no dialogue scope —
+  // back should return there) or from one specific dialogue's "Shadow this"
+  // button (back should return to the dialogue list, not all the way home,
+  // since that's the resource she was just reading and may want more of).
+  function handleShadowingBack() {
+    const backToDialogues = shadowDialogueId !== undefined
+    setShadowDialogueId(undefined)
+    setScreen(backToDialogues ? 'dialogues' : 'home')
+  }
+
   function renderScreen() {
     if (!profileName) return <Name onNext={goHome} />
     if (!placed) return <Placement onDone={goHome} />
@@ -73,15 +102,15 @@ export default function App() {
       case 'conjugation':
         return <ConjugationTable onBack={goHome} />
       case 'plan':
-        return <ComingSoon title="8-week plan" onBack={goHome} />
+        return <Plan onBack={goHome} />
       case 'dialogues':
-        return <ComingSoon title="Dialogues" onBack={goHome} />
+        return <Dialogues onBack={goHome} onShadow={handleShadowFromDialogue} />
       case 'shadowing':
-        return <Shadowing onBack={goHome} />
+        return <Shadowing dialogueId={shadowDialogueId} onBack={handleShadowingBack} />
       case 'settings':
         return <ComingSoon title="Settings" onBack={goHome} />
       default:
-        return <Home onNavigate={setScreen} onStudy={handleStudy} />
+        return <Home onNavigate={handleNavigate} onStudy={handleStudy} />
     }
   }
 
