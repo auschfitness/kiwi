@@ -55,4 +55,36 @@ describe('Session', () => {
     await userEvent.click(screen.getByRole('button', { name: /end session/i }))
     expect(onDone).toHaveBeenCalled()
   })
+
+  it('brings a missed card back before the session ends', async () => {
+    // Card: survival_0 ("Hello", pos "greeting").
+    //   isTypable: "Hello".length (5) <= 16, no "…", pos "greeting" is in
+    //     TYPABLE_POS -> true, so 'listen' and 'type' are supported.
+    //   isSentence: stripTags("<b>Hello</b>, how are you?") -> "Hello, how are
+    //     you?" -> 4 words, 3 <= 4 <= 9 -> true, so 'build' and 'dictate' are
+    //     supported too. canSpeak is forced false in Session, so 'speak' is not.
+    //   supported = ORDER.filter(...) = ['recognize','listen','type','build','dictate']
+    //     (length 5).
+    //   pickModality returns supported[reps % supported.length]. reps must be
+    //   > 0 for the card to count as studied (isNew is reps === 0), so the
+    //   smallest reps that lands on index 0 ('recognize') is reps = 5
+    //   (5 % 5 === 0).
+    useStore.setState({
+      ...createInitialState(Date.now()),
+      unlocked: null, placed: true, cefrLevel: 1, unlockedLevel: 1,
+      newPerSession: 0, autoPlayAudio: false,
+      cards: { survival_0: { due: Date.now() - 1000, interval: 1, ease: 2.5, reps: 5, lapses: 0 } },
+    })
+    const onDone = vi.fn()
+    render(<Session deckId="survival" onDone={onDone} />)
+
+    // The one due card, in its recognize form.
+    await userEvent.click(screen.getByRole('button', { name: /show meaning/i }))
+    await userEvent.click(screen.getByRole('button', { name: /didn't/i }))
+
+    // It was requeued, so the session is not over and the card is shown again.
+    expect(onDone).not.toHaveBeenCalled()
+    expect(screen.getByRole('button', { name: /show meaning/i })).toBeInTheDocument()
+    expect(useStore.getState().cards.survival_0.lapses).toBe(1)
+  })
 })
