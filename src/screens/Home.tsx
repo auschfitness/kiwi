@@ -201,7 +201,7 @@ export function Home({ onNavigate, onStudy }: HomeProps) {
                           type="button"
                           aria-label="Conjugation table"
                           onClick={() => onNavigate('conjugation')}
-                          className="flex min-h-[56px] w-16 shrink-0 flex-col items-center justify-center gap-0.5 rounded-card border border-line bg-card2 text-ink transition active:scale-[0.98]"
+                          className={`flex min-h-[56px] w-16 shrink-0 flex-col items-center justify-center gap-0.5 rounded-card border border-line bg-card2 text-ink transition active:scale-[0.98]${locked ? ' opacity-50' : ''}`}
                         >
                           <span className="text-base" aria-hidden="true">📋</span>
                           <span className="text-[10px] font-bold">Table</span>
