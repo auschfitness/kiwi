@@ -64,7 +64,7 @@ export function Speak({ card, onAnswer }: ModalityProps) {
             <p>{judgement.message}</p>
           </Card>
           {micFailed ? (
-            <Button variant="ghost" onClick={() => finish(true)} disabled={answered}>
+            <Button variant="primary" onClick={() => finish(true)} disabled={answered}>
               Skip this one
             </Button>
           ) : (

@@ -26,4 +26,9 @@ describe('Shadowing', () => {
     await userEvent.click(screen.getByRole('button', { name: /next line/i }))
     expect(screen.getByText(/line 2 of/i)).toBeInTheDocument()
   })
+
+  it('tells her the browser cannot check pronunciation when recognition is unavailable', () => {
+    render(<Shadowing dialogueId="dlg_0" onBack={vi.fn()} />)
+    expect(screen.getByText(/can.t check your pronunciation/i)).toBeInTheDocument()
+  })
 })

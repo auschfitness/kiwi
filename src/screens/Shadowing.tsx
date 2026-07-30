@@ -3,6 +3,7 @@ import { ScreenHeader, Card, Button } from '../components/ui'
 import { useStore } from '../store/useStore'
 import { speak } from '../audio/speak'
 import { recognizeOnce } from '../audio/listen'
+import { speechRecognitionAvailable } from '../audio/capabilities'
 import { judgePronunciation, shadowingLines } from '../core/pronunciation'
 
 export interface ShadowingProps {
@@ -111,6 +112,13 @@ export function Shadowing({ dialogueId, onBack }: ShadowingProps) {
         {phase === 'listening' ? 'Listening…' : 'Record your voice'}
       </button>
 
+      {!speechRecognitionAvailable() && (
+        <p className="text-center text-sm text-muted">
+          This browser can&apos;t check your pronunciation. Listen, say it out loud, then use Next
+          line to carry on — that&apos;s the practice that counts.
+        </p>
+      )}
+
       {judgement && (
         <Card className={judgement.ok ? 'text-center font-bold text-good' : 'text-center font-bold text-ink'}>
           <p>{judgement.message}</p>
@@ -121,7 +129,6 @@ export function Shadowing({ dialogueId, onBack }: ShadowingProps) {
         <Button
           variant="ghost"
           size="md"
-          aria-label="Previous line"
           onClick={prev}
           disabled={index === 0}
         >
@@ -130,7 +137,6 @@ export function Shadowing({ dialogueId, onBack }: ShadowingProps) {
         <Button
           variant="ghost"
           size="md"
-          aria-label="Next line"
           onClick={next}
           disabled={index === lines.length - 1}
         >
