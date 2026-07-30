@@ -14,22 +14,20 @@ export interface QueueOptions {
   bias?: Skill
 }
 
-/** Spread `extras` evenly through `base` rather than stacking them at the head. */
-function interleave(base: QueueItem[], extras: QueueItem[]): QueueItem[] {
-  if (extras.length === 0) return base
-  if (base.length === 0) return extras
-  const out: QueueItem[] = []
-  const gap = (base.length + extras.length) / extras.length
-  let nextExtra = 0
-  let placed = 0
-  for (let i = 0; i < base.length; i++) {
-    while (placed < extras.length && out.length >= Math.floor((placed + 1) * gap) - 1) {
-      out.push(extras[placed]); placed += 1
-    }
-    out.push(base[i])
-    nextExtra = placed
+/** Spread `extras` proportionally through `base`, never leading with an extra. */
+function interleave<T>(base: T[], extras: T[]): T[] {
+  if (extras.length === 0) return [...base]
+  if (base.length === 0) return [...extras]
+  const total = base.length + extras.length
+  const out: T[] = []
+  let bi = 0
+  let ei = 0
+  for (let i = 0; i < total; i++) {
+    const targetExtras = ((i + 1) * extras.length) / total
+    const takeBase = bi < base.length && (i === 0 || ei >= extras.length || ei + 1 > targetExtras)
+    if (takeBase) out.push(base[bi++])
+    else out.push(extras[ei++])
   }
-  while (nextExtra < extras.length) { out.push(extras[nextExtra]); nextExtra += 1 }
   return out
 }
 
@@ -44,10 +42,11 @@ export function buildQueue(opts: QueueOptions): QueueItem[] {
   const fresh: QueueItem[] = cards
     .filter(c => isNew(states[c.id]) && !isDue(states[c.id], now))
     .sort((a, b) => Math.abs(levelOf(a.id) - cefrLevel) - Math.abs(levelOf(b.id) - cefrLevel))
-    .slice(0, newPerSession)
     .map(c => ({ cardId: c.id, modality: 'learn' as const }))
 
-  let queue = interleave(due.slice(0, cap), fresh).slice(0, cap)
+  const newCount = Math.min(newPerSession, fresh.length)
+  const dueSlots = Math.max(0, cap - newCount)
+  let queue = interleave(due.slice(0, dueSlots), fresh.slice(0, newCount))
 
   if (queue.length < cap) {
     const chosen = new Set(queue.map(i => i.cardId))

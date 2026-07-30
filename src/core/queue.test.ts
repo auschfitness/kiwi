@@ -123,6 +123,33 @@ describe('buildQueue', () => {
     })
     expect(q[0].modality).not.toBe('learn')
   })
+
+  it('still introduces new cards when the due backlog fills the cap', () => {
+    const dueCards = Array.from({ length: 30 }, (_, i) => card('r' + i))
+    const newCards = [card('n1'), card('n2'), card('n3')]
+    const cards = [...dueCards, ...newCards]
+    const states = Object.fromEntries(dueCards.map(c => [c.id, studied(NOW - 1)]))
+    const q = buildQueue({
+      cards, states, now: NOW, newPerSession: 3, cap: 20,
+      canSpeak: false, cefrLevel: 1, levelOf: levelOf(cards),
+    })
+    expect(q).toHaveLength(20)
+    expect(q.filter(i => i.modality === 'learn')).toHaveLength(3)
+  })
+
+  it('does not stack new cards at the head when they outnumber reviews', () => {
+    const cards = [card('r1'), card('r2'), ...Array.from({ length: 8 }, (_, i) => card('n' + i))]
+    const q = buildQueue({
+      cards, states: { r1: studied(NOW - 1), r2: studied(NOW - 1) },
+      now: NOW, newPerSession: 8, cap: 20, canSpeak: false,
+      cefrLevel: 1, levelOf: levelOf(cards),
+    })
+    expect(q[0].modality).not.toBe('learn')
+    // r1/r2 are studied with reps=3; supportedModalities for these cards is
+    // ['recognize','listen','type','build','dictate'], so reps % 5 === 3 -> 'build'.
+    const lastReviewAt = q.map(i => i.modality).lastIndexOf('build')
+    expect(lastReviewAt).toBeGreaterThan(0)
+  })
 })
 
 describe('requeueWrong', () => {
