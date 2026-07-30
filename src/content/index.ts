@@ -1,10 +1,12 @@
 import type { Card, Deck, Level } from '../types'
 import { GENERATED_DECKS } from './decks.generated'
+import { IRREGULAR_DECK } from './authored/irregular'
 
 export { DIALOGUES } from './dialogues.generated'
 export { PLAN } from './plan'
+export { IRREGULAR_TABLE } from './authored/irregular'
 
-export const DECKS: Deck[] = [...GENERATED_DECKS]
+export const DECKS: Deck[] = [...GENERATED_DECKS, IRREGULAR_DECK]
 
 export const ALL_CARDS: Card[] = DECKS.flatMap(d => d.cards)
 

@@ -175,23 +175,39 @@ export function Home({ onNavigate, onStudy }: HomeProps) {
                 {decks.map(deck => {
                   const stats = deckProgress(deck, cards, now)
                   return (
-                    <button
-                      key={deck.id}
-                      type="button"
-                      data-testid={`deck-${deck.id}`}
-                      disabled={locked}
-                      onClick={() => onStudy(deck.id)}
-                      className="flex min-h-[56px] w-full items-center gap-3 rounded-card border border-line bg-card p-3 text-left transition active:scale-[0.98] disabled:opacity-50"
-                    >
-                      <span className="text-2xl">{deck.emoji}</span>
-                      <span className="flex-1">
-                        <span className="block text-sm font-bold text-ink">{deck.name}</span>
-                        <span className="block text-xs text-muted">
-                          {stats.learned}/{stats.total} learned
+                    <div key={deck.id} className="flex items-stretch gap-2">
+                      <button
+                        type="button"
+                        data-testid={`deck-${deck.id}`}
+                        disabled={locked}
+                        onClick={() => onStudy(deck.id)}
+                        className="flex min-h-[56px] flex-1 items-center gap-3 rounded-card border border-line bg-card p-3 text-left transition active:scale-[0.98] disabled:opacity-50"
+                      >
+                        <span className="text-2xl">{deck.emoji}</span>
+                        <span className="flex-1">
+                          <span className="block text-sm font-bold text-ink">{deck.name}</span>
+                          <span className="block text-xs text-muted">
+                            {stats.learned}/{stats.total} learned
+                          </span>
                         </span>
-                      </span>
-                      {!locked && stats.due > 0 && <Chip tone="brand">{stats.due} due</Chip>}
-                    </button>
+                        {!locked && stats.due > 0 && <Chip tone="brand">{stats.due} due</Chip>}
+                      </button>
+                      {/* Reference table, not a study action — kept as a
+                       * separate sibling button rather than nested inside
+                       * the deck row so it stays reachable even when the
+                       * deck is locked. */}
+                      {deck.id === 'irregular' && (
+                        <button
+                          type="button"
+                          aria-label="Conjugation table"
+                          onClick={() => onNavigate('conjugation')}
+                          className="flex min-h-[56px] w-16 shrink-0 flex-col items-center justify-center gap-0.5 rounded-card border border-line bg-card2 text-ink transition active:scale-[0.98]"
+                        >
+                          <span className="text-base" aria-hidden="true">📋</span>
+                          <span className="text-[10px] font-bold">Table</span>
+                        </button>
+                      )}
+                    </div>
                   )
                 })}
               </div>

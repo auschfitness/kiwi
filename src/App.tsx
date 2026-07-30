@@ -8,10 +8,11 @@ import { Placement } from './screens/Placement'
 import { Home } from './screens/Home'
 import { Session } from './screens/Session'
 import { Dashboard } from './screens/Dashboard'
+import { ConjugationTable } from './screens/ConjugationTable'
 
 export type Screen =
   | 'home' | 'name' | 'placement' | 'session' | 'dashboard'
-  | 'plan' | 'dialogues' | 'shadowing' | 'settings' | 'done'
+  | 'plan' | 'dialogues' | 'shadowing' | 'settings' | 'done' | 'conjugation'
 
 /** A screen that has not landed yet (Tasks 20-25) — an honest placeholder, not a dead button. */
 function ComingSoon({ title, onBack }: { title: string; onBack: () => void }) {
@@ -68,6 +69,8 @@ export default function App() {
         return <Done onBack={goHome} />
       case 'dashboard':
         return <Dashboard onBack={goHome} />
+      case 'conjugation':
+        return <ConjugationTable onBack={goHome} />
       case 'plan':
         return <ComingSoon title="8-week plan" onBack={goHome} />
       case 'dialogues':
