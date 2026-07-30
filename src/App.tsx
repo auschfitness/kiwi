@@ -7,6 +7,7 @@ import { Name } from './screens/Name'
 import { Placement } from './screens/Placement'
 import { Home } from './screens/Home'
 import { Session } from './screens/Session'
+import { Dashboard } from './screens/Dashboard'
 
 export type Screen =
   | 'home' | 'name' | 'placement' | 'session' | 'dashboard'
@@ -66,7 +67,7 @@ export default function App() {
       case 'done':
         return <Done onBack={goHome} />
       case 'dashboard':
-        return <ComingSoon title="Progress" onBack={goHome} />
+        return <Dashboard onBack={goHome} />
       case 'plan':
         return <ComingSoon title="8-week plan" onBack={goHome} />
       case 'dialogues':
