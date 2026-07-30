@@ -105,4 +105,26 @@ describe('mergeSnapshots', () => {
     const remote = snap({ updatedAt: T + 1, doneToday: 4, doneDate: '2026-7-30' })
     expect(mergeSnapshots(local, remote).doneToday).toBe(30)
   })
+
+  it('resolves a full card tie identically in both directions', () => {
+    const a: CardState = { due: T, interval: 9, ease: 2.5, reps: 3, lapses: 0 }
+    const b: CardState = { due: T, interval: 4, ease: 1.9, reps: 3, lapses: 2 }
+    const local = snap({ cards: { x: a } })
+    const remote = snap({ cards: { x: b } })
+    expect(mergeSnapshots(local, remote).cards.x).toEqual(mergeSnapshots(remote, local).cards.x)
+  })
+
+  it('keeps the more progressed state when due and reps tie', () => {
+    const strong: CardState = { due: T, interval: 9, ease: 2.5, reps: 3, lapses: 0 }
+    const weak: CardState = { due: T, interval: 4, ease: 1.9, reps: 3, lapses: 2 }
+    expect(mergeSnapshots(snap({ cards: { x: weak } }), snap({ cards: { x: strong } })).cards.x).toEqual(strong)
+  })
+
+  it('keeps the newer device daily count across a single-digit day boundary', () => {
+    const older = snap({ updatedAt: T, doneToday: 30, doneDate: '2026-7-9' })
+    const newer = snap({ updatedAt: T + 1000, doneToday: 4, doneDate: '2026-7-10' })
+    const merged = mergeSnapshots(older, newer)
+    expect(merged.doneDate).toBe('2026-7-10')
+    expect(merged.doneToday).toBe(4)
+  })
 })

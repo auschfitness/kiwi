@@ -1,10 +1,15 @@
 import type { AppState, CardState, Skill, Skills } from '../types'
 
+/** Deterministic and symmetric: prefers the more-progressed state on every tie. */
 function pickCard(a: CardState | undefined, b: CardState | undefined): CardState {
   if (!a) return b!
   if (!b) return a
   if (a.due !== b.due) return a.due > b.due ? a : b
-  return a.reps >= b.reps ? a : b
+  if (a.reps !== b.reps) return a.reps > b.reps ? a : b
+  if (a.interval !== b.interval) return a.interval > b.interval ? a : b
+  if (a.lapses !== b.lapses) return a.lapses < b.lapses ? a : b
+  if (a.ease !== b.ease) return a.ease > b.ease ? a : b
+  return a
 }
 
 function mergeSkills(a: Skills, b: Skills): Skills {
@@ -28,9 +33,9 @@ export function mergeSnapshots(local: AppState, remote: AppState): AppState {
   }
 
   const sameDay = local.doneDate === remote.doneDate
-  const dayOwner = sameDay
+  const dayOwner = sameDay || local.updatedAt === remote.updatedAt
     ? (local.doneToday >= remote.doneToday ? local : remote)
-    : ((remote.doneDate ?? '') > (local.doneDate ?? '') ? remote : local)
+    : newer
 
   return {
     profileName: newer.profileName,
