@@ -37,15 +37,18 @@ describe('recognizeOnce', () => {
     await expect(recognizeOnce('en-NZ')).resolves.toBe('flat white')
   })
 
-  it('resolves only once even when onend follows onresult', async () => {
+  it('runs its cleanup once even when onend follows onresult', async () => {
+    let abortCalls = 0
     w.SpeechRecognition = function (this: Record<string, unknown>) {
-      this.abort = () => {}
+      this.abort = () => { abortCalls += 1 }
       this.start = () => {
         const self = this as { onresult?: (e: unknown) => void; onend?: () => void }
         self.onresult?.({ results: [[{ transcript: 'kia ora' }]] })
+        // onend always follows; without the settled guard this would run cleanup twice
         self.onend?.()
       }
     }
     await expect(recognizeOnce('en-NZ')).resolves.toBe('kia ora')
+    expect(abortCalls).toBe(1)
   })
 })
