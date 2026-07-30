@@ -23,9 +23,33 @@ function mergeSkills(a: Skills, b: Skills): Skills {
   return out
 }
 
+/** Rank a `YYYY-M-D` day key numerically. `null` (never studied) ranks lowest. */
+function dayRank(key: string | null): number {
+  if (!key) return -1
+  const [y, m, d] = key.split('-').map(Number)
+  if (!Number.isFinite(y) || !Number.isFinite(m) || !Number.isFinite(d)) return -1
+  return y * 10_000 + m * 100 + d
+}
+
+/**
+ * Which snapshot's scalar fields win. Recency decides it in every real case;
+ * the later comparisons exist so an exact `updatedAt` tie still resolves the
+ * same way regardless of which snapshot was passed first.
+ */
+function preferred(local: AppState, remote: AppState): AppState {
+  if (local.updatedAt !== remote.updatedAt) return local.updatedAt > remote.updatedAt ? local : remote
+  if (local.bestDay !== remote.bestDay) return local.bestDay > remote.bestDay ? local : remote
+  if (local.streak !== remote.streak) return local.streak > remote.streak ? local : remote
+  const localDay = dayRank(local.doneDate)
+  const remoteDay = dayRank(remote.doneDate)
+  if (localDay !== remoteDay) return localDay > remoteDay ? local : remote
+  if (local.doneToday !== remote.doneToday) return local.doneToday > remote.doneToday ? local : remote
+  return local.profileName <= remote.profileName ? local : remote
+}
+
 /** Deterministic, order-independent, never destructive. */
 export function mergeSnapshots(local: AppState, remote: AppState): AppState {
-  const newer = remote.updatedAt > local.updatedAt ? remote : local
+  const newer = preferred(local, remote)
 
   const cards: Record<string, CardState> = {}
   for (const id of new Set([...Object.keys(local.cards), ...Object.keys(remote.cards)])) {
@@ -33,9 +57,11 @@ export function mergeSnapshots(local: AppState, remote: AppState): AppState {
   }
 
   const sameDay = local.doneDate === remote.doneDate
-  const dayOwner = sameDay || local.updatedAt === remote.updatedAt
+  const dayOwner = sameDay
     ? (local.doneToday >= remote.doneToday ? local : remote)
-    : newer
+    : (dayRank(local.doneDate) !== dayRank(remote.doneDate)
+        ? (dayRank(local.doneDate) > dayRank(remote.doneDate) ? local : remote)
+        : newer)
 
   return {
     profileName: newer.profileName,

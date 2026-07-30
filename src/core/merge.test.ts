@@ -127,4 +127,29 @@ describe('mergeSnapshots', () => {
     expect(merged.doneDate).toBe('2026-7-10')
     expect(merged.doneToday).toBe(4)
   })
+
+  it('resolves a tied-timestamp day conflict identically in both directions', () => {
+    const x = snap({ updatedAt: 1000, doneToday: 10, doneDate: '2026-7-9' })
+    const y = snap({ updatedAt: 1000, doneToday: 10, doneDate: '2026-7-15' })
+    const xy = mergeSnapshots(x, y)
+    const yx = mergeSnapshots(y, x)
+    expect(xy.doneDate).toBe(yx.doneDate)
+    expect(xy.doneToday).toBe(yx.doneToday)
+  })
+
+  it('picks scalar preferences identically in both directions on a timestamp tie', () => {
+    const x = snap({ updatedAt: 1000, profileName: 'Ana', accent: 'en-NZ', dailyGoal: 20 })
+    const y = snap({ updatedAt: 1000, profileName: 'Bia', accent: 'en-AU', dailyGoal: 30 })
+    const xy = mergeSnapshots(x, y)
+    const yx = mergeSnapshots(y, x)
+    expect(xy.profileName).toBe(yx.profileName)
+    expect(xy.accent).toBe(yx.accent)
+    expect(xy.dailyGoal).toBe(yx.dailyGoal)
+  })
+
+  it('prefers the later calendar day regardless of digit width', () => {
+    const older = snap({ updatedAt: 5000, doneToday: 30, doneDate: '2026-7-9' })
+    const later = snap({ updatedAt: 1000, doneToday: 4, doneDate: '2026-7-10' })
+    expect(mergeSnapshots(older, later).doneDate).toBe('2026-7-10')
+  })
 })
