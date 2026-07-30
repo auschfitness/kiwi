@@ -665,7 +665,7 @@ const workplace: Deck = {
     {
       id: 'workplace_18', deckId: 'workplace',
       en: 'reference', pt: 'referência profissional',
-      exampleHtml: 'Could you be a <b>reference</b> for me?',
+      exampleHtml: 'Could you be my <b>reference</b>?',
       examplePt: 'Você poderia ser minha referência?',
       pos: 'noun',
     },
@@ -708,7 +708,7 @@ const workplace: Deck = {
       id: 'workplace_24', deckId: 'workplace',
       en: 'casual work', pt: 'trabalho eventual',
       exampleHtml: "She's doing <b>casual work</b> at the café.",
-      examplePt: 'Ela está fazendo trabalho casual no café.',
+      examplePt: 'Ela está fazendo trabalho eventual no café.',
       pos: 'phrase',
     },
     {
@@ -848,7 +848,7 @@ const idioms: Deck = {
       id: 'idioms_17', deckId: 'idioms',
       en: 'cut corners', pt: 'economizar de forma prejudicial',
       exampleHtml: "Don't <b>cut corners</b> on safety.",
-      examplePt: 'Não corte custos na segurança.',
+      examplePt: 'Não pule etapas na segurança.',
       pos: 'phrase',
     },
     {
