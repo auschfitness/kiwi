@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event'
 import App from './App'
 import { useStore } from './store/useStore'
 import { createInitialState } from './store/defaults'
+import { DIALOGUES } from './content'
 
 vi.mock('./audio/speak', () => ({
   speak: vi.fn(),
@@ -76,5 +77,31 @@ describe('App', () => {
 
     await userEvent.click(screen.getByRole('button', { name: /back home/i }))
     expect(screen.getByTestId('study-now')).toBeInTheDocument()
+  })
+
+  it('scopes Shadowing to one dialogue when reached via "Shadow this", and back returns to Dialogues', async () => {
+    useStore.setState({ profileName: 'Ana', placed: true, cefrLevel: 1, unlockedLevel: 1 })
+    render(<App />)
+
+    await userEvent.click(screen.getByRole('button', { name: /dialogues/i }))
+    await userEvent.click(screen.getAllByTestId('dialogue-card')[0])
+    await userEvent.click(screen.getByRole('button', { name: /shadow this/i }))
+
+    // The strongest available signal that Shadowing is actually scoped to
+    // this one dialogue (rather than the full mixed practice set — every
+    // dialogue line plus every long card example) is that its line count
+    // matches this dialogue's own line count, not the much larger unscoped
+    // total.
+    const firstDialogueLineCount = DIALOGUES[0].lines.length
+    expect(
+      screen.getByText(`Line 1 of ${firstDialogueLineCount}`),
+    ).toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('button', { name: /go back/i }))
+
+    // Back from a dialogue-scoped Shadowing session must return to the
+    // dialogue list it came from, not all the way home.
+    expect(screen.getByRole('heading', { name: 'Dialogues' })).toBeInTheDocument()
+    expect(screen.getAllByTestId('dialogue-card').length).toBeGreaterThan(0)
   })
 })
