@@ -8,7 +8,7 @@ const TYPABLE_POS: ReadonlySet<PartOfSpeech> = new Set<PartOfSpeech>([
 export function normalize(s: string): string {
   return s
     .toLowerCase()
-    .replace(/[.?!,'‘’]/g, '')
+    .replace(/[.?!,'’"]/g, '')
     .trim()
     .replace(/^to\s+/, '')
     .replace(/\s+/g, ' ')
