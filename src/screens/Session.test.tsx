@@ -52,7 +52,7 @@ describe('Session', () => {
   it('lets her leave early', async () => {
     const onDone = vi.fn()
     render(<Session onDone={onDone} />)
-    await userEvent.click(screen.getByRole('button', { name: /end session/i }))
+    await userEvent.click(screen.getByRole('button', { name: /finish session/i }))
     expect(onDone).toHaveBeenCalled()
   })
 

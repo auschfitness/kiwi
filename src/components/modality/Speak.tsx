@@ -49,7 +49,6 @@ export function Speak({ card, onAnswer }: ModalityProps) {
 
       <button
         type="button"
-        aria-label="Record your voice"
         onClick={record}
         disabled={phase === 'listening'}
         className="flex min-h-[52px] items-center justify-center gap-2 rounded-2xl border border-line bg-card2 text-lg font-bold text-ink transition active:scale-[0.98] disabled:opacity-70"

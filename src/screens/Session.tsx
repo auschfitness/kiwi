@@ -91,7 +91,7 @@ export function Session({ deckId, onDone }: SessionProps) {
       <div className="flex items-center gap-3">
         <Meter value={index / queue.length} label={`${index + 1} of ${queue.length}`} className="flex-1" />
         <div className="shrink-0">
-          <Button variant="ghost" size="md" aria-label="End session" onClick={onDone}>
+          <Button variant="ghost" size="md" aria-label="Finish session" onClick={onDone}>
             Finish
           </Button>
         </div>

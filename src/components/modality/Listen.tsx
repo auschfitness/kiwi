@@ -54,7 +54,20 @@ export function Listen({ card, onAnswer }: ModalityProps) {
               onClick={() => choose(option)}
               disabled={picked !== null}
             >
+              {/* Correct/incorrect must never be colour-only: the tick/cross
+                  is visible to everyone (including colour-blind readers),
+                  and the sr-only text carries the same distinction to a
+                  screen reader, whose users get no benefit from the variant
+                  colour at all. */}
+              {showState && (
+                <span aria-hidden="true">{isAnswer ? '✅ ' : '❌ '}</span>
+              )}
               {option}
+              {showState && (
+                <span className="sr-only">
+                  {isAnswer ? ' — correct answer' : ' — your answer, incorrect'}
+                </span>
+              )}
             </Button>
           )
         })}

@@ -67,12 +67,12 @@ describe('App', () => {
     render(<App />)
 
     await userEvent.click(screen.getByTestId('study-now'))
-    // "End session" is the aria-label on Session's Finish button — a reliable
+    // "Finish session" is the aria-label on Session's Finish button — a reliable
     // marker that a session is on screen, regardless of which card/modality
     // happens to be first in the queue.
-    expect(screen.getByRole('button', { name: /end session/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /finish session/i })).toBeInTheDocument()
 
-    await userEvent.click(screen.getByRole('button', { name: /end session/i }))
+    await userEvent.click(screen.getByRole('button', { name: /finish session/i }))
     expect(screen.getByRole('button', { name: /back home/i })).toBeInTheDocument()
 
     await userEvent.click(screen.getByRole('button', { name: /back home/i }))
