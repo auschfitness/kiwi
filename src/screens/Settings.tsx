@@ -1,13 +1,18 @@
 import { useState } from 'react'
 import type { Accent } from '../types'
 import { useStore } from '../store/useStore'
-import { isSyncConfigured, validateSyncCode } from '../sync/client'
-import { useSync } from '../sync/useSync'
+import { isSyncConfigured, validateSyncCode, type SyncStatus } from '../sync/client'
 import { Button, Card, Chip, ScreenHeader } from '../components/ui'
 
 export interface SettingsProps {
   onBack: () => void
   onRetakePlacement: () => void
+  // Sync status + restore action live in App's single instance of the sync
+  // hook — Settings is a presentational consumer of them, not a second
+  // mount of that hook (which would double the debounced push timers, the
+  // visibilitychange/pagehide listeners, and the launch pull).
+  syncStatus: SyncStatus
+  onRestore: (code: string) => Promise<'merged' | 'pushed' | 'error'>
 }
 
 const ACCENTS: { value: Accent; label: string }[] = [
@@ -111,7 +116,7 @@ function Toggle({
  * progress). With no Supabase env vars, the sync section degrades to a
  * plain explanatory card instead of a field that can never work.
  */
-export function Settings({ onBack, onRetakePlacement }: SettingsProps) {
+export function Settings({ onBack, onRetakePlacement, syncStatus, onRestore }: SettingsProps) {
   const profileName = useStore(s => s.profileName)
   const syncCode = useStore(s => s.syncCode)
   const dailyGoal = useStore(s => s.dailyGoal)
@@ -123,7 +128,6 @@ export function Settings({ onBack, onRetakePlacement }: SettingsProps) {
   const resetProgress = useStore(s => s.resetProgress)
 
   const configured = isSyncConfigured()
-  const { status, restore } = useSync()
 
   const [name, setName] = useState(profileName)
   const [codeInput, setCodeInput] = useState(syncCode ?? '')
@@ -145,7 +149,7 @@ export function Settings({ onBack, onRetakePlacement }: SettingsProps) {
     setCodeError(err)
     if (err) return
     setRestoring(true)
-    await restore(trimmed)
+    await onRestore(trimmed)
     setRestoring(false)
   }
 
@@ -154,7 +158,7 @@ export function Settings({ onBack, onRetakePlacement }: SettingsProps) {
     resetProgress(Date.now())
   }
 
-  const liveStatus = isLiveStatus(status) ? status : null
+  const liveStatus = isLiveStatus(syncStatus) ? syncStatus : null
 
   return (
     <div className="flex flex-col gap-4 pt-2">

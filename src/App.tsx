@@ -48,7 +48,11 @@ export default function App() {
   // showing — this is what keeps progress pushed to the cloud in the
   // background. With no Supabase env vars it's a no-op: isSyncConfigured()
   // is false, so every effect inside short-circuits before touching a client.
-  useSync()
+  // Settings is a presentational consumer of this single instance (status +
+  // restore passed down as props) rather than mounting its own — one set of
+  // debounced push timers and visibility listeners per session, not one per
+  // screen that happens to render Settings.
+  const { status: syncStatus, restore: onRestore } = useSync()
 
   useEffect(() => {
     const unlock = () => { warmUp(); document.removeEventListener('pointerdown', unlock) }
@@ -115,7 +119,14 @@ export default function App() {
       case 'shadowing':
         return <Shadowing dialogueId={shadowDialogueId} onBack={handleShadowingBack} />
       case 'settings':
-        return <Settings onBack={goHome} onRetakePlacement={handleRetakePlacement} />
+        return (
+          <Settings
+            onBack={goHome}
+            onRetakePlacement={handleRetakePlacement}
+            syncStatus={syncStatus}
+            onRestore={onRestore}
+          />
+        )
       default:
         return <Home onNavigate={handleNavigate} onStudy={handleStudy} />
     }
