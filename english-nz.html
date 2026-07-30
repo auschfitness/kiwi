@@ -1,0 +1,1523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0f172a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="English → NZ">
+<title>English → NZ</title>
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%230f172a'/%3E%3Ctext x='50%25' y='54%25' font-size='90' text-anchor='middle' dominant-baseline='middle'%3E🥝%3C/text%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#0f172a; --bg2:#131e36; --card:#1e293b; --card2:#273449;
+  --ink:#f1f5f9; --muted:#94a3b8; --line:#334155;
+  --brand:#38bdf8; --brand2:#0ea5e9; --good:#34d399; --easy:#22d3ee;
+  --hard:#fbbf24; --again:#fb7185; --gold:#fcd34d;
+  --shadow:0 10px 30px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;height:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  background:linear-gradient(180deg,#0f172a,#0b1220);color:var(--ink);
+  overscroll-behavior-y:none;-webkit-user-select:none;user-select:none;
+}
+#app{max-width:520px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+.screen{display:none;flex:1;flex-direction:column;padding:18px 18px 24px}
+.screen.active{display:flex;animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+
+/* ---------- HOME ---------- */
+.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.hi{font-size:14px;color:var(--muted)}
+.hi b{color:var(--ink)}
+.gear{width:40px;height:40px;border-radius:12px;background:var(--card);display:flex;align-items:center;justify-content:center;font-size:18px}
+.streakwrap{display:flex;gap:12px;margin:14px 0 6px}
+.stat{flex:1;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;text-align:center}
+.stat .n{font-size:26px;font-weight:800;line-height:1}
+.stat .l{font-size:11px;color:var(--muted);margin-top:5px;text-transform:uppercase;letter-spacing:.5px}
+.stat.fire .n{color:var(--gold)}
+.goalcard{background:linear-gradient(135deg,#0ea5e9,#2563eb);border-radius:20px;padding:18px;margin:12px 0 6px;display:flex;align-items:center;gap:16px;box-shadow:var(--shadow)}
+.ring{position:relative;width:66px;height:66px;flex:none}
+.ring svg{transform:rotate(-90deg)}
+.ring .txt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px}
+.goalcard .g1{font-weight:800;font-size:17px}
+.goalcard .g2{font-size:13px;opacity:.9;margin-top:3px}
+.sectitle{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin:20px 4px 10px;font-weight:700}
+.bigbtn{width:100%;padding:17px;border-radius:16px;font-size:17px;font-weight:800;
+  background:linear-gradient(135deg,var(--brand),var(--brand2));color:#04263a;box-shadow:var(--shadow);
+  display:flex;align-items:center;justify-content:center;gap:8px}
+.bigbtn:active{transform:scale(.98)}
+.bigbtn.sec{background:var(--card);color:var(--ink);border:1px solid var(--line);box-shadow:none}
+.bigbtn[disabled]{opacity:.5}
+.decks{display:flex;flex-direction:column;gap:10px}
+.deck{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;display:flex;align-items:center;gap:13px}
+.deck:active{background:var(--card2)}
+.deck .emo{width:44px;height:44px;border-radius:12px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:22px;flex:none}
+.deck .mid{flex:1;min-width:0}
+.deck .dn{font-weight:700;font-size:15px}
+.deck .ds{font-size:12px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar{height:6px;border-radius:6px;background:var(--card2);margin-top:8px;overflow:hidden}
+.bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--good),var(--easy));border-radius:6px;transition:width .4s}
+.deck .due{font-size:11px;font-weight:800;background:var(--brand);color:#04263a;border-radius:999px;padding:3px 8px;flex:none}
+.deck .done{font-size:18px;color:var(--good);flex:none}
+
+/* ---------- STUDY ---------- */
+.shead{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.x{width:38px;height:38px;border-radius:12px;background:var(--card);display:flex;align-items:center;justify-content:center;font-size:18px;flex:none}
+.pbar{flex:1;height:8px;background:var(--card);border-radius:8px;overflow:hidden}
+.pbar>i{display:block;height:100%;background:linear-gradient(90deg,var(--brand),var(--good));transition:width .3s}
+.count{font-size:13px;color:var(--muted);font-weight:700;flex:none;min-width:44px;text-align:right}
+.cardwrap{flex:1;display:flex;align-items:center;justify-content:center;perspective:1200px;padding:6px 0}
+.flip{width:100%;height:100%;min-height:340px;position:relative;transition:transform .5s;transform-style:preserve-3d}
+.flip.flipped{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  background:var(--card);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;gap:14px}
+.face.back{transform:rotateY(180deg);background:linear-gradient(160deg,#1e293b,#182338)}
+.tag{position:absolute;top:16px;left:16px;font-size:11px;font-weight:800;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.6px;background:var(--card2);padding:5px 10px;border-radius:999px}
+.pos{position:absolute;top:16px;right:16px;font-size:11px;color:var(--muted);font-style:italic}
+.word{font-size:38px;font-weight:800;line-height:1.1}
+.phon{font-size:15px;color:var(--muted)}
+.speak{width:60px;height:60px;border-radius:50%;background:var(--brand);color:#04263a;
+  display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:var(--shadow)}
+.speak:active{transform:scale(.92)}
+.speak.sm{width:44px;height:44px;font-size:20px}
+.hintflip{position:absolute;bottom:18px;font-size:13px;color:var(--muted)}
+.pt{font-size:30px;font-weight:800;color:var(--gold)}
+.ex{font-size:16px;line-height:1.5;color:var(--ink);max-width:90%}
+.ex b{color:var(--brand)}
+.expt{font-size:14px;color:var(--muted);max-width:90%;font-style:italic}
+.exrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center}
+.rate{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
+.rate button{padding:14px 4px;border-radius:14px;font-weight:800;font-size:13px;color:#04121f;display:flex;flex-direction:column;gap:3px;align-items:center}
+.rate .t{font-size:11px;opacity:.85;font-weight:600}
+.rate .again{background:var(--again)}.rate .hard{background:var(--hard)}
+.rate .good{background:var(--good)}.rate .easy{background:var(--easy)}
+.rate button:active{transform:scale(.96)}
+.tapflip{margin-top:14px;width:100%;padding:16px;border-radius:16px;background:var(--brand);color:#04263a;font-weight:800;font-size:16px}
+
+/* quiz */
+.qwrap{flex:1;display:flex;flex-direction:column;justify-content:center;gap:14px}
+.qprompt{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:26px;text-align:center;box-shadow:var(--shadow)}
+.qprompt .qw{font-size:32px;font-weight:800}
+.qprompt .qs{font-size:13px;color:var(--muted);margin-top:6px}
+.opt{width:100%;padding:16px;border-radius:14px;background:var(--card);border:1px solid var(--line);
+  font-size:16px;font-weight:600;text-align:left}
+.opt:active{background:var(--card2)}
+.opt.correct{background:rgba(52,211,153,.18);border-color:var(--good);color:var(--good)}
+.opt.wrong{background:rgba(251,113,133,.16);border-color:var(--again);color:var(--again)}
+
+/* done / celebrate */
+.done-screen{align-items:center;justify-content:center;text-align:center;gap:8px}
+.done-screen .big{font-size:64px}
+.done-screen h2{margin:6px 0 0;font-size:24px}
+.done-screen p{color:var(--muted);margin:4px 0 18px;max-width:280px}
+
+/* settings */
+.setrow{display:flex;align-items:center;justify-content:space-between;background:var(--card);
+  border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:10px}
+.setrow .sl{font-size:15px;font-weight:600}
+.setrow .sd{font-size:12px;color:var(--muted);margin-top:2px;max-width:220px}
+.sw{width:52px;height:30px;border-radius:999px;background:var(--card2);position:relative;flex:none;transition:.2s}
+.sw.on{background:var(--good)}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:.2s}
+.sw.on::after{left:25px}
+select,.selbtn{background:var(--card2);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:9px 12px;font-size:14px;font-weight:600}
+.stepper{display:flex;align-items:center;gap:12px}
+.stepper button{width:34px;height:34px;border-radius:10px;background:var(--card2);font-size:20px;font-weight:800}
+.dang{color:var(--again);font-weight:700}
+.back{display:flex;align-items:center;gap:8px;font-size:16px;font-weight:700;margin-bottom:16px}
+.foot{text-align:center;font-size:11px;color:var(--muted);margin-top:22px;line-height:1.6}
+/* practice row on home */
+.prow{display:flex;gap:10px;margin:10px 0}
+.pcell{flex:1;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 6px;
+  display:flex;flex-direction:column;align-items:center;gap:5px;font-size:22px}
+.pcell span{font-size:12px;font-weight:700;color:var(--muted)}
+.pcell:active{background:var(--card2)}
+/* typing */
+.typewrap{flex:1;display:flex;flex-direction:column;justify-content:center;gap:16px}
+.typecard{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:24px;text-align:center;box-shadow:var(--shadow)}
+.typecard .tp{font-size:26px;font-weight:800;color:var(--gold)}
+.typecard .ts{font-size:14px;color:var(--muted);margin-top:8px;line-height:1.5}
+.typecard .ts b{color:var(--brand)}
+.typein{width:100%;padding:16px;border-radius:14px;background:var(--card2);border:2px solid var(--line);
+  color:var(--ink);font-size:20px;text-align:center;font-weight:700;outline:none}
+.typein:focus{border-color:var(--brand)}
+.typein.ok{border-color:var(--good);color:var(--good)}
+.typein.no{border-color:var(--again);color:var(--again)}
+.typefb{text-align:center;font-size:16px;font-weight:700;min-height:24px}
+.typefb .ans{color:var(--good)}
+.typefb.bad{color:var(--again)}
+.listenbtn{width:96px;height:96px;border-radius:50%;background:var(--brand);color:#04263a;
+  font-size:44px;display:flex;align-items:center;justify-content:center;margin:0 auto;box-shadow:var(--shadow)}
+.listenbtn:active{transform:scale(.94)}
+.replay{font-size:14px;color:var(--muted);text-align:center;margin-top:4px}
+/* plan */
+.weekcard{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px;margin-bottom:12px}
+.weekcard.now{border-color:var(--brand);box-shadow:0 0 0 2px rgba(56,189,248,.25)}
+.weekcard .wk{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.weekcard .wn{background:var(--brand);color:#04263a;font-weight:800;font-size:12px;border-radius:999px;padding:3px 10px}
+.weekcard.now .wn{background:var(--good)}
+.weekcard .wt{font-weight:800;font-size:15px}
+.weekcard .wd{font-size:13px;color:var(--muted);line-height:1.5;margin-top:3px}
+.weekcard .wtip{font-size:12px;color:var(--gold);margin-top:7px}
+/* dialogues */
+.dlist .dcard{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px}
+.dlist .dcard:active{background:var(--card2)}
+.dlist .demo{font-size:24px}
+.dline{display:flex;gap:10px;margin-bottom:12px;align-items:flex-start}
+.dline.you{flex-direction:row-reverse}
+.bubble{max-width:78%;padding:12px 14px;border-radius:16px;background:var(--card);border:1px solid var(--line)}
+.dline.you .bubble{background:linear-gradient(135deg,#0ea5e9,#2563eb);color:#fff;border:none}
+.bubble .ben{font-size:16px;font-weight:600}
+.bubble .bpt{font-size:13px;opacity:.85;margin-top:3px;font-style:italic}
+.bubble .spk{font-size:15px;margin-left:6px;cursor:pointer}
+.who{font-size:11px;color:var(--muted);margin-bottom:3px;font-weight:700}
+.toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%) translateY(20px);
+  background:#0b1220;border:1px solid var(--line);color:var(--ink);padding:12px 18px;border-radius:14px;
+  font-size:14px;font-weight:600;opacity:0;pointer-events:none;transition:.25s;z-index:50;box-shadow:var(--shadow)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- HOME -->
+  <section id="home" class="screen active">
+    <div class="top">
+      <div class="hi">Kia ora, <b id="uname">love</b> 👋<br><span id="subhi"></span></div>
+      <button class="gear" onclick="go('settings')">⚙️</button>
+    </div>
+    <div class="streakwrap">
+      <div class="stat fire"><div class="n" id="stStreak">0</div><div class="l">🔥 day streak</div></div>
+      <div class="stat"><div class="n" id="stKnown">0</div><div class="l">words learned</div></div>
+      <div class="stat"><div class="n" id="stDue">0</div><div class="l">to review</div></div>
+    </div>
+    <div class="goalcard">
+      <div class="ring">
+        <svg width="66" height="66"><circle cx="33" cy="33" r="28" stroke="rgba(255,255,255,.25)" stroke-width="7" fill="none"/>
+        <circle id="goalRing" cx="33" cy="33" r="28" stroke="#fff" stroke-width="7" fill="none" stroke-linecap="round" stroke-dasharray="176" stroke-dashoffset="176"/></svg>
+        <div class="txt" id="goalTxt">0/20</div>
+      </div>
+      <div>
+        <div class="g1" id="goalHead">Today's goal</div>
+        <div class="g2" id="goalSub">Study a little every day — that's the secret 🥝</div>
+      </div>
+    </div>
+    <button class="bigbtn" id="reviewBtn" onclick="startReview()">▶︎ Study now</button>
+    <div class="prow">
+      <button class="pcell" onclick="startTyping()">✍️<span>Typing</span></button>
+      <button class="pcell" onclick="startListening()">👂<span>Listening</span></button>
+      <button class="pcell" onclick="startQuiz()">🎯<span>Quiz</span></button>
+    </div>
+    <div class="prow">
+      <button class="pcell" onclick="go('plan')">🗺️<span>8-week plan</span></button>
+      <button class="pcell" onclick="go('dialogues')">🗣️<span>Dialogues</span></button>
+    </div>
+    <div class="sectitle">Lessons</div>
+    <div class="decks" id="deckList"></div>
+    <div class="foot">Made with 💙 for your move to Aotearoa · tap ⚙️ for settings</div>
+  </section>
+
+  <!-- STUDY -->
+  <section id="study" class="screen">
+    <div class="shead">
+      <button class="x" onclick="confirmQuit()">✕</button>
+      <div class="pbar"><i id="studyProg"></i></div>
+      <div class="count" id="studyCount">0/0</div>
+    </div>
+    <div class="cardwrap">
+      <div class="flip" id="flip" onclick="onCardTap(event)">
+        <div class="face front">
+          <span class="tag" id="fTag">deck</span>
+          <span class="pos" id="fPos"></span>
+          <div class="word" id="fWord">—</div>
+          <div class="phon" id="fPhon"></div>
+          <button class="speak" onclick="speakCard(event)">🔊</button>
+          <div class="hintflip">tap the card to see the meaning</div>
+        </div>
+        <div class="face back">
+          <span class="tag" id="bTag">deck</span>
+          <div class="word" id="bWord" style="font-size:28px">—</div>
+          <div class="pt" id="bPt">—</div>
+          <div class="exrow">
+            <button class="speak sm" onclick="speakCard(event)">🔊</button>
+            <div class="ex" id="bEx"></div>
+          </div>
+          <div class="expt" id="bExPt"></div>
+        </div>
+      </div>
+    </div>
+    <button class="tapflip" id="showBtn" onclick="flipCard()">Show answer</button>
+    <div class="rate" id="rateRow" style="display:none">
+      <button class="again" onclick="rate(0)">😵<span>Again</span><span class="t" id="t0">1m</span></button>
+      <button class="hard" onclick="rate(1)">😬<span>Hard</span><span class="t" id="t1">6m</span></button>
+      <button class="good" onclick="rate(2)">🙂<span>Good</span><span class="t" id="t2">1d</span></button>
+      <button class="easy" onclick="rate(3)">😎<span>Easy</span><span class="t" id="t3">4d</span></button>
+    </div>
+  </section>
+
+  <!-- QUIZ -->
+  <section id="quiz" class="screen">
+    <div class="shead">
+      <button class="x" onclick="go('home')">✕</button>
+      <div class="pbar"><i id="quizProg"></i></div>
+      <div class="count" id="quizCount">0/0</div>
+    </div>
+    <div class="qwrap">
+      <div class="qprompt"><div class="qw" id="qWord">—</div><div class="qs" id="qSub">Choose the meaning</div></div>
+      <div id="qOpts" style="display:flex;flex-direction:column;gap:10px"></div>
+    </div>
+  </section>
+
+  <!-- DONE -->
+  <section id="done" class="screen done-screen">
+    <div class="big" id="doneEmo">🎉</div>
+    <h2 id="doneH">Ka pai! Well done!</h2>
+    <p id="doneP">You finished this session.</p>
+    <button class="bigbtn" onclick="go('home')" style="max-width:260px">Back home</button>
+    <button class="bigbtn sec" id="doneMore" onclick="startReview()" style="max-width:260px;margin-top:10px">Keep going</button>
+  </section>
+
+  <!-- TYPING -->
+  <section id="typing" class="screen">
+    <div class="shead">
+      <button class="x" onclick="go('home')">✕</button>
+      <div class="pbar"><i id="typeProg"></i></div>
+      <div class="count" id="typeCount">0/0</div>
+    </div>
+    <div class="typewrap">
+      <div class="typecard">
+        <div class="tp" id="typePt">—</div>
+        <div class="ts" id="typeHint"></div>
+      </div>
+      <input id="typeInput" class="typein" autocomplete="off" autocorrect="off" autocapitalize="none"
+        spellcheck="false" placeholder="type in English…" onkeydown="if(event.key==='Enter')checkType()">
+      <div class="typefb" id="typeFb"></div>
+      <button class="bigbtn" id="typeBtn" onclick="checkType()">Check</button>
+    </div>
+  </section>
+
+  <!-- LISTENING -->
+  <section id="listening" class="screen">
+    <div class="shead">
+      <button class="x" onclick="go('home')">✕</button>
+      <div class="pbar"><i id="lisProg"></i></div>
+      <div class="count" id="lisCount">0/0</div>
+    </div>
+    <div class="qwrap">
+      <div style="text-align:center">
+        <button class="listenbtn" onclick="playListen()">🔊</button>
+        <div class="replay">tap to hear it again</div>
+        <div class="qs" style="margin-top:12px;color:var(--muted);font-size:13px">Which word did you hear?</div>
+      </div>
+      <div id="lisOpts" style="display:flex;flex-direction:column;gap:10px;margin-top:6px"></div>
+    </div>
+  </section>
+
+  <!-- PLAN -->
+  <section id="plan" class="screen">
+    <button class="back" onclick="go('home')">‹ Back</button>
+    <div class="sectitle" style="margin-top:0">Your 8-week plan to Aotearoa 🥝</div>
+    <div id="planList"></div>
+    <div class="foot">Aim for a little every day. Consistency beats long study once a week.</div>
+  </section>
+
+  <!-- DIALOGUES -->
+  <section id="dialogues" class="screen">
+    <button class="back" onclick="go('home')">‹ Back</button>
+    <div class="sectitle" style="margin-top:0" id="dlgTitle">Survival dialogues 🗣️</div>
+    <div id="dlgList" class="dlist"></div>
+    <div id="dlgView" style="display:none"></div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section id="settings" class="screen">
+    <button class="back" onclick="go('home')">‹ Back</button>
+    <div class="sectitle" style="margin-top:0">Her name</div>
+    <div class="setrow">
+      <div><div class="sl">Name on home screen</div><div class="sd">So the app greets her</div></div>
+      <input id="nameInput" class="selbtn" style="width:120px" oninput="setName(this.value)" placeholder="love">
+    </div>
+    <div class="sectitle">Study</div>
+    <div class="setrow">
+      <div><div class="sl">Daily goal</div><div class="sd">New + review cards per day</div></div>
+      <div class="stepper"><button onclick="chgGoal(-5)">−</button><b id="goalVal">20</b><button onclick="chgGoal(5)">+</button></div>
+    </div>
+    <div class="setrow">
+      <div><div class="sl">New cards per session</div><div class="sd">How many fresh words to introduce</div></div>
+      <div class="stepper"><button onclick="chgNew(-2)">−</button><b id="newVal">8</b><button onclick="chgNew(2)">+</button></div>
+    </div>
+    <div class="sectitle">Sound & language</div>
+    <div class="setrow">
+      <div><div class="sl">Accent</div><div class="sd">Voice for pronunciation</div></div>
+      <select id="accentSel" onchange="setAccent(this.value)">
+        <option value="en-NZ">🇳🇿 New Zealand</option>
+        <option value="en-AU">🇦🇺 Australian</option>
+        <option value="en-GB">🇬🇧 British</option>
+        <option value="en-US">🇺🇸 American</option>
+      </select>
+    </div>
+    <div class="setrow">
+      <div><div class="sl">Auto-play audio</div><div class="sd">Say the word when a card appears</div></div>
+      <div class="sw" id="swAuto" onclick="toggle('autoPlay','swAuto')"></div>
+    </div>
+    <div class="setrow">
+      <div><div class="sl">Show Portuguese</div><div class="sd">Hide it later for full immersion</div></div>
+      <div class="sw on" id="swPt" onclick="toggle('showPt','swPt')"></div>
+    </div>
+    <div class="sectitle">Data</div>
+    <div class="setrow" onclick="resetProgress()">
+      <div><div class="sl dang">Reset all progress</div><div class="sd">Start over from zero</div></div>
+      <span style="font-size:20px">↺</span>
+    </div>
+    <div class="foot">English → NZ · offline-ready · your progress is saved on this phone</div>
+  </section>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   CONTENT  — each item: [english, portuguese, example, examplePT, part-of-speech, phonetic]
+   ============================================================ */
+const DECKS = [
+ {id:"survival", name:"First words & courtesy", emo:"👋", desc:"Greetings, please, thank you, yes/no",
+  cards:[
+   ["Hello","Olá","<b>Hello</b>, how are you?","Olá, como você está?","greeting",""],
+   ["Hi","Oi","<b>Hi</b>! Nice to meet you.","Oi! Prazer em conhecer.","greeting",""],
+   ["Good morning","Bom dia","<b>Good morning</b>, everyone.","Bom dia a todos.","phrase",""],
+   ["Good afternoon","Boa tarde","<b>Good afternoon</b>, sir.","Boa tarde, senhor.","phrase",""],
+   ["Good evening","Boa noite (chegada)","<b>Good evening</b>, table for two?","Boa noite, mesa para dois?","phrase",""],
+   ["Goodbye","Tchau / adeus","<b>Goodbye</b>, see you tomorrow.","Tchau, até amanhã.","phrase",""],
+   ["Please","Por favor","A coffee, <b>please</b>.","Um café, por favor.","word",""],
+   ["Thank you","Obrigada","<b>Thank you</b> so much!","Muito obrigada!","phrase",""],
+   ["You're welcome","De nada","“Thanks!” — “<b>You're welcome</b>.”","“Valeu!” — “De nada.”","phrase",""],
+   ["Sorry","Desculpa","<b>Sorry</b>, I didn't hear you.","Desculpa, não te ouvi.","word",""],
+   ["Excuse me","Com licença / desculpe","<b>Excuse me</b>, where is the toilet?","Com licença, onde fica o banheiro?","phrase",""],
+   ["Yes","Sim","<b>Yes</b>, please.","Sim, por favor.","word",""],
+   ["No","Não","<b>No</b>, thank you.","Não, obrigada.","word",""],
+   ["Maybe","Talvez","<b>Maybe</b> later.","Talvez mais tarde.","word",""],
+   ["My name is…","Meu nome é…","<b>My name is</b> Ana.","Meu nome é Ana.","phrase",""],
+   ["Nice to meet you","Prazer em conhecer","<b>Nice to meet you</b>, John.","Prazer em conhecer, John.","phrase",""],
+   ["How are you?","Como você está?","Hi! <b>How are you?</b>","Oi! Como você está?","phrase",""],
+   ["I'm good, thanks","Estou bem, obrigada","<b>I'm good, thanks</b>. And you?","Estou bem, obrigada. E você?","phrase",""],
+   ["I don't understand","Eu não entendo","Sorry, <b>I don't understand</b>.","Desculpa, eu não entendo.","phrase",""],
+   ["Can you repeat, please?","Pode repetir, por favor?","<b>Can you repeat, please?</b>","Pode repetir, por favor?","phrase",""],
+   ["Can you speak slowly?","Pode falar devagar?","<b>Can you speak slowly, please?</b>","Pode falar devagar, por favor?","phrase",""],
+   ["I'm from Brazil","Eu sou do Brasil","Hi, <b>I'm from Brazil</b>.","Oi, eu sou do Brasil.","phrase",""]
+  ]},
+ {id:"numbers", name:"Numbers, time & days", emo:"🔢", desc:"Count, tell time, days of the week",
+  cards:[
+   ["One","Um","I have <b>one</b> brother.","Eu tenho um irmão.","number",""],
+   ["Two","Dois","<b>Two</b> coffees, please.","Dois cafés, por favor.","number",""],
+   ["Three","Três","<b>Three</b> tickets.","Três ingressos.","number",""],
+   ["Four","Quatro","<b>Four</b> people.","Quatro pessoas.","number",""],
+   ["Five","Cinco","It's <b>five</b> dollars.","São cinco dólares.","number",""],
+   ["Ten","Dez","<b>Ten</b> minutes.","Dez minutos.","number",""],
+   ["Twenty","Vinte","<b>Twenty</b> dollars.","Vinte dólares.","number",""],
+   ["Hundred","Cem","One <b>hundred</b> people.","Cem pessoas.","number",""],
+   ["First","Primeiro","The <b>first</b> door.","A primeira porta.","word",""],
+   ["Today","Hoje","<b>Today</b> is Monday.","Hoje é segunda.","word",""],
+   ["Tomorrow","Amanhã","See you <b>tomorrow</b>.","Até amanhã.","word",""],
+   ["Yesterday","Ontem","I arrived <b>yesterday</b>.","Cheguei ontem.","word",""],
+   ["Now","Agora","I need it <b>now</b>.","Preciso disso agora.","word",""],
+   ["What time is it?","Que horas são?","Excuse me, <b>what time is it?</b>","Com licença, que horas são?","phrase",""],
+   ["It's half past two","São duas e meia","<b>It's half past two.</b>","São duas e meia.","phrase",""],
+   ["Morning","Manhã","In the <b>morning</b>.","De manhã.","word",""],
+   ["Afternoon","Tarde","This <b>afternoon</b>.","Esta tarde.","word",""],
+   ["Night","Noite","At <b>night</b>.","À noite.","word",""],
+   ["Monday","Segunda-feira","See you on <b>Monday</b>.","Até segunda.","word",""],
+   ["Friday","Sexta-feira","<b>Friday</b> is my day off.","Sexta é minha folga.","word",""],
+   ["Weekend","Fim de semana","Have a good <b>weekend</b>!","Bom fim de semana!","word",""],
+   ["Week","Semana","Next <b>week</b>.","Semana que vem.","word",""]
+  ]},
+ {id:"verbs", name:"Everyday verbs", emo:"🏃", desc:"The action words you'll use daily",
+  cards:[
+   ["to be","ser / estar","I <b>am</b> tired.","Estou cansada.","verb",""],
+   ["to have","ter","I <b>have</b> a question.","Eu tenho uma pergunta.","verb",""],
+   ["to want","querer","I <b>want</b> a coffee.","Eu quero um café.","verb",""],
+   ["to need","precisar","I <b>need</b> help.","Eu preciso de ajuda.","verb",""],
+   ["to go","ir","I <b>go</b> to work.","Eu vou ao trabalho.","verb",""],
+   ["to come","vir","<b>Come</b> here, please.","Venha aqui, por favor.","verb",""],
+   ["to eat","comer","Let's <b>eat</b>.","Vamos comer.","verb",""],
+   ["to drink","beber","I want to <b>drink</b> water.","Quero beber água.","verb",""],
+   ["to buy","comprar","I want to <b>buy</b> this.","Quero comprar isto.","verb",""],
+   ["to pay","pagar","Can I <b>pay</b> by card?","Posso pagar no cartão?","verb",""],
+   ["to work","trabalhar","I <b>work</b> in a shop.","Eu trabalho numa loja.","verb",""],
+   ["to live","morar / viver","I <b>live</b> in Auckland.","Eu moro em Auckland.","verb",""],
+   ["to speak","falar","I <b>speak</b> a little English.","Eu falo um pouco de inglês.","verb",""],
+   ["to know","saber / conhecer","I don't <b>know</b>.","Eu não sei.","verb",""],
+   ["to like","gostar","I <b>like</b> it.","Eu gosto disso.","verb",""],
+   ["to help","ajudar","Can you <b>help</b> me?","Você pode me ajudar?","verb",""],
+   ["to open","abrir","Can you <b>open</b> the door?","Pode abrir a porta?","verb",""],
+   ["to close","fechar","Please <b>close</b> the window.","Por favor feche a janela.","verb",""],
+   ["to wait","esperar","Please <b>wait</b> here.","Por favor espere aqui.","verb",""],
+   ["to find","encontrar","I can't <b>find</b> it.","Não consigo encontrar.","verb",""],
+   ["to look for","procurar","I'm <b>looking for</b> the bus stop.","Estou procurando o ponto de ônibus.","verb",""],
+   ["to understand","entender","Do you <b>understand</b>?","Você entende?","verb",""]
+  ]},
+ {id:"people", name:"People & family", emo:"👨‍👩‍👧", desc:"Talk about who's who",
+  cards:[
+   ["Husband","Marido","This is my <b>husband</b>.","Este é meu marido.","noun",""],
+   ["Wife","Esposa","She is my <b>wife</b>.","Ela é minha esposa.","noun",""],
+   ["Child","Criança / filho(a)","We have one <b>child</b>.","Temos um filho.","noun",""],
+   ["Children","Crianças / filhos","We have two <b>children</b>.","Temos dois filhos.","noun",""],
+   ["Mother","Mãe","My <b>mother</b> lives in Brazil.","Minha mãe mora no Brasil.","noun",""],
+   ["Father","Pai","My <b>father</b> is a teacher.","Meu pai é professor.","noun",""],
+   ["Friend","Amigo(a)","She is my <b>friend</b>.","Ela é minha amiga.","noun",""],
+   ["Neighbour","Vizinho(a)","Our <b>neighbour</b> is kind.","Nosso vizinho é gentil.","noun",""],
+   ["Man","Homem","That <b>man</b> works here.","Aquele homem trabalha aqui.","noun",""],
+   ["Woman","Mulher","The <b>woman</b> at the desk.","A mulher no balcão.","noun",""],
+   ["Boy","Menino","The little <b>boy</b>.","O menininho.","noun",""],
+   ["Girl","Menina","The little <b>girl</b>.","A menininha.","noun",""],
+   ["Everyone","Todo mundo","<b>Everyone</b> is here.","Todo mundo está aqui.","word",""],
+   ["Together","Juntos","We are moving <b>together</b>.","Nós vamos juntos.","word",""],
+   ["He / She","Ele / Ela","<b>He</b> is my brother; <b>she</b> is my sister.","Ele é meu irmão; ela é minha irmã.","word",""],
+   ["We","Nós","<b>We</b> live in New Zealand.","Nós moramos na Nova Zelândia.","word",""]
+  ]},
+ {id:"food", name:"Café & restaurant", emo:"☕", desc:"Order food and drinks like a local",
+  cards:[
+   ["Water","Água","Can I have some <b>water</b>?","Pode me dar água?","noun",""],
+   ["Coffee","Café","A flat white is a NZ <b>coffee</b>.","Flat white é um café típico da NZ.","noun",""],
+   ["Flat white","Café com leite cremoso (típico NZ)","I'll have a <b>flat white</b>, thanks.","Vou querer um flat white, obrigada.","noun",""],
+   ["Tea","Chá","A cup of <b>tea</b>, please.","Uma xícara de chá, por favor.","noun",""],
+   ["Bread","Pão","Fresh <b>bread</b>.","Pão fresco.","noun",""],
+   ["Breakfast","Café da manhã","<b>Breakfast</b> is at 8.","O café da manhã é às 8.","noun",""],
+   ["Lunch","Almoço","Let's have <b>lunch</b>.","Vamos almoçar.","noun",""],
+   ["Dinner","Jantar","<b>Dinner</b> is ready.","O jantar está pronto.","noun",""],
+   ["Menu","Cardápio","Can I see the <b>menu</b>?","Posso ver o cardápio?","noun",""],
+   ["I'd like…","Eu gostaria de…","<b>I'd like</b> a sandwich, please.","Eu gostaria de um sanduíche, por favor.","phrase",""],
+   ["Can I have…?","Posso pedir…?","<b>Can I have</b> the bill, please?","Posso pedir a conta, por favor?","phrase",""],
+   ["The bill, please","A conta, por favor","<b>The bill, please.</b>","A conta, por favor.","phrase",""],
+   ["Takeaway","Para viagem","Is it <b>takeaway</b> or dine in?","É para viagem ou para comer aqui?","noun",""],
+   ["Delicious","Delicioso","This is <b>delicious</b>!","Isto está delicioso!","adj",""],
+   ["I'm allergic to…","Sou alérgica a…","<b>I'm allergic to</b> nuts.","Sou alérgica a nozes.","phrase",""],
+   ["No sugar, thanks","Sem açúcar, obrigada","<b>No sugar, thanks.</b>","Sem açúcar, obrigada.","phrase",""],
+   ["Cheers","Valeu / saúde","<b>Cheers</b>, mate!","Valeu, cara!","word",""]
+  ]},
+ {id:"shopping", name:"Shopping & supermarket", emo:"🛒", desc:"Prices, sizes, paying",
+  cards:[
+   ["How much is it?","Quanto custa?","Excuse me, <b>how much is it?</b>","Com licença, quanto custa?","phrase",""],
+   ["Too expensive","Caro demais","That's <b>too expensive</b>.","Isso é caro demais.","phrase",""],
+   ["Cheap","Barato","This one is <b>cheap</b>.","Este é barato.","adj",""],
+   ["On special","Em promoção (NZ)","The apples are <b>on special</b>.","As maçãs estão em promoção.","phrase",""],
+   ["Do you have…?","Você tem…?","<b>Do you have</b> this in blue?","Você tem isto em azul?","phrase",""],
+   ["Size","Tamanho","What <b>size</b> are you?","Qual é o seu tamanho?","noun",""],
+   ["Receipt","Recibo / nota","Can I have a <b>receipt</b>?","Pode me dar o recibo?","noun",""],
+   ["Trolley","Carrinho (de mercado)","Grab a <b>trolley</b>.","Pega um carrinho.","noun",""],
+   ["Checkout","Caixa (do mercado)","Meet me at the <b>checkout</b>.","Me encontra no caixa.","noun",""],
+   ["EFTPOS","Máquina de cartão (NZ)","Can I pay by <b>EFTPOS</b>?","Posso pagar no cartão (EFTPOS)?","noun",""],
+   ["Cash","Dinheiro","Do you take <b>cash</b>?","Vocês aceitam dinheiro?","noun",""],
+   ["Card","Cartão","I'll pay by <b>card</b>.","Vou pagar no cartão.","noun",""],
+   ["Bag","Sacola","Do you need a <b>bag</b>?","Você precisa de uma sacola?","noun",""],
+   ["The Warehouse","Loja de tudo barato (NZ)","Let's go to <b>The Warehouse</b>.","Vamos à The Warehouse.","noun",""],
+   ["Countdown / New World","Supermercados (NZ)","I shop at <b>Countdown</b>.","Faço compras no Countdown.","noun",""],
+   ["Dairy","Mercadinho de esquina (NZ)","Get milk from the <b>dairy</b>.","Pega leite no mercadinho.","noun",""]
+  ]},
+ {id:"money", name:"Money & banking", emo:"🏦", desc:"IRD, accounts, paying bills",
+  cards:[
+   ["Bank account","Conta bancária","I need to open a <b>bank account</b>.","Preciso abrir uma conta bancária.","noun",""],
+   ["IRD number","Nº de contribuinte (NZ)","You need an <b>IRD number</b> to work.","Você precisa de um IRD number para trabalhar.","noun",""],
+   ["Bill","Conta (a pagar)","I have to pay the <b>bill</b>.","Tenho que pagar a conta.","noun",""],
+   ["Rent","Aluguel","The <b>rent</b> is due on Friday.","O aluguel vence na sexta.","noun",""],
+   ["Wages / pay","Salário","I get my <b>pay</b> every week.","Recebo meu salário toda semana.","noun",""],
+   ["Fortnight","Quinzena (comum na NZ)","I'm paid every <b>fortnight</b>.","Recebo a cada quinzena.","noun",""],
+   ["Savings","Poupança / economias","We have some <b>savings</b>.","Temos uma poupança.","noun",""],
+   ["Expensive","Caro","Housing is <b>expensive</b> here.","Moradia é cara aqui.","adj",""],
+   ["Dollar","Dólar","It costs ten <b>dollars</b>.","Custa dez dólares.","noun",""],
+   ["Cents","Centavos","Ninety-nine <b>cents</b>.","Noventa e nove centavos.","noun",""],
+   ["Transfer","Transferência","I'll do a bank <b>transfer</b>.","Vou fazer uma transferência.","noun",""],
+   ["ATM","Caixa eletrônico","Where's the nearest <b>ATM</b>?","Onde fica o caixa eletrônico mais perto?","noun",""],
+   ["Deposit","Depósito","I'd like to make a <b>deposit</b>.","Gostaria de fazer um depósito.","noun",""],
+   ["Budget","Orçamento","We need a <b>budget</b>.","Precisamos de um orçamento.","noun",""]
+  ]},
+ {id:"housing", name:"Housing & renting (NZ)", emo:"🏠", desc:"Flats, bond, letting agents",
+  cards:[
+   ["Flat","Apartamento / casa alugada (NZ)","We're renting a <b>flat</b>.","Estamos alugando um flat.","noun",""],
+   ["Flatmate","Colega de moradia","We have two <b>flatmates</b>.","Temos dois flatmates.","noun",""],
+   ["Landlord","Proprietário / locador","The <b>landlord</b> is nice.","O locador é gente boa.","noun",""],
+   ["Letting agent","Corretor de aluguel","Call the <b>letting agent</b>.","Ligue para o corretor de aluguel.","noun",""],
+   ["Bond","Caução / depósito de garantia","The <b>bond</b> is four weeks' rent.","A caução é quatro semanas de aluguel.","noun",""],
+   ["Lease / tenancy","Contrato de aluguel","We signed a one-year <b>tenancy</b>.","Assinamos um contrato de um ano.","noun",""],
+   ["Viewing","Visita ao imóvel","We have a <b>viewing</b> at 3pm.","Temos uma visita às 15h.","noun",""],
+   ["Furnished","Mobiliado","Is the flat <b>furnished</b>?","O apê é mobiliado?","adj",""],
+   ["Power / electricity","Energia elétrica","We need to connect the <b>power</b>.","Precisamos ligar a energia.","noun",""],
+   ["Heat pump","Ar-condicionado/aquecedor (NZ)","The <b>heat pump</b> keeps us warm.","O heat pump nos aquece.","noun",""],
+   ["Rubbish / bin","Lixo / lixeira","Put it in the <b>rubbish bin</b>.","Coloca no lixo.","noun",""],
+   ["Recycling","Reciclagem","The <b>recycling</b> goes out on Tuesday.","A reciclagem sai na terça.","noun",""],
+   ["Suburb","Bairro","Which <b>suburb</b> do you live in?","Em que bairro você mora?","noun",""],
+   ["Damp","Úmido (comum em casas NZ)","The room is a bit <b>damp</b>.","O quarto é meio úmido.","adj",""],
+   ["Key","Chave","I lost my <b>key</b>.","Perdi minha chave.","noun",""],
+   ["Address","Endereço","What's your <b>address</b>?","Qual é o seu endereço?","noun",""]
+  ]},
+ {id:"health", name:"Health, GP & pharmacy (NZ)", emo:"🩺", desc:"Doctors, chemist, feeling unwell",
+  cards:[
+   ["GP","Clínico geral / médico de família","I need to see a <b>GP</b>.","Preciso consultar um clínico geral.","noun",""],
+   ["Appointment","Consulta / agendamento","I'd like to book an <b>appointment</b>.","Gostaria de marcar uma consulta.","noun",""],
+   ["Chemist / pharmacy","Farmácia (NZ)","Get it from the <b>chemist</b>.","Pega na farmácia.","noun",""],
+   ["Prescription","Receita médica","I need a <b>prescription</b>.","Preciso de uma receita.","noun",""],
+   ["Medicine","Remédio","Take this <b>medicine</b> twice a day.","Tome este remédio duas vezes ao dia.","noun",""],
+   ["I feel sick","Estou me sentindo mal","<b>I feel sick</b> today.","Estou me sentindo mal hoje.","phrase",""],
+   ["It hurts here","Dói aqui","<b>It hurts here.</b>","Dói aqui.","phrase",""],
+   ["Headache","Dor de cabeça","I have a <b>headache</b>.","Estou com dor de cabeça.","noun",""],
+   ["Fever","Febre","She has a <b>fever</b>.","Ela está com febre.","noun",""],
+   ["Cough","Tosse","I have a <b>cough</b>.","Estou com tosse.","noun",""],
+   ["Cold / flu","Resfriado / gripe","I've got a <b>cold</b>.","Estou resfriada.","noun",""],
+   ["Nurse","Enfermeiro(a)","The <b>nurse</b> will see you now.","O enfermeiro vai te atender agora.","noun",""],
+   ["Hospital","Hospital","Where is the <b>hospital</b>?","Onde fica o hospital?","noun",""],
+   ["Dentist","Dentista","I need a <b>dentist</b>.","Preciso de um dentista.","noun",""],
+   ["Healthline","Telessaúde grátis (NZ)","You can call <b>Healthline</b> for advice.","Você pode ligar para a Healthline.","noun",""],
+   ["I'm pregnant","Estou grávida","<b>I'm pregnant.</b>","Estou grávida.","phrase",""]
+  ]},
+ {id:"transport", name:"Getting around (NZ)", emo:"🚌", desc:"Buses, driving, directions",
+  cards:[
+   ["Bus","Ônibus","The <b>bus</b> is late.","O ônibus está atrasado.","noun",""],
+   ["Bus stop","Ponto de ônibus","Wait at the <b>bus stop</b>.","Espere no ponto de ônibus.","noun",""],
+   ["AT HOP / Bee Card","Cartão de transporte (NZ)","Tag on with your <b>AT HOP card</b>.","Passe o cartão de transporte.","noun",""],
+   ["Train","Trem","Take the <b>train</b> to the city.","Pegue o trem para a cidade.","noun",""],
+   ["Ferry","Balsa / ferry","The <b>ferry</b> leaves at noon.","A balsa sai ao meio-dia.","noun",""],
+   ["Car","Carro","We need a <b>car</b>.","Precisamos de um carro.","noun",""],
+   ["Petrol","Gasolina (NZ)","I need to get <b>petrol</b>.","Preciso abastecer.","noun",""],
+   ["Driver's licence","Carteira de motorista","I have a Brazilian <b>driver's licence</b>.","Tenho carteira de motorista brasileira.","noun",""],
+   ["Left side","Lado esquerdo (dirige-se à esquerda!)","In NZ you drive on the <b>left side</b>.","Na NZ se dirige do lado esquerdo.","phrase",""],
+   ["How do I get to…?","Como chego em…?","<b>How do I get to</b> the city centre?","Como chego ao centro da cidade?","phrase",""],
+   ["Turn left","Vire à esquerda","<b>Turn left</b> here.","Vire à esquerda aqui.","phrase",""],
+   ["Turn right","Vire à direita","<b>Turn right</b> at the lights.","Vire à direita no sinal.","phrase",""],
+   ["Straight ahead","Em frente","Go <b>straight ahead</b>.","Siga em frente.","phrase",""],
+   ["Near / far","Perto / longe","Is it <b>near</b> or <b>far</b>?","É perto ou longe?","adj",""],
+   ["Traffic lights","Semáforo","Stop at the <b>traffic lights</b>.","Pare no semáforo.","noun",""],
+   ["Footpath","Calçada (NZ)","Walk on the <b>footpath</b>.","Ande na calçada.","noun",""]
+  ]},
+ {id:"work", name:"Work & job", emo:"💼", desc:"Interviews, workplace basics",
+  cards:[
+   ["Job","Emprego / trabalho","I'm looking for a <b>job</b>.","Estou procurando emprego.","noun",""],
+   ["CV / résumé","Currículo","Here is my <b>CV</b>.","Aqui está meu currículo.","noun",""],
+   ["Interview","Entrevista","I have a job <b>interview</b>.","Tenho uma entrevista de emprego.","noun",""],
+   ["Boss / manager","Chefe / gerente","My <b>manager</b> is helpful.","Meu gerente é prestativo.","noun",""],
+   ["Colleague / workmate","Colega de trabalho","My <b>workmates</b> are friendly.","Meus colegas são simpáticos.","noun",""],
+   ["Shift","Turno","I work the morning <b>shift</b>.","Trabalho no turno da manhã.","noun",""],
+   ["Full-time","Tempo integral","It's a <b>full-time</b> job.","É um emprego de tempo integral.","adj",""],
+   ["Part-time","Meio período","I want <b>part-time</b> work.","Quero um trabalho de meio período.","adj",""],
+   ["Experience","Experiência","I have three years of <b>experience</b>.","Tenho três anos de experiência.","noun",""],
+   ["Available","Disponível","I'm <b>available</b> to start now.","Estou disponível para começar agora.","adj",""],
+   ["Break","Pausa / intervalo","Let's take a <b>break</b>.","Vamos fazer uma pausa.","noun",""],
+   ["Meeting","Reunião","We have a <b>meeting</b> at 10.","Temos uma reunião às 10.","noun",""],
+   ["Email","E-mail","I'll send you an <b>email</b>.","Vou te mandar um e-mail.","noun",""],
+   ["Thank you for your time","Obrigada pelo seu tempo","<b>Thank you for your time.</b>","Obrigada pelo seu tempo.","phrase",""]
+  ]},
+ {id:"smalltalk", name:"Small talk & social", emo:"💬", desc:"Chat, make friends, be polite",
+  cards:[
+   ["How's it going?","Como vão as coisas?","Hey, <b>how's it going?</b>","E aí, como vão as coisas?","phrase",""],
+   ["Not bad, you?","Nada mal, e você?","“How are you?” — “<b>Not bad, you?</b>”","“Como vai?” — “Nada mal, e você?”","phrase",""],
+   ["What do you do?","O que você faz? (trabalho)","So, <b>what do you do?</b>","Então, o que você faz?","phrase",""],
+   ["Where are you from?","De onde você é?","<b>Where are you from?</b>","De onde você é?","phrase",""],
+   ["Lovely weather","Tempo ótimo (papo comum)","<b>Lovely weather</b> today, eh?","Que tempo bom hoje, né?","phrase",""],
+   ["That's great!","Que ótimo!","<b>That's great!</b> Congratulations.","Que ótimo! Parabéns.","phrase",""],
+   ["No worries","Sem problema / tranquilo","“Thanks!” — “<b>No worries.</b>”","“Valeu!” — “Tranquilo.”","phrase",""],
+   ["See you later","Até mais","<b>See you later!</b>","Até mais!","phrase",""],
+   ["Take care","Se cuida","Bye, <b>take care!</b>","Tchau, se cuida!","phrase",""],
+   ["Have a good one","Tenha um bom dia (informal NZ)","<b>Have a good one!</b>","Tenha um bom dia!","phrase",""],
+   ["I'm still learning English","Ainda estou aprendendo inglês","Sorry, <b>I'm still learning English</b>.","Desculpa, ainda estou aprendendo inglês.","phrase",""],
+   ["Could you help me?","Você poderia me ajudar?","<b>Could you help me</b>, please?","Você poderia me ajudar, por favor?","phrase",""],
+   ["What does this mean?","O que isso significa?","<b>What does this mean?</b>","O que isso significa?","phrase",""],
+   ["Congratulations","Parabéns","<b>Congratulations</b> on the new job!","Parabéns pelo novo emprego!","word",""]
+  ]},
+ {id:"kiwi", name:"Kiwi slang & NZ words", emo:"🥝", desc:"Sound like a local in Aotearoa",
+  cards:[
+   ["Kia ora","Olá / saúde (Māori)","<b>Kia ora!</b> Welcome.","Kia ora! Bem-vinda.","greeting",""],
+   ["Sweet as","Show / beleza / perfeito","“Meet at six?” — “<b>Sweet as!</b>”","“Às seis?” — “Beleza!”","slang",""],
+   ["Chur","Valeu / obrigado (gíria)","<b>Chur</b>, bro!","Valeu, mano!","slang",""],
+   ["Heaps","Muito / um monte","Thanks <b>heaps</b>!","Muito obrigada!","slang",""],
+   ["Keen","Animado / a fim","I'm <b>keen</b> to go.","Tô a fim de ir.","slang",""],
+   ["Mate","Amigo / cara","Cheers, <b>mate</b>.","Valeu, cara.","slang",""],
+   ["Ta","Obrigada (curtinho)","<b>Ta!</b> That's kind.","Obrigada! Que gentil.","slang",""],
+   ["Jandals","Chinelo de dedo","Wear your <b>jandals</b> to the beach.","Leve os chinelos pra praia.","noun",""],
+   ["Togs","Roupa de banho","Bring your <b>togs</b> for swimming.","Traga sua roupa de banho.","noun",""],
+   ["Bach","Casa de praia / campo","We're staying at a <b>bach</b>.","Vamos ficar numa casa de praia.","noun",""],
+   ["Chilly bin","Cooler / isopor","Put the drinks in the <b>chilly bin</b>.","Põe as bebidas no cooler.","noun",""],
+   ["Tramping","Trilha / caminhada","We're going <b>tramping</b> this weekend.","Vamos fazer trilha neste fim de semana.","noun",""],
+   ["Bring a plate","Traga um prato de comida (festa)","It's a party — <b>bring a plate</b>.","É festa — traga um prato de comida.","phrase",""],
+   ["Wee","Pequeno / um pouquinho","Just a <b>wee</b> bit.","Só um pouquinho.","slang",""],
+   ["Good on ya","Muito bem / parabéns","<b>Good on ya!</b>","Muito bem!","phrase",""],
+   ["Aotearoa","Nome Māori da Nova Zelândia","Welcome to <b>Aotearoa</b>.","Bem-vinda à Aotearoa.","noun",""]
+  ]},
+ {id:"emergency", name:"Emergencies & help", emo:"🚨", desc:"Words that matter when it's urgent",
+  cards:[
+   ["Help!","Socorro! / Ajuda!","<b>Help!</b> Please call someone.","Socorro! Por favor chame alguém.","word",""],
+   ["Call 111","Ligue 111 (emergência NZ)","<b>Call 111</b> — it's an emergency.","Ligue 111 — é uma emergência.","phrase",""],
+   ["Emergency","Emergência","This is an <b>emergency</b>.","Isto é uma emergência.","noun",""],
+   ["Ambulance","Ambulância","We need an <b>ambulance</b>.","Precisamos de uma ambulância.","noun",""],
+   ["Police","Polícia","Call the <b>police</b>.","Chame a polícia.","noun",""],
+   ["Fire","Fogo / incêndio","There's a <b>fire</b>!","Tem um incêndio!","noun",""],
+   ["I need help","Preciso de ajuda","<b>I need help</b>, please.","Preciso de ajuda, por favor.","phrase",""],
+   ["I'm lost","Estou perdida","Excuse me, <b>I'm lost</b>.","Com licença, estou perdida.","phrase",""],
+   ["Are you okay?","Você está bem?","<b>Are you okay?</b>","Você está bem?","phrase",""],
+   ["Careful!","Cuidado!","<b>Careful!</b>","Cuidado!","word",""],
+   ["Stop","Pare","<b>Stop</b>, please!","Pare, por favor!","word",""],
+   ["Danger","Perigo","<b>Danger</b> — do not enter.","Perigo — não entre.","noun",""],
+   ["I don't feel safe","Não me sinto segura","<b>I don't feel safe</b> here.","Não me sinto segura aqui.","phrase",""],
+   ["Where is the exit?","Onde fica a saída?","<b>Where is the exit?</b>","Onde fica a saída?","phrase",""]
+  ]},
+ {id:"feelings", name:"Feelings & states", emo:"😊", desc:"Say how you feel — happy, tired, cold…",
+  cards:[
+   ["Happy","Feliz","I'm so <b>happy</b> here.","Estou tão feliz aqui.","adj",""],
+   ["Sad","Triste","She feels <b>sad</b> today.","Ela está triste hoje.","adj",""],
+   ["Tired","Cansada","I'm really <b>tired</b>.","Estou muito cansada.","adj",""],
+   ["Hungry","Com fome","Are you <b>hungry</b>?","Você está com fome?","adj",""],
+   ["Thirsty","Com sede","I'm <b>thirsty</b>.","Estou com sede.","adj",""],
+   ["Cold","Com frio","I'm <b>cold</b>.","Estou com frio.","adj",""],
+   ["Hot","Com calor","It's too <b>hot</b> in here.","Está quente demais aqui.","adj",""],
+   ["Scared","Com medo","Don't be <b>scared</b>.","Não fique com medo.","adj",""],
+   ["Angry","Com raiva / bravo","He looks <b>angry</b>.","Ele parece bravo.","adj",""],
+   ["Worried","Preocupada","I'm a bit <b>worried</b>.","Estou meio preocupada.","adj",""],
+   ["Excited","Animada / empolgada","I'm <b>excited</b> about the move.","Estou animada com a mudança.","adj",""],
+   ["Nervous","Nervosa","I'm <b>nervous</b> about the interview.","Estou nervosa com a entrevista.","adj",""],
+   ["Bored","Entediada","I'm <b>bored</b>.","Estou entediada.","adj",""],
+   ["Fine","Bem / tudo certo","I'm <b>fine</b>, thanks.","Estou bem, obrigada.","adj",""],
+   ["Homesick","Com saudade de casa","I feel a little <b>homesick</b>.","Estou com saudade de casa.","adj",""],
+   ["Proud","Orgulhosa","I'm <b>proud</b> of you.","Estou orgulhosa de você.","adj",""],
+   ["Comfortable","Confortável","Make yourself <b>comfortable</b>.","Fique à vontade.","adj",""],
+   ["Confused","Confusa","I'm a bit <b>confused</b>.","Estou meio confusa.","adj",""]
+  ]},
+ {id:"house", name:"Around the house", emo:"🛋️", desc:"Rooms and things at home",
+  cards:[
+   ["Door","Porta","Close the <b>door</b>, please.","Feche a porta, por favor.","noun",""],
+   ["Window","Janela","Open the <b>window</b>.","Abra a janela.","noun",""],
+   ["Table","Mesa","Put it on the <b>table</b>.","Coloque na mesa.","noun",""],
+   ["Chair","Cadeira","Take a <b>chair</b>.","Pegue uma cadeira.","noun",""],
+   ["Bed","Cama","The <b>bed</b> is comfortable.","A cama é confortável.","noun",""],
+   ["Kitchen","Cozinha","She's in the <b>kitchen</b>.","Ela está na cozinha.","noun",""],
+   ["Bathroom","Banheiro","Where's the <b>bathroom</b>?","Onde fica o banheiro?","noun",""],
+   ["Bedroom","Quarto","This is the <b>bedroom</b>.","Este é o quarto.","noun",""],
+   ["Living room","Sala de estar","We watch TV in the <b>living room</b>.","Assistimos TV na sala.","noun",""],
+   ["Fridge","Geladeira","The milk is in the <b>fridge</b>.","O leite está na geladeira.","noun",""],
+   ["Oven","Forno","The <b>oven</b> is hot.","O forno está quente.","noun",""],
+   ["Sink","Pia","Wash it in the <b>sink</b>.","Lave na pia.","noun",""],
+   ["Shower","Chuveiro / ducha","I'll take a <b>shower</b>.","Vou tomar banho.","noun",""],
+   ["Towel","Toalha","Pass me a <b>towel</b>.","Me passa uma toalha.","noun",""],
+   ["Blanket","Cobertor","I need another <b>blanket</b>.","Preciso de outro cobertor.","noun",""],
+   ["Light","Luz","Turn on the <b>light</b>.","Acenda a luz.","noun",""],
+   ["Heater","Aquecedor","Turn on the <b>heater</b>, it's cold.","Liga o aquecedor, está frio.","noun",""],
+   ["Clean","Limpo / limpar","The house is <b>clean</b>.","A casa está limpa.","adj",""]
+  ]},
+ {id:"clothes", name:"Clothes & weather", emo:"🧥", desc:"Dress for the Kiwi weather",
+  cards:[
+   ["Clothes","Roupas","I need warm <b>clothes</b>.","Preciso de roupas quentes.","noun",""],
+   ["Shirt","Camisa","A blue <b>shirt</b>.","Uma camisa azul.","noun",""],
+   ["Jacket","Jaqueta","Bring a <b>jacket</b>.","Leve uma jaqueta.","noun",""],
+   ["Coat","Casaco","It's cold — wear a <b>coat</b>.","Está frio — use um casaco.","noun",""],
+   ["Shoes","Sapatos","Nice <b>shoes</b>!","Sapatos legais!","noun",""],
+   ["Socks","Meias","Warm <b>socks</b> for winter.","Meias quentes pro inverno.","noun",""],
+   ["Pants","Calça","New <b>pants</b>.","Calça nova.","noun",""],
+   ["Dress","Vestido","A pretty <b>dress</b>.","Um vestido bonito.","noun",""],
+   ["Hat","Chapéu / gorro","Wear a <b>hat</b>.","Use um gorro.","noun",""],
+   ["Umbrella","Guarda-chuva","Take an <b>umbrella</b>, it might rain.","Leve um guarda-chuva, pode chover.","noun",""],
+   ["Raincoat","Capa de chuva","A <b>raincoat</b> is useful in NZ.","Capa de chuva é útil na NZ.","noun",""],
+   ["Weather","Tempo / clima","How's the <b>weather</b>?","Como está o tempo?","noun",""],
+   ["Rain","Chuva","There's a lot of <b>rain</b> today.","Tem muita chuva hoje.","noun",""],
+   ["Wind","Vento","Wellington has a lot of <b>wind</b>.","Wellington tem muito vento.","noun",""],
+   ["Sunny","Ensolarado","It's <b>sunny</b> today.","Está ensolarado hoje.","adj",""],
+   ["Cloudy","Nublado","It's <b>cloudy</b>.","Está nublado.","adj",""],
+   ["Wet","Molhado","The ground is <b>wet</b>.","O chão está molhado.","adj",""],
+   ["Warm","Quentinho / agradável","It's nice and <b>warm</b> inside.","Está bem quentinho aqui dentro.","adj",""]
+  ]},
+ {id:"body", name:"The body", emo:"🧍", desc:"Useful at the doctor and daily life",
+  cards:[
+   ["Head","Cabeça","My <b>head</b> hurts.","Minha cabeça dói.","noun",""],
+   ["Hand","Mão","Give me your <b>hand</b>.","Me dá a mão.","noun",""],
+   ["Arm","Braço","My <b>arm</b> is sore.","Meu braço está dolorido.","noun",""],
+   ["Leg","Perna","My <b>leg</b> hurts.","Minha perna dói.","noun",""],
+   ["Foot","Pé","My <b>foot</b> is cold.","Meu pé está frio.","noun",""],
+   ["Eye","Olho","Something's in my <b>eye</b>.","Tem algo no meu olho.","noun",""],
+   ["Ear","Orelha / ouvido","My <b>ear</b> hurts.","Meu ouvido dói.","noun",""],
+   ["Mouth","Boca","Open your <b>mouth</b>.","Abra a boca.","noun",""],
+   ["Nose","Nariz","My <b>nose</b> is blocked.","Meu nariz está entupido.","noun",""],
+   ["Tooth","Dente","My <b>tooth</b> hurts.","Meu dente dói.","noun",""],
+   ["Stomach","Estômago / barriga","I have a <b>stomach</b> ache.","Estou com dor de barriga.","noun",""],
+   ["Back","Costas","My <b>back</b> is sore.","Minhas costas doem.","noun",""],
+   ["Throat","Garganta","I have a sore <b>throat</b>.","Estou com dor de garganta.","noun",""],
+   ["Hair","Cabelo","She has long <b>hair</b>.","Ela tem cabelo comprido.","noun",""]
+  ]},
+ {id:"questions", name:"Question & linking words", emo:"❓", desc:"Ask anything and join your ideas",
+  cards:[
+   ["What","O que / qual","<b>What</b> is this?","O que é isto?","word",""],
+   ["Where","Onde","<b>Where</b> is the bus?","Onde está o ônibus?","word",""],
+   ["When","Quando","<b>When</b> does it open?","Quando abre?","word",""],
+   ["Who","Quem","<b>Who</b> is that?","Quem é aquele?","word",""],
+   ["Why","Por quê","<b>Why</b> is it closed?","Por que está fechado?","word",""],
+   ["How","Como","<b>How</b> does this work?","Como isto funciona?","word",""],
+   ["Which","Qual (de opções)","<b>Which</b> one do you want?","Qual você quer?","word",""],
+   ["How much","Quanto (preço)","<b>How much</b> is this?","Quanto custa isto?","phrase",""],
+   ["How many","Quantos","<b>How many</b> do you need?","Quantos você precisa?","phrase",""],
+   ["And","E","Tea <b>and</b> bread.","Chá e pão.","word",""],
+   ["But","Mas","I want to, <b>but</b> I can't.","Eu quero, mas não posso.","word",""],
+   ["Because","Porque","I'm late <b>because</b> of the bus.","Estou atrasada por causa do ônibus.","word",""],
+   ["Also","Também","I'd like tea, <b>also</b> water.","Quero chá, também água.","word",""],
+   ["Or","Ou","Tea <b>or</b> coffee?","Chá ou café?","word",""],
+   ["If","Se","<b>If</b> it rains, we'll stay home.","Se chover, ficamos em casa.","word",""],
+   ["So","Então / por isso","It's late, <b>so</b> let's go.","Está tarde, então vamos.","word",""]
+  ]},
+ {id:"arrival", name:"Airport & immigration", emo:"🛂", desc:"Arriving in NZ — the exact words you'll hear",
+  cards:[
+   ["Passport","Passaporte","Here's my <b>passport</b>.","Aqui está meu passaporte.","noun",""],
+   ["Visa","Visto","I have a work <b>visa</b>.","Eu tenho um visto de trabalho.","noun",""],
+   ["Flight","Voo","My <b>flight</b> was long.","Meu voo foi longo.","noun",""],
+   ["Boarding pass","Cartão de embarque","Show your <b>boarding pass</b>.","Mostre seu cartão de embarque.","noun",""],
+   ["Luggage","Bagagem","Where is my <b>luggage</b>?","Onde está minha bagagem?","noun",""],
+   ["Baggage claim","Esteira de bagagem","Go to <b>baggage claim</b>.","Vá à esteira de bagagem.","phrase",""],
+   ["Arrival","Chegada","<b>Arrival</b> hall is this way.","O saguão de chegada é por aqui.","noun",""],
+   ["Customs","Alfândega","Please go through <b>customs</b>.","Passe pela alfândega.","noun",""],
+   ["Immigration","Imigração","The <b>immigration</b> officer was kind.","O oficial de imigração foi gentil.","noun",""],
+   ["Biosecurity","Biossegurança (importante na NZ!)","NZ has strict <b>biosecurity</b> rules.","A NZ tem regras rígidas de biossegurança.","noun",""],
+   ["Declare","Declarar","Do you have anything to <b>declare</b>?","Você tem algo a declarar?","verb",""],
+   ["Nothing to declare","Nada a declarar","I have <b>nothing to declare</b>.","Não tenho nada a declarar.","phrase",""],
+   ["No food or plants","Sem comida nem plantas","<b>No food or plants</b> in your bag?","Sem comida nem plantas na mala?","phrase",""],
+   ["Purpose of visit","Motivo da viagem","What's the <b>purpose of your visit</b>?","Qual o motivo da sua viagem?","phrase",""],
+   ["I'm moving here","Estou me mudando pra cá","<b>I'm moving here</b> to live and work.","Estou me mudando pra cá pra morar e trabalhar.","phrase",""],
+   ["Residence","Residência","We got <b>residence</b> visas.","Conseguimos vistos de residência.","noun",""]
+  ]},
+ {id:"town", name:"Around town", emo:"🧭", desc:"Places you'll go every week",
+  cards:[
+   ["Street","Rua","What <b>street</b> is this?","Que rua é esta?","noun",""],
+   ["Road","Estrada / via","It's on the main <b>road</b>.","É na via principal.","noun",""],
+   ["Corner","Esquina","It's on the <b>corner</b>.","É na esquina.","noun",""],
+   ["Shop","Loja","The <b>shop</b> is closed.","A loja está fechada.","noun",""],
+   ["Bank","Banco","I'm going to the <b>bank</b>.","Vou ao banco.","noun",""],
+   ["Post office","Correios","Where's the <b>post office</b>?","Onde ficam os correios?","noun",""],
+   ["Library","Biblioteca","The <b>library</b> is free to join.","A biblioteca é grátis pra se cadastrar.","noun",""],
+   ["Park","Parque","Let's go to the <b>park</b>.","Vamos ao parque.","noun",""],
+   ["School","Escola","The <b>school</b> is nearby.","A escola é perto.","noun",""],
+   ["Petrol station","Posto de gasolina","Stop at the <b>petrol station</b>.","Pare no posto.","noun",""],
+   ["Toilet","Banheiro (público)","Where's the <b>toilet</b>?","Onde fica o banheiro?","noun",""],
+   ["Café","Cafeteria","Meet me at the <b>café</b>.","Me encontra na cafeteria.","noun",""],
+   ["Beach","Praia","The <b>beach</b> is beautiful.","A praia é linda.","noun",""],
+   ["City centre","Centro da cidade","Take the bus to the <b>city centre</b>.","Pegue o ônibus pro centro.","noun",""],
+   ["Here","Aqui","It's right <b>here</b>.","É bem aqui.","word",""],
+   ["There","Lá / ali","It's over <b>there</b>.","É ali.","word",""]
+  ]},
+ {id:"basics", name:"Colours & describing", emo:"🎨", desc:"Colours and useful adjectives",
+  cards:[
+   ["Colour","Cor","What <b>colour</b> is it?","De que cor é?","noun",""],
+   ["Red","Vermelho","A <b>red</b> car.","Um carro vermelho.","adj",""],
+   ["Blue","Azul","A <b>blue</b> shirt.","Uma camisa azul.","adj",""],
+   ["Green","Verde","A <b>green</b> apple.","Uma maçã verde.","adj",""],
+   ["Yellow","Amarelo","A <b>yellow</b> bag.","Uma bolsa amarela.","adj",""],
+   ["Black","Preto","<b>Black</b> shoes.","Sapatos pretos.","adj",""],
+   ["White","Branco","A <b>white</b> wall.","Uma parede branca.","adj",""],
+   ["Big","Grande","A <b>big</b> house.","Uma casa grande.","adj",""],
+   ["Small","Pequeno","A <b>small</b> flat.","Um apê pequeno.","adj",""],
+   ["New","Novo","A <b>new</b> job.","Um emprego novo.","adj",""],
+   ["Old","Velho / antigo","An <b>old</b> car.","Um carro velho.","adj",""],
+   ["Good","Bom","This is <b>good</b>.","Isto é bom.","adj",""],
+   ["Bad","Ruim","The weather is <b>bad</b>.","O tempo está ruim.","adj",""],
+   ["Beautiful","Lindo / bonito","What a <b>beautiful</b> view!","Que vista linda!","adj",""],
+   ["Easy","Fácil","It's <b>easy</b>.","É fácil.","adj",""],
+   ["Difficult","Difícil","English is <b>difficult</b> but I'm learning.","Inglês é difícil mas estou aprendendo.","adj",""]
+  ]},
+ {id:"verbs2", name:"More everyday verbs", emo:"⚡", desc:"Another set of high-use verbs",
+  cards:[
+   ["to give","dar","Can you <b>give</b> me that?","Pode me dar aquilo?","verb",""],
+   ["to take","pegar / levar","I'll <b>take</b> this one.","Vou levar este.","verb",""],
+   ["to make","fazer (criar)","I'll <b>make</b> dinner.","Vou fazer o jantar.","verb",""],
+   ["to do","fazer","What do you <b>do</b> on weekends?","O que você faz nos fins de semana?","verb",""],
+   ["to say","dizer","What did you <b>say</b>?","O que você disse?","verb",""],
+   ["to tell","contar / dizer","<b>Tell</b> me more.","Me conta mais.","verb",""],
+   ["to ask","perguntar / pedir","Can I <b>ask</b> a question?","Posso fazer uma pergunta?","verb",""],
+   ["to call","ligar / chamar","I'll <b>call</b> you later.","Te ligo mais tarde.","verb",""],
+   ["to bring","trazer","<b>Bring</b> your umbrella.","Traga seu guarda-chuva.","verb",""],
+   ["to put","colocar / pôr","<b>Put</b> it here.","Coloque aqui.","verb",""],
+   ["to get","conseguir / pegar","Where can I <b>get</b> a coffee?","Onde consigo um café?","verb",""],
+   ["to learn","aprender","I want to <b>learn</b> English.","Quero aprender inglês.","verb",""],
+   ["to remember","lembrar","I can't <b>remember</b> his name.","Não lembro o nome dele.","verb",""],
+   ["to forget","esquecer","Don't <b>forget</b> your key.","Não esqueça a chave.","verb",""],
+   ["to try","tentar","I'll <b>try</b> again.","Vou tentar de novo.","verb",""],
+   ["to show","mostrar","Can you <b>show</b> me?","Pode me mostrar?","verb",""],
+   ["to start","começar","When does it <b>start</b>?","Quando começa?","verb",""],
+   ["to finish","terminar","I <b>finish</b> work at five.","Termino o trabalho às cinco.","verb",""]
+  ]},
+ {id:"power", name:"Power phrases", emo:"💪", desc:"Sentences that get you through the day",
+  cards:[
+   ["How do you say… in English?","Como se diz… em inglês?","<b>How do you say</b> 'obrigada' <b>in English?</b>","Como se diz 'obrigada' em inglês?","phrase",""],
+   ["What's this called?","Como se chama isto?","<b>What's this called?</b>","Como isto se chama?","phrase",""],
+   ["Can you write it down?","Pode escrever pra mim?","<b>Can you write it down</b>, please?","Pode escrever, por favor?","phrase",""],
+   ["I'm not sure","Não tenho certeza","<b>I'm not sure</b>, sorry.","Não tenho certeza, desculpa.","phrase",""],
+   ["I think so","Acho que sim","<b>I think so.</b>","Acho que sim.","phrase",""],
+   ["Just a moment","Só um momento","<b>Just a moment</b>, please.","Só um momento, por favor.","phrase",""],
+   ["I'll be right back","Já volto","<b>I'll be right back.</b>","Já volto.","phrase",""],
+   ["Never mind","Deixa pra lá","It's okay, <b>never mind</b>.","Tá tudo bem, deixa pra lá.","phrase",""],
+   ["Of course","Claro","<b>Of course!</b> No problem.","Claro! Sem problema.","phrase",""],
+   ["That's fine","Tá tudo bem","<b>That's fine</b> with me.","Por mim tá tudo bem.","phrase",""],
+   ["Let me check","Deixa eu verificar","<b>Let me check</b> for you.","Deixa eu verificar pra você.","phrase",""],
+   ["Can I ask you something?","Posso te perguntar uma coisa?","<b>Can I ask you something?</b>","Posso te perguntar uma coisa?","phrase",""],
+   ["I agree","Concordo","<b>I agree</b> with you.","Concordo com você.","phrase",""],
+   ["Good idea","Boa ideia","<b>Good idea!</b> Let's do it.","Boa ideia! Vamos fazer isso.","phrase",""],
+   ["Don't worry","Não se preocupe","<b>Don't worry</b>, it's fine.","Não se preocupe, tá tudo bem.","phrase",""],
+   ["What should I do?","O que devo fazer?","<b>What should I do?</b>","O que eu devo fazer?","phrase",""],
+   ["I'll have this one","Vou querer este","<b>I'll have this one</b>, thanks.","Vou querer este, obrigada.","phrase",""],
+   ["Slow down, please","Mais devagar, por favor","<b>Slow down, please.</b>","Mais devagar, por favor.","phrase",""]
+  ]},
+ {id:"grammar", name:"Essential grammar", emo:"📘", desc:"The building blocks of sentences",
+  cards:[
+   ["I am / you are / he is","verbo TO BE (ser/estar): I am, you are, he/she/it is, we/they are","<b>I am</b> Ana. <b>You are</b> kind. <b>She is</b> here.","Eu sou Ana. Você é gentil. Ela está aqui.","grammar",""],
+   ["I'm not / isn't / aren't","Negativo do TO BE: add NOT. I'm not, he isn't, they aren't","<b>I'm not</b> ready. He <b>isn't</b> here.","Não estou pronta. Ele não está aqui.","grammar",""],
+   ["Are you…? / Is he…?","Pergunta com TO BE: inverta o verbo. Are you…? Is she…?","<b>Are you</b> okay? <b>Is she</b> your friend?","Você está bem? Ela é sua amiga?","grammar",""],
+   ["a / an","Artigo 'um/uma'. Use AN antes de som de vogal: a car, an apple","I have <b>a</b> car and <b>an</b> apple.","Tenho um carro e uma maçã.","grammar",""],
+   ["the","'o/a' — coisa específica que os dois conhecem","Close <b>the</b> door. <b>The</b> bus is late.","Feche a porta. O ônibus está atrasado.","grammar",""],
+   ["Plurals: add -s","Plural: geralmente +s. one car → two cars; box → boxes","I have two <b>cars</b> and three <b>boxes</b>.","Tenho dois carros e três caixas.","grammar",""],
+   ["this / that / these / those","this=isto(perto), that=aquilo(longe), these/those=plural","<b>This</b> is mine. <b>Those</b> are yours.","Isto é meu. Aqueles são seus.","grammar",""],
+   ["my / your / his / her","Possessivos: my, your, his, her, our, their","<b>My</b> name, <b>your</b> bag, <b>her</b> car.","Meu nome, sua bolsa, o carro dela.","grammar",""],
+   ["Present: I work / she works","Presente simples. Na 3ª pessoa (he/she/it) add -s: she works","I <b>work</b> here. She <b>works</b> there.","Eu trabalho aqui. Ela trabalha ali.","grammar",""],
+   ["I don't / she doesn't","Negativo no presente: don't (I/you/we/they), doesn't (he/she/it)","I <b>don't</b> know. She <b>doesn't</b> live here.","Eu não sei. Ela não mora aqui.","grammar",""],
+   ["Do you…? / Does he…?","Pergunta no presente: Do you…? Does she…?","<b>Do you</b> speak English? <b>Does he</b> work?","Você fala inglês? Ele trabalha?","grammar",""],
+   ["Present continuous: I'm working","Ação agora: am/is/are + verbo-ING","I <b>am working</b> now. It <b>is raining</b>.","Estou trabalhando agora. Está chovendo.","grammar",""],
+   ["Past: worked / went","Passado: verbos regulares +ed (worked); irregulares mudam (go→went)","Yesterday I <b>worked</b> and <b>went</b> home.","Ontem eu trabalhei e fui pra casa.","grammar",""],
+   ["Irregular past: was / had / went","Comuns: be→was/were, have→had, go→went, do→did, say→said","I <b>was</b> tired, so I <b>went</b> to bed.","Eu estava cansada, então fui dormir.","grammar",""],
+   ["Future: will","Futuro/decisão: WILL + verbo. I will call = I'll call","I <b>will</b> help you. She'<b>ll</b> come later.","Vou te ajudar. Ela virá depois.","grammar",""],
+   ["Future: going to","Plano/intenção: am/is/are + going to + verbo","We <b>are going to</b> move to NZ.","Nós vamos nos mudar pra NZ.","grammar",""],
+   ["can / can't","Habilidade/permissão: can + verbo (sem 'to'). can't = não pode","I <b>can</b> swim. I <b>can't</b> drive yet.","Sei nadar. Ainda não sei dirigir.","grammar",""],
+   ["there is / there are","Existe: there is (singular), there are (plural)","<b>There is</b> a shop. <b>There are</b> two rooms.","Tem uma loja. Tem dois quartos.","grammar",""],
+   ["have to / need to","Obrigação: have to / need to + verbo","I <b>have to</b> work. We <b>need to</b> go.","Tenho que trabalhar. Precisamos ir.","grammar",""],
+   ["Comparatives: bigger / more…","Comparar: curtas +er (bigger); longas more+adj (more expensive)","This is <b>bigger</b> and <b>more expensive</b>.","Este é maior e mais caro.","grammar",""],
+   ["would like","Pedido educado: I would like = I'd like (mais fino que 'I want')","<b>I'd like</b> a coffee, please.","Eu gostaria de um café, por favor.","grammar",""],
+   ["Object words: me/you/him/her","Depois do verbo: me, you, him, her, us, them","Call <b>me</b>. I saw <b>her</b>. Help <b>us</b>.","Me liga. Eu a vi. Nos ajude.","grammar",""]
+  ]}
+];
+
+/* ============================================================
+   STATE + STORAGE
+   ============================================================ */
+const KEY="engnz_v1";
+const DAY=86400000, MIN=60000;
+let mem={}; // fallback if localStorage blocked
+function load(){
+  let raw;
+  try{ raw=localStorage.getItem(KEY); }catch(e){ raw=mem[KEY]; }
+  let s=raw?JSON.parse(raw):null;
+  if(!s) s={};
+  s.cards = s.cards||{};           // id -> {due,interval,ease,reps,lapses}
+  s.name = s.name||"love";
+  s.goal = s.goal||20;
+  s.newPer = s.newPer||8;
+  s.accent = s.accent||"en-NZ";
+  s.autoPlay = s.autoPlay!==undefined? s.autoPlay : true;
+  s.showPt = s.showPt!==undefined? s.showPt : true;
+  s.streak = s.streak||0;
+  s.lastDay = s.lastDay||null;     // date string
+  s.doneToday = s.doneToday||0;
+  s.doneDate = s.doneDate||null;
+  s.introduced = s.introduced||0;  // total new cards started today
+  s.introDate = s.introDate||null;
+  return s;
+}
+function save(){
+  try{ localStorage.setItem(KEY,JSON.stringify(S)); }
+  catch(e){ mem[KEY]=JSON.stringify(S); }
+}
+let S=load();
+
+// use device date (yyyy-mm-dd) without relying on unavailable Date.now in some envs
+function todayStr(){ const d=new Date(); return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate(); }
+function nowMs(){ return new Date().getTime(); }
+
+function rollDay(){
+  const t=todayStr();
+  if(S.doneDate!==t){ S.doneToday=0; S.doneDate=t; }
+  if(S.introDate!==t){ S.introduced=0; S.introDate=t; }
+  save();
+}
+function bumpStreak(){
+  const t=todayStr();
+  if(S.lastDay===t) return;
+  // check if yesterday
+  const y=new Date(); y.setDate(y.getDate()-1);
+  const ys=y.getFullYear()+"-"+(y.getMonth()+1)+"-"+y.getDate();
+  if(S.lastDay===ys) S.streak=(S.streak||0)+1;
+  else S.streak=1;
+  S.lastDay=t; save();
+}
+
+/* ============================================================
+   CARD LOOKUP
+   ============================================================ */
+const ALL={}; // uid -> {deck, card, en, pt, ex, exPt, pos}
+DECKS.forEach(d=>{
+  d.cards.forEach((c,i)=>{
+    const uid=d.id+"_"+i;
+    ALL[uid]={uid,deckId:d.id,deckName:d.name,en:c[0],pt:c[1],ex:c[2],exPt:c[3],pos:c[4]};
+  });
+});
+function st(uid){ return S.cards[uid]; }
+function isDue(uid){ const c=st(uid); return c && c.due<=nowMs(); }
+function isNew(uid){ return !st(uid); }
+
+function deckStats(d){
+  let learned=0, due=0, total=d.cards.length;
+  d.cards.forEach((c,i)=>{
+    const uid=d.id+"_"+i, s=st(uid);
+    if(s){ if(s.reps>0) learned++; if(s.due<=nowMs()) due++; }
+  });
+  return {learned,due,total};
+}
+function totalKnown(){ let n=0; for(const k in S.cards){ if(S.cards[k].reps>0) n++; } return n; }
+function totalDue(){ let n=0; for(const k in S.cards){ if(S.cards[k].due<=nowMs()) n++; } return n; }
+
+/* ============================================================
+   SRS ENGINE (SM-2 lite)
+   ============================================================ */
+function ensure(uid){
+  if(!S.cards[uid]) S.cards[uid]={due:nowMs(),interval:0,ease:2.5,reps:0,lapses:0};
+  return S.cards[uid];
+}
+// rating: 0 again,1 hard,2 good,3 easy → returns next interval label
+function schedule(uid,rating){
+  const c=ensure(uid);
+  if(rating===0){ // Again
+    c.reps=Math.max(1,c.reps); c.lapses++; c.interval=0; c.ease=Math.max(1.3,c.ease-0.2);
+    c.due=nowMs()+10*MIN; return "10m";
+  }
+  c.reps++;
+  if(c.reps===1){
+    c.interval = rating===1?0.007 : rating===2?1 : 4; // hard≈10m, good 1d, easy 4d
+  } else if(c.reps===2){
+    c.interval = rating===1?1 : rating===2?3 : 6;
+  } else {
+    let f = rating===1?1.2 : rating===2?c.ease : c.ease*1.3;
+    c.interval = Math.max(1, Math.round(c.interval*f));
+  }
+  if(rating===1) c.ease=Math.max(1.3,c.ease-0.15);
+  if(rating===3) c.ease=c.ease+0.1;
+  if(c.interval<1){ c.due=nowMs()+Math.round(c.interval*DAY); return "10m"; }
+  c.due=nowMs()+Math.round(c.interval*DAY);
+  return c.interval>=1 ? Math.round(c.interval)+"d" : "1d";
+}
+// preview labels for buttons (no state change)
+function previewLabels(uid){
+  const c=st(uid);
+  if(!c||c.reps===0) return ["1m","10m","1d","4d"];
+  if(c.reps===1) return ["1m","10m","1d","4d"];
+  if(c.reps===2) return ["10m","1d","3d","6d"];
+  const good=Math.max(1,Math.round(c.interval*c.ease));
+  const easy=Math.max(1,Math.round(c.interval*c.ease*1.3));
+  const hard=Math.max(1,Math.round(c.interval*1.2));
+  return ["1m",hard+"d",good+"d",easy+"d"];
+}
+
+/* ============================================================
+   QUEUE BUILDING
+   ============================================================ */
+let queue=[], qIdx=0, curDeck=null, sessionCount=0;
+
+function buildQueue(deckId){
+  rollDay();
+  let due=[], fresh=[];
+  const pool = deckId ? DECKS.filter(d=>d.id===deckId) : DECKS;
+  pool.forEach(d=>d.cards.forEach((c,i)=>{
+    const uid=d.id+"_"+i, s=st(uid);
+    if(s){ if(s.due<=nowMs()) due.push(uid); }
+    else fresh.push(uid);
+  }));
+  // limit new cards
+  const room = deckId ? S.newPer : Math.max(0, S.newPer - 0); // per session
+  fresh = fresh.slice(0, S.newPer);
+  // interleave: some new mixed among reviews
+  let q=[];
+  due.sort(()=>0.0); // keep order
+  q = due.concat(fresh);
+  // light shuffle by index parity to avoid pure blocks (deterministic-ish)
+  return q;
+}
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+function go(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+  if(id==='home') renderHome();
+  if(id==='settings') renderSettings();
+  if(id==='plan') renderPlan();
+  if(id==='dialogues') showDialogueList();
+  if(id!=='dialogues') playToken++; // stop any playing dialogue when leaving
+}
+
+function toast(msg){
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),1600);
+}
+
+/* ============================================================
+   HOME RENDER
+   ============================================================ */
+function renderHome(){
+  rollDay();
+  document.getElementById('uname').textContent=S.name;
+  const known=totalKnown(), due=totalDue();
+  document.getElementById('stStreak').textContent=S.streak;
+  document.getElementById('stKnown').textContent=known;
+  document.getElementById('stDue').textContent=due;
+  // greeting by time
+  const h=new Date().getHours();
+  const sub = h<12?"Ready for a little English this morning?" : h<18?"A few minutes now and then adds up.":"A quick study before bed? 🌙";
+  document.getElementById('subhi').textContent=sub;
+  // goal ring
+  const g=S.goal, done=Math.min(S.doneToday,g), frac=g?done/g:0;
+  const circ=176;
+  document.getElementById('goalRing').style.strokeDashoffset=circ*(1-frac);
+  document.getElementById('goalTxt').textContent=done+"/"+g;
+  document.getElementById('goalHead').textContent = done>=g? "Goal reached! 🎉" : "Today's goal";
+  document.getElementById('goalSub').textContent = done>=g? "Amazing — you can keep going or rest." : (due>0? due+" cards ready to review":"Study a little every day 🥝");
+  const rb=document.getElementById('reviewBtn');
+  const anyNew = DECKS.some(d=>d.cards.some((c,i)=>isNew(d.id+"_"+i)));
+  rb.textContent = due>0? "▶︎ Review "+due+" card"+(due>1?"s":"") : (anyNew? "▶︎ Learn new words" : "✓ All done for now");
+  rb.disabled = (due===0 && !anyNew);
+  // decks
+  const list=document.getElementById('deckList'); list.innerHTML="";
+  DECKS.forEach(d=>{
+    const s=deckStats(d);
+    const pct=Math.round(100*s.learned/s.total);
+    const el=document.createElement('div'); el.className='deck'; el.onclick=()=>startDeck(d.id);
+    let right = s.due>0? `<span class="due">${s.due}</span>` : (s.learned===s.total && s.total>0? `<span class="done">✓</span>`:"");
+    el.innerHTML=`<div class="emo">${d.emo}</div>
+      <div class="mid"><div class="dn">${d.name}</div><div class="ds">${d.desc}</div>
+      <div class="bar"><i style="width:${pct}%"></i></div></div>${right}`;
+    list.appendChild(el);
+  });
+}
+
+/* ============================================================
+   STUDY FLOW
+   ============================================================ */
+let flipped=false;
+function startReview(){ curDeck=null; queue=buildQueue(null); qIdx=0; sessionCount=0; if(!queue.length){ finish(true); return;} go('study'); showCard(); }
+function startDeck(id){ curDeck=id; queue=buildQueue(id); qIdx=0; sessionCount=0; if(!queue.length){ finish(true,id); return;} go('study'); showCard(); }
+
+function showCard(){
+  if(qIdx>=queue.length){ finish(false); return; }
+  flipped=false;
+  const flip=document.getElementById('flip'); flip.classList.remove('flipped');
+  document.getElementById('showBtn').style.display='block';
+  document.getElementById('rateRow').style.display='none';
+  const uid=queue[qIdx], c=ALL[uid];
+  document.getElementById('fTag').textContent=c.deckName;
+  document.getElementById('bTag').textContent=c.deckName;
+  document.getElementById('fPos').textContent=c.pos||"";
+  document.getElementById('fWord').textContent=c.en;
+  document.getElementById('fPhon').textContent = isNew(uid)? "🆕 new word":"";
+  document.getElementById('bWord').textContent=c.en;
+  document.getElementById('bPt').textContent = S.showPt? c.pt : "";
+  document.getElementById('bPt').style.display = S.showPt? "block":"none";
+  document.getElementById('bEx').innerHTML=c.ex||"";
+  document.getElementById('bExPt').textContent = S.showPt? (c.exPt||"") : "";
+  // progress
+  const tot=queue.length;
+  document.getElementById('studyProg').style.width=(100*qIdx/tot)+"%";
+  document.getElementById('studyCount').textContent=(qIdx+1)+"/"+tot;
+  // rating labels
+  const L=previewLabels(uid);
+  ["t0","t1","t2","t3"].forEach((id,k)=>document.getElementById(id).textContent=L[k]);
+  if(S.autoPlay) setTimeout(()=>speak(c.en),250);
+}
+function onCardTap(e){ if(e.target.closest('.speak')) return; if(!flipped) flipCard(); }
+function flipCard(){
+  flipped=true;
+  document.getElementById('flip').classList.add('flipped');
+  document.getElementById('showBtn').style.display='none';
+  document.getElementById('rateRow').style.display='grid';
+}
+function rate(r){
+  const uid=queue[qIdx];
+  schedule(uid,r);
+  // count toward daily goal & streak
+  S.doneToday=(S.doneToday||0)+1;
+  sessionCount++;
+  if(isNew(uid)) {} // already scheduled -> ensure created inside schedule
+  bumpStreak();
+  save();
+  // Again → requeue later in this session
+  if(r===0){ queue.push(uid); }
+  qIdx++;
+  showCard();
+}
+function speak(text){
+  try{
+    if(!('speechSynthesis' in window)) return;
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text.replace(/<[^>]+>/g,''));
+    u.rate=0.9; u.pitch=1;
+    const v=pickVoice(); if(v){ u.voice=v; u.lang=v.lang; } else u.lang=S.accent;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+function speakCard(e){ if(e) e.stopPropagation(); const uid=queue[qIdx]; if(uid) speak(ALL[uid].en); }
+let VOICES=[];
+function loadVoices(){ try{ VOICES=speechSynthesis.getVoices(); }catch(e){ VOICES=[]; } }
+function pickVoice(){
+  if(!VOICES.length) loadVoices();
+  const want=S.accent;
+  const order=[want,"en-AU","en-GB","en-IE","en-US","en"];
+  for(const lang of order){
+    const v=VOICES.find(v=>v.lang && v.lang.toLowerCase().startsWith(lang.toLowerCase()));
+    if(v) return v;
+  }
+  return VOICES.find(v=>v.lang && v.lang.toLowerCase().startsWith("en"))||null;
+}
+if('speechSynthesis' in window){ loadVoices(); speechSynthesis.onvoiceschanged=loadVoices; }
+
+function confirmQuit(){ go('home'); }
+
+function finish(empty,deckId){
+  // build a small quiz from recently studied words if enough learned
+  const learnedUids = Object.keys(S.cards).filter(u=>S.cards[u].reps>0);
+  document.getElementById('doneEmo').textContent = empty? "🌱" : "🎉";
+  document.getElementById('doneH').textContent = empty? "Nothing due right now" : "Ka pai! Well done!";
+  let msg;
+  if(empty){
+    msg = deckId? "You've reviewed everything in this lesson. Come back later or try another lesson."
+                : "No cards are due yet. Great job staying on top of it! Try a lesson to learn new words.";
+  } else {
+    msg = "You studied "+sessionCount+" card"+(sessionCount!==1?"s":"")+" · 🔥 "+S.streak+"-day streak!";
+  }
+  document.getElementById('doneP').textContent=msg;
+  // offer quiz if possible
+  const more=document.getElementById('doneMore');
+  if(learnedUids.length>=4){
+    more.textContent="🎯 Quick quiz"; more.onclick=()=>startQuiz(learnedUids);
+  } else {
+    more.textContent="Keep going"; more.onclick=startReview;
+  }
+  go('done');
+}
+
+/* ============================================================
+   QUIZ (multiple choice EN -> PT)
+   ============================================================ */
+let quizList=[], quizIdx=0;
+function startQuiz(pool){
+  const uids = (pool||Object.keys(S.cards).filter(u=>S.cards[u].reps>0)).slice();
+  // pick up to 8
+  uids.sort(()=> qIdx%2? 1:-1);
+  quizList=uids.slice(0,8); quizIdx=0;
+  if(quizList.length<4){ toast("Learn a few more words first 🙂"); go('home'); return; }
+  go('quiz'); showQuiz();
+}
+function showQuiz(){
+  if(quizIdx>=quizList.length){
+    document.getElementById('doneEmo').textContent="🏆";
+    document.getElementById('doneH').textContent="Quiz complete!";
+    document.getElementById('doneP').textContent="You're building a solid foundation. Keep it up! 🥝";
+    document.getElementById('doneMore').textContent="Back to study";
+    document.getElementById('doneMore').onclick=startReview;
+    go('done'); return;
+  }
+  const uid=quizList[quizIdx], c=ALL[uid];
+  document.getElementById('qWord').textContent=c.en;
+  document.getElementById('qSub').textContent="What does it mean?";
+  document.getElementById('quizProg').style.width=(100*quizIdx/quizList.length)+"%";
+  document.getElementById('quizCount').textContent=(quizIdx+1)+"/"+quizList.length;
+  // options
+  const correct=c.pt;
+  let opts=[correct];
+  const others=Object.values(ALL).filter(x=>x.uid!==uid && x.pt!==correct);
+  while(opts.length<4 && others.length){
+    const pick=others.splice(Math.floor((quizIdx*7+opts.length*13)%others.length),1)[0];
+    if(pick && !opts.includes(pick.pt)) opts.push(pick.pt);
+  }
+  // shuffle deterministically
+  opts.sort((a,b)=> (a.length+quizIdx)%3 - (b.length+quizIdx)%3);
+  const box=document.getElementById('qOpts'); box.innerHTML="";
+  opts.forEach(o=>{
+    const b=document.createElement('button'); b.className='opt'; b.textContent=o;
+    b.onclick=()=>answerQuiz(b,o===correct,box);
+    box.appendChild(b);
+  });
+  speak(c.en);
+}
+function answerQuiz(btn,ok,box){
+  Array.from(box.children).forEach(b=>b.onclick=null);
+  if(ok){ btn.classList.add('correct'); }
+  else{
+    btn.classList.add('wrong');
+    const c=ALL[quizList[quizIdx]];
+    Array.from(box.children).forEach(b=>{ if(b.textContent===c.pt) b.classList.add('correct'); });
+  }
+  setTimeout(()=>{ quizIdx++; showQuiz(); }, 900);
+}
+
+/* ============================================================
+   SETTINGS
+   ============================================================ */
+function renderSettings(){
+  document.getElementById('nameInput').value=S.name;
+  document.getElementById('goalVal').textContent=S.goal;
+  document.getElementById('newVal').textContent=S.newPer;
+  document.getElementById('accentSel').value=S.accent;
+  document.getElementById('swAuto').classList.toggle('on',S.autoPlay);
+  document.getElementById('swPt').classList.toggle('on',S.showPt);
+}
+function setName(v){ S.name=v.trim()||"love"; save(); }
+function chgGoal(d){ S.goal=Math.max(5,Math.min(100,S.goal+d)); document.getElementById('goalVal').textContent=S.goal; save(); }
+function chgNew(d){ S.newPer=Math.max(2,Math.min(30,S.newPer+d)); document.getElementById('newVal').textContent=S.newPer; save(); }
+function setAccent(v){ S.accent=v; save(); loadVoices(); toast("Accent set — tap 🔊 to hear it"); speak("Kia ora"); }
+function toggle(key,el){ S[key]=!S[key]; document.getElementById(el).classList.toggle('on',S[key]); save(); }
+function resetProgress(){
+  if(confirm("Reset ALL progress and start over? This can't be undone.")){
+    S.cards={}; S.streak=0; S.lastDay=null; S.doneToday=0; S.introduced=0; save();
+    toast("Progress reset"); go('home');
+  }
+}
+
+/* ============================================================
+   PRACTICE HELPERS (typing + listening)
+   ============================================================ */
+const TYPABLE=new Set(["word","noun","verb","adj","number","greeting","slang"]);
+function isTypable(uid){ const c=ALL[uid]; return c.en.length<=16 && !c.en.includes("…") && TYPABLE.has(c.pos); }
+function norm(s){ return (s||"").toLowerCase().trim().replace(/^to\s+/,"").replace(/[.!?,'’]/g,"").replace(/\s+/g," "); }
+function buildPractice(filter){
+  rollDay();
+  let due=[],fresh=[],learned=[];
+  for(const uid in ALL){ if(!filter(uid)) continue; const s=st(uid);
+    if(s){ if(s.due<=nowMs()) due.push(uid); else if(s.reps>0) learned.push(uid); }
+    else fresh.push(uid);
+  }
+  fresh=fresh.slice(0,S.newPer);
+  let q=due.concat(fresh);
+  if(q.length<6) q=q.concat(learned.slice(0,10));
+  q=[...new Set(q)];
+  return q.slice(0,15);
+}
+function practiceDone(kind){
+  document.getElementById('doneEmo').textContent = kind==='typing'?'✍️':'👂';
+  document.getElementById('doneH').textContent='Ka pai! Nice work!';
+  document.getElementById('doneP').textContent='🔥 '+S.streak+'-day streak · saved on this phone.';
+  const more=document.getElementById('doneMore'); more.textContent='Back to study'; more.onclick=startReview;
+  go('done');
+}
+
+/* ---------- TYPING ---------- */
+let tQ=[],tIdx=0,tAnswered=false;
+function startTyping(){ tQ=buildPractice(isTypable); tIdx=0; if(tQ.length<1){toast('Learn a few words first 🙂');return;} go('typing'); showType(); }
+function showType(){
+  if(tIdx>=tQ.length){ practiceDone('typing'); return; }
+  tAnswered=false;
+  const uid=tQ[tIdx], c=ALL[uid];
+  document.getElementById('typePt').textContent=c.pt;
+  let hint = c.ex? ('e.g. '+c.ex.replace(/<b>.*?<\/b>/,'<b>_____</b>')) : '';
+  document.getElementById('typeHint').innerHTML=hint;
+  const inp=document.getElementById('typeInput');
+  inp.value=''; inp.className='typein'; inp.disabled=false;
+  const fb=document.getElementById('typeFb'); fb.textContent=''; fb.className='typefb';
+  document.getElementById('typeBtn').textContent='Check';
+  document.getElementById('typeProg').style.width=(100*tIdx/tQ.length)+'%';
+  document.getElementById('typeCount').textContent=(tIdx+1)+'/'+tQ.length;
+  setTimeout(()=>{ try{inp.focus();}catch(e){} },120);
+}
+function checkType(){
+  const uid=tQ[tIdx], c=ALL[uid];
+  if(tAnswered){ tIdx++; showType(); return; }
+  const inp=document.getElementById('typeInput');
+  const ok = norm(inp.value)===norm(c.en);
+  tAnswered=true; inp.disabled=true;
+  const fb=document.getElementById('typeFb');
+  if(ok){ inp.classList.add('ok'); fb.innerHTML='✓ <b>'+c.en+'</b> — '+c.pt; fb.className='typefb'; }
+  else{ inp.classList.add('no'); fb.innerHTML='Answer: <span class="ans">'+c.en+'</span> — '+c.pt; fb.className='typefb bad'; }
+  schedule(uid, ok?2:0);
+  S.doneToday=(S.doneToday||0)+1; bumpStreak(); save();
+  document.getElementById('typeBtn').textContent='Next ›';
+  speak(c.en);
+}
+
+/* ---------- LISTENING ---------- */
+let lQ=[],lIdx=0;
+function startListening(){ lQ=buildPractice(isTypable); lIdx=0; if(lQ.length<4){toast('Learn a few words first 🙂');return;} go('listening'); showListen(); }
+function playListen(){ const uid=lQ[lIdx]; if(uid) speak(ALL[uid].en); }
+function showListen(){
+  if(lIdx>=lQ.length){ practiceDone('listening'); return; }
+  const uid=lQ[lIdx], c=ALL[uid], correct=c.en;
+  document.getElementById('lisProg').style.width=(100*lIdx/lQ.length)+'%';
+  document.getElementById('lisCount').textContent=(lIdx+1)+'/'+lQ.length;
+  let opts=[correct];
+  const others=Object.keys(ALL).filter(u=>isTypable(u)&&ALL[u].en!==correct).map(u=>ALL[u].en);
+  let guard=0;
+  while(opts.length<4 && others.length && guard<200){ guard++; const i=(lIdx*5+opts.length*11+guard)%others.length; const w=others.splice(i,1)[0]; if(w && !opts.includes(w)) opts.push(w); }
+  opts.sort((a,b)=> ((a.length+lIdx)%3)-((b.length+lIdx)%3));
+  const box=document.getElementById('lisOpts'); box.innerHTML='';
+  opts.forEach(o=>{ const b=document.createElement('button'); b.className='opt'; b.textContent=o; b.onclick=()=>answerListen(b,o===correct,box); box.appendChild(b); });
+  setTimeout(playListen,350);
+}
+function answerListen(btn,ok,box){
+  Array.from(box.children).forEach(b=>b.onclick=null);
+  const uid=lQ[lIdx], c=ALL[uid];
+  if(ok){ btn.classList.add('correct'); }
+  else{ btn.classList.add('wrong'); Array.from(box.children).forEach(b=>{ if(b.textContent===c.en) b.classList.add('correct'); }); }
+  toast(c.en+' = '+c.pt);
+  schedule(uid, ok?2:0);
+  S.doneToday=(S.doneToday||0)+1; bumpStreak(); save();
+  setTimeout(()=>{ lIdx++; showListen(); }, 1100);
+}
+
+/* ============================================================
+   8-WEEK PLAN
+   ============================================================ */
+const PLAN=[
+ {t:"Foundations & survival",d:"First words & courtesy, Numbers/time, Feelings. Learn to greet, say please/thank you, yes/no and how you feel.",tip:"Do 10–15 cards every morning with coffee ☕"},
+ {t:"Verbs & everyday things",d:"Everyday verbs, Around the house, Colours & describing. Start making tiny sentences: 'I want water.'",tip:"Say each word out loud — your mouth needs practice too."},
+ {t:"Out and about",d:"Café & restaurant, Shopping, Around town. Practise ordering and asking 'How much is it?'",tip:"Try the Listening mode to tune your ear to the Kiwi accent."},
+ {t:"Grammar glue",d:"Essential grammar (to be, a/the, present tense) + Question words. This is where words become sentences.",tip:"Don't aim for perfect — aim for understood."},
+ {t:"Life admin in NZ",d:"Money & banking (IRD), Housing & renting (bond, flat), Work & job. The vocabulary for settling in.",tip:"Use Typing mode to lock in spelling of key words."},
+ {t:"Health & getting around",d:"Health/GP/pharmacy, Transport, Airport & immigration. Words for the doctor, the bus, and arrival day.",tip:"Read the 'At the GP' and 'At immigration' dialogues out loud."},
+ {t:"Sound like a local",d:"Kiwi slang, Small talk & social, Power phrases. Chit-chat, 'no worries', 'sweet as', 'how's it going?'",tip:"Chat to yourself in the mirror for 2 minutes a day."},
+ {t:"Put it all together",d:"Review everything due + all dialogues + quizzes. Focus on the words you still find hard.",tip:"You've got this. Confidence comes from repetition, not talent 🥝"}
+];
+function renderPlan(){
+  if(!S.startMs){ S.startMs=nowMs(); save(); }
+  const wk=Math.min(8, Math.floor((nowMs()-S.startMs)/(7*DAY))+1);
+  const box=document.getElementById('planList'); box.innerHTML='';
+  PLAN.forEach((p,i)=>{
+    const n=i+1, now=n===wk;
+    const el=document.createElement('div'); el.className='weekcard'+(now?' now':'');
+    el.innerHTML=`<div class="wk"><span class="wn">Week ${n}${now?' • now':''}</span><span class="wt">${p.t}</span></div>
+      <div class="wd">${p.d}</div><div class="wtip">💡 ${p.tip}</div>`;
+    box.appendChild(el);
+  });
+}
+
+/* ============================================================
+   DIALOGUES
+   ============================================================ */
+const DIALOGUES=[
+ {title:"At the café",emo:"☕",lines:[
+   {w:"Barista",en:"Hi there! What can I get you?",pt:"Oi! O que você vai querer?"},
+   {w:"You",en:"Hi, can I have a flat white, please?",pt:"Oi, pode me ver um flat white, por favor?"},
+   {w:"Barista",en:"Sure. Have here or takeaway?",pt:"Claro. Pra comer aqui ou pra viagem?"},
+   {w:"You",en:"Takeaway, thanks.",pt:"Pra viagem, obrigada."},
+   {w:"Barista",en:"That's five fifty.",pt:"São cinco e cinquenta."},
+   {w:"You",en:"Can I pay by card?",pt:"Posso pagar no cartão?"},
+   {w:"Barista",en:"Of course, pop it on there.",pt:"Claro, passe aqui."},
+   {w:"You",en:"Thanks, cheers!",pt:"Obrigada, valeu!"}
+ ]},
+ {title:"Viewing a flat",emo:"🏠",lines:[
+   {w:"Agent",en:"Hi, are you here for the viewing?",pt:"Oi, você veio pra visita?"},
+   {w:"You",en:"Yes, we're interested in renting.",pt:"Sim, estamos interessados em alugar."},
+   {w:"Agent",en:"Great. It has two bedrooms and a heat pump.",pt:"Ótimo. Tem dois quartos e um heat pump."},
+   {w:"You",en:"How much is the rent per week?",pt:"Quanto é o aluguel por semana?"},
+   {w:"Agent",en:"It's five hundred and twenty a week.",pt:"São quinhentos e vinte por semana."},
+   {w:"You",en:"And how much is the bond?",pt:"E quanto é a caução?"},
+   {w:"Agent",en:"Four weeks' rent, paid upfront.",pt:"Quatro semanas de aluguel, adiantado."},
+   {w:"You",en:"Thank you. When can we move in?",pt:"Obrigada. Quando podemos entrar?"}
+ ]},
+ {title:"At the GP (doctor)",emo:"🩺",lines:[
+   {w:"Reception",en:"Kia ora, do you have an appointment?",pt:"Kia ora, você tem hora marcada?"},
+   {w:"You",en:"Yes, at ten with the nurse.",pt:"Sim, às dez com o enfermeiro."},
+   {w:"Nurse",en:"Come through. What's the problem today?",pt:"Pode vir. Qual é o problema hoje?"},
+   {w:"You",en:"I have a sore throat and a fever.",pt:"Estou com dor de garganta e febre."},
+   {w:"Nurse",en:"How long have you felt like this?",pt:"Há quanto tempo você está assim?"},
+   {w:"You",en:"For three days.",pt:"Faz três dias."},
+   {w:"Nurse",en:"I'll give you a prescription for the chemist.",pt:"Vou te dar uma receita pra farmácia."},
+   {w:"You",en:"Thank you so much.",pt:"Muito obrigada."}
+ ]},
+ {title:"At the supermarket",emo:"🛒",lines:[
+   {w:"You",en:"Excuse me, where is the milk?",pt:"Com licença, onde fica o leite?"},
+   {w:"Staff",en:"It's down the back, on the left.",pt:"É lá no fundo, à esquerda."},
+   {w:"You",en:"Thanks. Are these apples on special?",pt:"Obrigada. Essas maçãs estão em promoção?"},
+   {w:"Staff",en:"Yeah, two dollars a kilo.",pt:"Sim, dois dólares o quilo."},
+   {w:"Checkout",en:"Hi, do you need a bag?",pt:"Oi, você precisa de sacola?"},
+   {w:"You",en:"Yes, please. Can I pay by EFTPOS?",pt:"Sim, por favor. Posso pagar no cartão?"},
+   {w:"Checkout",en:"Sure, tap when you're ready.",pt:"Claro, aproxime quando quiser."},
+   {w:"You",en:"Ta!",pt:"Obrigada!"}
+ ]},
+ {title:"Meeting a neighbour",emo:"👋",lines:[
+   {w:"Neighbour",en:"Hey, are you new here?",pt:"Oi, você é nova por aqui?"},
+   {w:"You",en:"Yes, we just moved from Brazil.",pt:"Sim, acabamos de mudar do Brasil."},
+   {w:"Neighbour",en:"Oh, lovely! Welcome. How's it going?",pt:"Ah, que ótimo! Bem-vinda. Como vão as coisas?"},
+   {w:"You",en:"Good, thanks. I'm still learning English.",pt:"Bem, obrigada. Ainda estou aprendendo inglês."},
+   {w:"Neighbour",en:"You're doing great. I'm Sam, by the way.",pt:"Você está indo muito bem. Aliás, sou o Sam."},
+   {w:"You",en:"Nice to meet you, Sam. I'm Ana.",pt:"Prazer, Sam. Sou a Ana."},
+   {w:"Neighbour",en:"If you need anything, just knock.",pt:"Se precisar de algo, é só bater na porta."},
+   {w:"You",en:"Thank you, that's very kind.",pt:"Obrigada, muito gentil."}
+ ]},
+ {title:"At immigration (arrival)",emo:"🛂",lines:[
+   {w:"Officer",en:"Good morning. Passport, please.",pt:"Bom dia. Passaporte, por favor."},
+   {w:"You",en:"Here you are.",pt:"Aqui está."},
+   {w:"Officer",en:"What's the purpose of your visit?",pt:"Qual é o motivo da sua viagem?"},
+   {w:"You",en:"I'm moving here to live and work.",pt:"Estou me mudando pra cá pra morar e trabalhar."},
+   {w:"Officer",en:"Do you have anything to declare? Any food?",pt:"Tem algo a declarar? Alguma comida?"},
+   {w:"You",en:"No, nothing to declare.",pt:"Não, nada a declarar."},
+   {w:"Officer",en:"Great. Welcome to New Zealand.",pt:"Ótimo. Bem-vinda à Nova Zelândia."},
+   {w:"You",en:"Thank you very much!",pt:"Muito obrigada!"}
+ ]},
+ {title:"A job interview (start)",emo:"💼",lines:[
+   {w:"Manager",en:"Hi, thanks for coming in. Take a seat.",pt:"Oi, obrigado por vir. Sente-se."},
+   {w:"You",en:"Thank you for the opportunity.",pt:"Obrigada pela oportunidade."},
+   {w:"Manager",en:"So, tell me a little about yourself.",pt:"Então, me conte um pouco sobre você."},
+   {w:"You",en:"I'm from Brazil and I have three years of experience.",pt:"Sou do Brasil e tenho três anos de experiência."},
+   {w:"Manager",en:"When are you available to start?",pt:"Quando você pode começar?"},
+   {w:"You",en:"I'm available to start right away.",pt:"Estou disponível para começar já."},
+   {w:"Manager",en:"Great. We'll be in touch this week.",pt:"Ótimo. Entraremos em contato esta semana."},
+   {w:"You",en:"Thank you for your time.",pt:"Obrigada pelo seu tempo."}
+ ]}
+];
+function showDialogueList(){
+  document.getElementById('dlgTitle').textContent='Survival dialogues 🗣️';
+  document.getElementById('dlgView').style.display='none';
+  const list=document.getElementById('dlgList'); list.style.display='block'; list.innerHTML='';
+  DIALOGUES.forEach((d,i)=>{
+    const el=document.createElement('div'); el.className='dcard'; el.onclick=()=>openDialogue(i);
+    el.innerHTML=`<div class="demo">${d.emo}</div><div style="flex:1"><div class="dn" style="font-weight:700">${d.title}</div><div class="ds" style="font-size:12px;color:var(--muted)">${d.lines.length} lines · tap to open</div></div><div style="color:var(--muted)">›</div>`;
+    list.appendChild(el);
+  });
+}
+function openDialogue(i){
+  const d=DIALOGUES[i];
+  document.getElementById('dlgTitle').textContent=d.emo+' '+d.title;
+  document.getElementById('dlgList').style.display='none';
+  const v=document.getElementById('dlgView'); v.style.display='block'; v.innerHTML='';
+  const controls=document.createElement('div'); controls.style.cssText='display:flex;gap:10px;margin-bottom:14px';
+  controls.innerHTML=`<button class="bigbtn" style="padding:12px" onclick="playAll(${i})">▶︎ Play all</button>
+    <button class="bigbtn sec" style="padding:12px;max-width:120px" onclick="showDialogueList()">‹ List</button>`;
+  v.appendChild(controls);
+  d.lines.forEach(ln=>{
+    const you=ln.w==='You';
+    const row=document.createElement('div'); row.className='dline'+(you?' you':'');
+    row.innerHTML=`<div style="flex:1"></div>`;
+    const wrap=document.createElement('div');
+    wrap.innerHTML=`<div class="who">${ln.w}</div><div class="bubble"><span class="ben">${ln.en}</span><span class="spk">🔊</span><div class="bpt">${ln.pt}</div></div>`;
+    wrap.querySelector('.bubble').onclick=()=>speak(ln.en);
+    // layout: replace row content
+    row.innerHTML=''; row.appendChild(wrap);
+    v.appendChild(row);
+  });
+}
+function speakThen(text,cb){
+  try{
+    if(!('speechSynthesis' in window)){ if(cb)cb(); return; }
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text.replace(/<[^>]+>/g,''));
+    const v=pickVoice(); if(v){u.voice=v;u.lang=v.lang;} else u.lang=S.accent;
+    u.rate=0.9; u.onend=cb; u.onerror=cb; speechSynthesis.speak(u);
+  }catch(e){ if(cb)cb(); }
+}
+let playToken=0;
+function playAll(i){
+  const d=DIALOGUES[i]; const my=++playToken;
+  (function step(k){ if(k>=d.lines.length||my!==playToken) return; speakThen(d.lines[k].en, ()=>setTimeout(()=>step(k+1),450)); })(0);
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+if(!S.startMs){ S.startMs=nowMs(); save(); }
+renderHome();
+// warm up voices on first interaction (mobile needs a user gesture)
+document.addEventListener('touchstart',function warm(){ try{ const u=new SpeechSynthesisUtterance(" "); speechSynthesis.speak(u);}catch(e){} loadVoices(); document.removeEventListener('touchstart',warm); },{once:true});
+</script>
+</body>
+</html>
