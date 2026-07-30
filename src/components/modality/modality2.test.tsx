@@ -8,6 +8,15 @@ import { useStore } from '../../store/useStore'
 import { createInitialState } from '../../store/defaults'
 import type { Card } from '../../types'
 
+vi.mock('../../audio/speak', () => ({
+  speak: vi.fn(),
+  cancelSpeech: vi.fn(),
+  warmUp: vi.fn(),
+  pickVoice: vi.fn(),
+}))
+
+import { speak } from '../../audio/speak'
+
 const card: Card = {
   id: 'x_0', deckId: 'x', en: 'water', pt: 'água',
   exampleHtml: 'I want <b>water</b>, please.', examplePt: 'Eu quero água, por favor.',
@@ -15,6 +24,7 @@ const card: Card = {
 }
 
 beforeEach(() => {
+  vi.clearAllMocks()
   useStore.setState({ ...createInitialState(0), unlocked: null })
 })
 
@@ -69,6 +79,12 @@ describe('Dictate', () => {
     await userEvent.click(cont)
     await userEvent.click(cont)
     expect(onAnswer).toHaveBeenCalledTimes(1)
+  })
+
+  it('plays the sentence even when auto-play audio is off', () => {
+    useStore.setState({ autoPlayAudio: false })
+    render(<Dictate card={card} onAnswer={vi.fn()} />)
+    expect(speak).toHaveBeenCalled()
   })
 })
 

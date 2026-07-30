@@ -10,7 +10,6 @@ type Result = 'pending' | 'right' | 'wrong'
 
 export function Dictate({ card, onAnswer }: ModalityProps) {
   const accent = useStore(s => s.accent)
-  const autoPlayAudio = useStore(s => s.autoPlayAudio)
   const [value, setValue] = useState('')
   const [result, setResult] = useState<Result>('pending')
   const [answered, setAnswered] = useState(false)
@@ -18,7 +17,6 @@ export function Dictate({ card, onAnswer }: ModalityProps) {
   const plain = useMemo(() => stripTags(card.exampleHtml), [card.exampleHtml])
 
   useEffect(() => {
-    if (!autoPlayAudio) return
     speak(plain, accent)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [card.id])
