@@ -38,15 +38,40 @@ describe('Speak', () => {
     expect(onAnswer).toHaveBeenCalledWith(true)
   })
 
-  it('never grades her down when the microphone catches nothing — it offers a skip instead', async () => {
+  it('grades nothing at all when the microphone catches nothing — it skips instead', async () => {
+    vi.mocked(recognizeOnce).mockResolvedValueOnce('')
+    const onAnswer = vi.fn()
+    const onSkip = vi.fn()
+    render(<Speak card={card} onAnswer={onAnswer} onSkip={onSkip} />)
+    await userEvent.click(screen.getByRole('button', { name: /record your voice/i }))
+    expect(await screen.findByText(/didn't catch that/i)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /^continue$/i })).not.toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: /skip this one/i }))
+    expect(onSkip).toHaveBeenCalledTimes(1)
+    // The whole point: a denied or silent mic must not grade her down *or* up.
+    expect(onAnswer).not.toHaveBeenCalled()
+  })
+
+  it('skips only once when Skip is double-tapped', async () => {
+    vi.mocked(recognizeOnce).mockResolvedValueOnce('')
+    const onSkip = vi.fn()
+    render(<Speak card={card} onAnswer={vi.fn()} onSkip={onSkip} />)
+    await userEvent.click(screen.getByRole('button', { name: /record your voice/i }))
+    const skip = await screen.findByRole('button', { name: /skip this one/i })
+    await userEvent.click(skip)
+    await userEvent.click(skip)
+    expect(onSkip).toHaveBeenCalledTimes(1)
+  })
+
+  it('offers no skip button at all when the host gives it no ungraded exit', async () => {
     vi.mocked(recognizeOnce).mockResolvedValueOnce('')
     const onAnswer = vi.fn()
     render(<Speak card={card} onAnswer={onAnswer} />)
     await userEvent.click(screen.getByRole('button', { name: /record your voice/i }))
     expect(await screen.findByText(/didn't catch that/i)).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /^continue$/i })).not.toBeInTheDocument()
-    await userEvent.click(screen.getByRole('button', { name: /skip this one/i }))
-    expect(onAnswer).toHaveBeenCalledWith(true)
+    // Never fall back to grading: no button beats a button that lies.
+    expect(screen.queryByRole('button', { name: /skip this one/i })).not.toBeInTheDocument()
+    expect(onAnswer).not.toHaveBeenCalled()
   })
 
   it('grades only once when Continue is double-tapped', async () => {

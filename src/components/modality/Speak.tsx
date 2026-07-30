@@ -8,11 +8,14 @@ import type { ModalityProps } from './types'
 type Phase = 'ready' | 'listening' | 'result'
 
 /**
- * A broken or absent microphone must never cost her a card: recognizeOnce
- * never rejects, and an empty transcript always renders the friendly retry
- * copy plus a Skip that grades the attempt as correct rather than wrong.
+ * A broken or absent microphone must never cost her a card — and must never
+ * win her one either. recognizeOnce never rejects, and an empty transcript
+ * renders the friendly retry copy plus a Skip that leaves the card ungraded
+ * (onSkip), so a denied mic can neither mark her wrong nor quietly schedule
+ * a review she never did. Without onSkip there is no skip button at all: she
+ * can record again, but she cannot buy progress with a broken microphone.
  */
-export function Speak({ card, onAnswer }: ModalityProps) {
+export function Speak({ card, onAnswer, onSkip }: ModalityProps) {
   const showPortuguese = useStore(s => s.showPortuguese)
   const accent = useStore(s => s.accent)
   const [phase, setPhase] = useState<Phase>('ready')
@@ -33,6 +36,13 @@ export function Speak({ card, onAnswer }: ModalityProps) {
     if (answered) return
     setAnswered(true)
     onAnswer(correct)
+  }
+
+  // Same one-shot guard as finish(), so a double-tap can't advance two items.
+  function skip() {
+    if (answered || !onSkip) return
+    setAnswered(true)
+    onSkip()
   }
 
   return (
@@ -63,9 +73,11 @@ export function Speak({ card, onAnswer }: ModalityProps) {
             <p>{judgement.message}</p>
           </Card>
           {micFailed ? (
-            <Button variant="primary" onClick={() => finish(true)} disabled={answered}>
-              Skip this one
-            </Button>
+            onSkip && (
+              <Button variant="primary" onClick={skip} disabled={answered}>
+                Skip this one
+              </Button>
+            )
           ) : (
             <Button variant="primary" onClick={() => finish(judgement.ok)} disabled={answered}>
               Continue

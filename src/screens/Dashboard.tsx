@@ -3,10 +3,17 @@ import { useStore, cardIdsByLevel } from '../store/useStore'
 import { totalKnown, totalDue } from '../core/srs'
 import { levelProgress, LEVEL_NAMES, LEVEL_EMOJI, LEVEL_TITLES } from '../core/leveling'
 import { skillSummary, weakestSkill, levelBreakdown } from '../core/stats'
-import { Card, Chip, Meter, ScreenHeader } from '../components/ui'
+import { Button, Card, Chip, Meter, ScreenHeader } from '../components/ui'
 
 export interface DashboardProps {
   onBack: () => void
+  /**
+   * §8: the placement test is retakeable "from settings/dashboard". Same
+   * action Settings offers — a retake only ever promotes her now (the store
+   * keeps unlockedLevel non-lowering and never overwrites a studied card's
+   * scheduling), so it is safe to reach from here too.
+   */
+  onRetakePlacement: () => void
 }
 
 const SKILL_LABELS: Record<Skill, string> = {
@@ -37,7 +44,7 @@ function SkillRow({ skill, total, accuracy }: {
 }
 
 /** Progress and skills, told kindly — encouraging, not a data dump. */
-export function Dashboard({ onBack }: DashboardProps) {
+export function Dashboard({ onBack, onRetakePlacement }: DashboardProps) {
   const cards = useStore(s => s.cards)
   const skills = useStore(s => s.skills)
   const unlockedLevel = useStore(s => s.unlockedLevel)
@@ -58,9 +65,19 @@ export function Dashboard({ onBack }: DashboardProps) {
       <ScreenHeader title="Progress" onBack={onBack} />
 
       <Card className="flex flex-col gap-3">
-        <Chip tone="brand" className="self-start text-sm">
-          {LEVEL_EMOJI[unlockedLevel]} {LEVEL_NAMES[unlockedLevel]} · {LEVEL_TITLES[unlockedLevel]}
-        </Chip>
+        <div className="flex items-center justify-between gap-3">
+          <Chip tone="brand" className="text-sm">
+            {LEVEL_EMOJI[unlockedLevel]} {LEVEL_NAMES[unlockedLevel]} · {LEVEL_TITLES[unlockedLevel]}
+          </Chip>
+          {/* Quiet on purpose: it sits beside the badge it changes, not among
+            * the study actions. Ghost + md keeps a 44px target without
+            * competing with anything. */}
+          <div className="shrink-0">
+            <Button variant="ghost" size="md" onClick={onRetakePlacement}>
+              Retake test
+            </Button>
+          </div>
+        </div>
         {atTopLevel ? (
           <p className="text-sm font-bold text-ink">Top level — keep it sharp 🏔️</p>
         ) : (

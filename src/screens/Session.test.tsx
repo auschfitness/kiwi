@@ -1,9 +1,19 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Session } from './Session'
 import { useStore } from '../store/useStore'
 import { createInitialState } from '../store/defaults'
+import { recognizeOnce } from '../audio/listen'
+
+// A speak item is the only way to reach the ungraded-skip path, and speak
+// items only appear when the browser exposes SpeechRecognition (see the
+// stubGlobal in the skip test below).
+vi.mock('../audio/listen', () => ({ recognizeOnce: vi.fn(async () => '') }))
+
+afterEach(() => {
+  vi.unstubAllGlobals()
+})
 
 beforeEach(() => {
   useStore.setState({
@@ -107,5 +117,37 @@ describe('Session', () => {
     expect(onDone).not.toHaveBeenCalled()
     expect(screen.getByRole('button', { name: /show meaning/i })).toBeInTheDocument()
     expect(useStore.getState().cards.survival_0.lapses).toBe(1)
+  })
+
+  it('a skipped speak card is not graded — no scheduling, no skill stat, no daily count', async () => {
+    // Same survival_0 reasoning as above, but with SpeechRecognition present:
+    // supported = ['recognize','listen','type','build','dictate','speak'] (6),
+    // so reps = 5 lands on index 5, 'speak'. recognizeOnce is mocked to '' —
+    // exactly what a denied microphone returns on Android Chrome, where
+    // speechRecognitionAvailable() is still true because permission is only
+    // checked at start().
+    vi.stubGlobal('SpeechRecognition', class {})
+    const state = { due: Date.now() - 1000, interval: 1, ease: 2.5, reps: 5, lapses: 0 }
+    useStore.setState({
+      ...createInitialState(Date.now()),
+      unlocked: null, placed: true, cefrLevel: 1, unlockedLevel: 1,
+      newPerSession: 0, autoPlayAudio: false,
+      cards: { survival_0: { ...state } },
+    })
+    vi.mocked(recognizeOnce).mockResolvedValueOnce('')
+
+    const onDone = vi.fn()
+    render(<Session deckId="survival" onDone={onDone} />)
+
+    await userEvent.click(screen.getByRole('button', { name: /record your voice/i }))
+    await userEvent.click(await screen.findByRole('button', { name: /skip this one/i }))
+
+    // She moved on, but bought nothing: the card keeps the exact scheduling it
+    // had, speaking gains no reviews, and the day's counter has not ticked.
+    const after = useStore.getState()
+    expect(after.cards).toEqual({ survival_0: state })
+    expect(after.skills).toEqual(createInitialState(0).skills)
+    expect(after.doneToday).toBe(0)
+    expect(onDone).toHaveBeenCalled()
   })
 })

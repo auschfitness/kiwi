@@ -119,11 +119,17 @@ export function Home({ onNavigate, onStudy }: HomeProps) {
         className="rounded-card border border-line bg-card p-4 text-left transition active:scale-[0.98]"
       >
         <div className="grid grid-cols-2 gap-3">
+          {/* Same rule as the Dashboard's skill rows: a skill she has never
+            * been asked to practise reads "not practised yet", never "0%".
+            * Speaking is the live case — iOS Safari has no speech
+            * recognition, so that modality never runs there, and a 0% would
+            * score her on something she was never offered. */}
           {skillRows.map(row => (
             <Meter
               key={row.skill}
               label={SKILL_LABELS[row.skill] ?? row.skill}
               value={(row.accuracy ?? 0) / 100}
+              valueText={row.accuracy === null ? 'not practised yet' : `${row.accuracy}%`}
             />
           ))}
         </div>

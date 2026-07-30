@@ -42,6 +42,19 @@ function isLiveStatus(s: string): s is LiveStatus {
   return s === 'syncing' || s === 'synced' || s === 'offline' || s === 'error'
 }
 
+type SyncOutcome = 'merged' | 'pushed' | 'error'
+
+/**
+ * What actually happened, in her words. onRestore always merges — there is no
+ * "replace" — so the copy never promises one, and 'pushed' (the code was
+ * empty in the cloud) is a different, equally honest sentence.
+ */
+const OUTCOME_MESSAGE: Record<SyncOutcome, string> = {
+  merged: '✓ Joined up with the progress already saved under that code.',
+  pushed: "✓ This device's progress is now saved in the cloud.",
+  error: "⚠︎ That didn't work just now. Check your internet and try again.",
+}
+
 /**
  * A +/- control with a label naming what it changes — never bare symbols.
  *
@@ -133,6 +146,7 @@ export function Settings({ onBack, onRetakePlacement, syncStatus, onRestore }: S
   const [codeInput, setCodeInput] = useState(syncCode ?? '')
   const [codeError, setCodeError] = useState<string | null>(null)
   const [restoring, setRestoring] = useState(false)
+  const [outcome, setOutcome] = useState<SyncOutcome | null>(null)
   const [confirmingReset, setConfirmingReset] = useState(false)
 
   function commitName() {
@@ -149,7 +163,9 @@ export function Settings({ onBack, onRetakePlacement, syncStatus, onRestore }: S
     setCodeError(err)
     if (err) return
     setRestoring(true)
-    await onRestore(trimmed)
+    setOutcome(null)
+    const result = await onRestore(trimmed)
+    setOutcome(result)
     setRestoring(false)
   }
 
@@ -197,7 +213,7 @@ export function Settings({ onBack, onRetakePlacement, syncStatus, onRestore }: S
             <input
               type="text"
               value={codeInput}
-              onChange={e => { setCodeInput(e.target.value); setCodeError(null) }}
+              onChange={e => { setCodeInput(e.target.value); setCodeError(null); setOutcome(null) }}
               placeholder="a word plus some numbers, e.g. kiwi2026"
               autoCapitalize="none"
               autoCorrect="off"
@@ -206,16 +222,22 @@ export function Settings({ onBack, onRetakePlacement, syncStatus, onRestore }: S
             />
           </label>
           {codeError && <p className="text-sm text-again">{codeError}</p>}
+          {/* One button, because there is only one behaviour. The old pair
+            * ("Save & sync" and "Restore from a code") called the same merge,
+            * and "restore" promised a replace this app cannot do. */}
           <p className="text-xs text-muted">
-            Use the same code on another device to bring your progress there, or to send
-            this device's progress to the cloud for the first time.
+            Typing a code puts this device's progress together with whatever is already
+            saved under that code. Nothing is lost either way — use the same code on your
+            other phone or laptop to keep them all in step.
           </p>
           <Button variant="primary" size="md" disabled={restoring} onClick={handleSyncSubmit}>
-            Save &amp; sync
+            Save &amp; sync this device
           </Button>
-          <Button variant="ghost" size="md" disabled={restoring} onClick={handleSyncSubmit}>
-            Restore from a code
-          </Button>
+          {outcome && (
+            <p role="status" className="text-sm text-ink">
+              {OUTCOME_MESSAGE[outcome]}
+            </p>
+          )}
         </Card>
       )}
 

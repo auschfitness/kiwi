@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Home } from './Home'
 import { useStore, cardIdsByLevel } from '../store/useStore'
@@ -51,6 +51,25 @@ describe('Home', () => {
     render(<Home onNavigate={onNavigate} onStudy={vi.fn()} />)
     await userEvent.click(screen.getByRole('button', { name: /progress/i }))
     expect(onNavigate).toHaveBeenCalledWith('dashboard')
+  })
+
+  it('never scores an unpractised skill at 0% on the strip', () => {
+    render(<Home onNavigate={vi.fn()} onStudy={vi.fn()} />)
+    // Scoped to the strip: the level rows elsewhere on Home legitimately show
+    // "0%" progress for a fresh profile. A skill she was never asked to
+    // practise is a different claim — iOS Safari never runs the speaking
+    // modality, and "0% speaking" would score her on it anyway.
+    const strip = within(screen.getByRole('button', { name: /skills overview/i }))
+    expect(strip.queryByText(/0%/)).not.toBeInTheDocument()
+    expect(strip.getAllByText(/not practised yet/i).length).toBe(4)
+  })
+
+  it('shows real accuracy on the strip once a skill has been practised', () => {
+    useStore.setState({ skills: { ...useStore.getState().skills, listening: { correct: 41, total: 50 } } })
+    render(<Home onNavigate={vi.fn()} onStudy={vi.fn()} />)
+    const strip = within(screen.getByRole('button', { name: /skills overview/i }))
+    expect(strip.getByText('82%')).toBeInTheDocument()
+    expect(strip.getAllByText(/not practised yet/i).length).toBe(3)
   })
 
   it('does not offer new words that are still locked', () => {

@@ -22,14 +22,37 @@ describe('Settings with Supabase configured', () => {
     render(<Settings onBack={vi.fn()} onRetakePlacement={vi.fn()} syncStatus="idle" onRestore={vi.fn()} />)
     expect(screen.queryByText(/cloud sync isn't set up yet/i)).not.toBeInTheDocument()
     expect(screen.getByLabelText(/sync code/i)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /save & sync/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /restore from a code/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /save & sync this device/i })).toBeInTheDocument()
+  })
+
+  it('offers one sync button, not two synonyms — and never promises a restore', () => {
+    render(<Settings onBack={vi.fn()} onRetakePlacement={vi.fn()} syncStatus="idle" onRestore={vi.fn()} />)
+    // Both old buttons called the same merge, and "Restore from a code" named
+    // a replace this app does not do.
+    expect(screen.queryByRole('button', { name: /restore/i })).not.toBeInTheDocument()
+    expect(screen.getByText(/nothing is lost either way/i)).toBeInTheDocument()
+  })
+
+  it('says which thing happened after a sync', async () => {
+    const onRestore = vi.fn().mockResolvedValue('merged')
+    render(<Settings onBack={vi.fn()} onRetakePlacement={vi.fn()} syncStatus="idle" onRestore={onRestore} />)
+    await userEvent.type(screen.getByLabelText(/sync code/i), 'kiwi2026')
+    await userEvent.click(screen.getByRole('button', { name: /save & sync this device/i }))
+    expect(await screen.findByText(/joined up with the progress/i)).toBeInTheDocument()
+  })
+
+  it('says so plainly when the sync fails', async () => {
+    const onRestore = vi.fn().mockResolvedValue('error')
+    render(<Settings onBack={vi.fn()} onRetakePlacement={vi.fn()} syncStatus="idle" onRestore={onRestore} />)
+    await userEvent.type(screen.getByLabelText(/sync code/i), 'kiwi2026')
+    await userEvent.click(screen.getByRole('button', { name: /save & sync this device/i }))
+    expect(await screen.findByText(/didn't work just now/i)).toBeInTheDocument()
   })
 
   it('shows a validation error for a bad code instead of submitting', async () => {
     render(<Settings onBack={vi.fn()} onRetakePlacement={vi.fn()} syncStatus="idle" onRestore={vi.fn()} />)
     await userEvent.type(screen.getByLabelText(/sync code/i), '123456')
-    await userEvent.click(screen.getByRole('button', { name: /save & sync/i }))
+    await userEvent.click(screen.getByRole('button', { name: /save & sync this device/i }))
     expect(await screen.findByText(/letter/i)).toBeInTheDocument()
   })
 
@@ -43,7 +66,7 @@ describe('Settings with Supabase configured', () => {
     const onRestore = vi.fn().mockResolvedValue('pushed')
     render(<Settings onBack={vi.fn()} onRetakePlacement={vi.fn()} syncStatus="idle" onRestore={onRestore} />)
     await userEvent.type(screen.getByLabelText(/sync code/i), 'kiwi2026')
-    await userEvent.click(screen.getByRole('button', { name: /save & sync/i }))
+    await userEvent.click(screen.getByRole('button', { name: /save & sync this device/i }))
     expect(onRestore).toHaveBeenCalledWith('kiwi2026')
   })
 })

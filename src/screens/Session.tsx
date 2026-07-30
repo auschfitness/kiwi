@@ -67,6 +67,19 @@ export function Session({ deckId, onDone }: SessionProps) {
     setShownAt(Date.now())
   }
 
+  /**
+   * Move on without grading. Deliberately never calls gradeItem: nothing is
+   * scheduled, no skill stat moves and doneToday does not tick, so an item the
+   * device made impossible (a mic that catches nothing) costs her nothing and
+   * earns her nothing. The card keeps whatever due date it already had and
+   * comes back on its own.
+   */
+  function handleSkip() {
+    if (!queue[index]) return
+    setIndex(i => i + 1)
+    setShownAt(Date.now())
+  }
+
   if (queue.length === 0) {
     return (
       <div className="flex flex-col items-center gap-6 pt-16 text-center">
@@ -97,7 +110,7 @@ export function Session({ deckId, onDone }: SessionProps) {
         </div>
       </div>
 
-      {renderModality(item, card, handleAnswer, index)}
+      {renderModality(item, card, handleAnswer, handleSkip, index)}
     </div>
   )
 }
@@ -106,6 +119,7 @@ function renderModality(
   item: QueueItem,
   card: NonNullable<ReturnType<typeof cardById>>,
   onAnswer: (correct: boolean, easy?: boolean) => void,
+  onSkip: () => void,
   index: number,
 ) {
   // Keyed on the queue position: without a key, React reuses the previous
@@ -126,6 +140,8 @@ function renderModality(
     case 'build':
       return <Build key={key} card={card} onAnswer={onAnswer} />
     case 'speak':
-      return <Speak key={key} card={card} onAnswer={onAnswer} />
+      // The only modality that can hit a dead end through no fault of hers,
+      // so the only one handed the ungraded exit.
+      return <Speak key={key} card={card} onAnswer={onAnswer} onSkip={onSkip} />
   }
 }

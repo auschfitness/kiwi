@@ -109,7 +109,7 @@ export default function App() {
       case 'done':
         return <Done onBack={goHome} />
       case 'dashboard':
-        return <Dashboard onBack={goHome} />
+        return <Dashboard onBack={goHome} onRetakePlacement={handleRetakePlacement} />
       case 'conjugation':
         return <ConjugationTable onBack={goHome} />
       case 'plan':
