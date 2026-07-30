@@ -59,6 +59,25 @@ describe('buildPlacementTest', () => {
   it('is deterministic for a given rand', () => {
     expect(buildPlacementTest(pool, seeded(7))).toEqual(buildPlacementTest(pool, seeded(7)))
   })
+
+  it('produces a shorter test when a band has no content yet', () => {
+    const noB2: Record<Level, Card[]> = { ...pool, 4: [] }
+    const qs = buildPlacementTest(noB2, seeded())
+    expect(qs).toHaveLength(15)
+    expect(qs.some(q => q.band === 4)).toBe(false)
+  })
+
+  it('never offers the same meaning twice in one question', () => {
+    const dupes: Record<Level, Card[]> = {
+      1: makeCards(1, 20).map(c => ({ ...c, pt: 'mesmo' })),
+      2: makeCards(2, 20), 3: makeCards(3, 20), 4: makeCards(4, 20),
+    }
+    for (const q of buildPlacementTest(dupes, seeded())) {
+      if (q.kind !== 'choice') continue
+      expect(new Set(q.options)).toHaveLength(q.options!.length)
+      expect(q.options).toContain(q.answer)
+    }
+  })
 })
 
 describe('scorePlacement', () => {
@@ -100,6 +119,18 @@ describe('scorePlacement', () => {
     const result = scorePlacement(qs, answerBands([1, 2]))
     expect(result.byBand[1].total).toBe(5)
     expect(result.byBand[4].correct).toBe(0)
+  })
+
+  // A band with zero questions has total === 0, so the consecutive-pass loop
+  // breaks there regardless of answers. This is intentional: a learner cannot
+  // be certified at a band the test never actually examined (e.g. B2 before
+  // that content ships), so startLevel must cap below it. Do not "fix" this
+  // by treating an empty band as an automatic pass.
+  it('cannot certify a band that asked no questions', () => {
+    const noB2: Record<Level, Card[]> = { ...pool, 4: [] }
+    const qs = buildPlacementTest(noB2, seeded())
+    const allCorrect = Object.fromEntries(qs.map(q => [q.id, true]))
+    expect(scorePlacement(qs, allCorrect).startLevel).toBe(3)
   })
 })
 

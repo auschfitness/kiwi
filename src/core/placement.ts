@@ -41,7 +41,9 @@ export function buildPlacementTest(
     picked.forEach((card, i) => {
       used.add(card.id)
       // Typed questions live at the hard end: the last two of band 3, and all of band 4.
-      const typed = band === 4 || (band === 3 && i >= PER_BAND[3] - 2)
+      // Based on how many cards this band actually supplied, not the nominal quota —
+      // a short band must still yield its typed questions at the hard end.
+      const typed = band === 4 || (band === 3 && i >= picked.length - 2)
       if (typed) {
         questions.push({
           id: `q_${band}_${i}`, kind: 'type', band, cardId: card.id,
@@ -49,9 +51,15 @@ export function buildPlacementTest(
         })
         return
       }
-      const distractors = shuffle(everyCard.filter(c => c.id !== card.id && c.pt !== card.pt), rand)
-        .slice(0, 3)
-        .map(c => c.pt)
+      const seen = new Set<string>([card.pt])
+      const distractors: string[] = []
+      for (const other of shuffle(everyCard, rand)) {
+        if (other.id === card.id) continue
+        if (seen.has(other.pt)) continue
+        seen.add(other.pt)
+        distractors.push(other.pt)
+        if (distractors.length === 3) break
+      }
       questions.push({
         id: `q_${band}_${i}`, kind: 'choice', band, cardId: card.id,
         prompt: card.en, answer: card.pt,
