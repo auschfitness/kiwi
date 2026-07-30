@@ -41,7 +41,7 @@ export function pickModality(
   const supported = supportedModalities(card, canSpeak)
   if (bias) {
     const biased = supported.filter(m => SKILL_OF[m] === bias)
-    if (biased.length > 0) return biased[0]
+    if (biased.length > 0) return biased[state!.reps % biased.length]
   }
   return supported[state!.reps % supported.length]
 }

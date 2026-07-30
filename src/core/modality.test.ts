@@ -61,10 +61,17 @@ describe('pickModality', () => {
     expect(pickModality(c, state(3), true)).toBe(pickModality(c, state(3), true))
   })
 
-  it('honours a skill bias when the card supports it', () => {
+  it('narrows to the weak skill when the card supports it', () => {
     const c = card()
-    expect(pickModality(c, state(1), true, 'listening')).toBe('listen')
+    expect(pickModality(c, state(2), true, 'listening')).toBe('listen')
+    expect(pickModality(c, state(1), true, 'listening')).toBe('dictate')
     expect(pickModality(c, state(1), true, 'speaking')).toBe('speak')
+  })
+
+  it('keeps rotating within the biased skill instead of pinning one modality', () => {
+    const c = card()
+    const picks = [1, 2, 3, 4].map(reps => pickModality(c, state(reps), true, 'listening'))
+    expect(new Set(picks)).toEqual(new Set(['listen', 'dictate']))
   })
 
   it('ignores a bias the card cannot serve', () => {
