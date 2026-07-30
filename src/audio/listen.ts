@@ -30,25 +30,30 @@ export function recognizeOnce(accent: Accent, timeoutMs = 6000): Promise<string>
 
   return new Promise<string>(resolve => {
     let settled = false
+    let timer: ReturnType<typeof setTimeout> | undefined
+    let rec: InstanceType<RecognitionCtor> | undefined
+
     const finish = (value: string) => {
       if (settled) return
       settled = true
-      clearTimeout(timer)
-      try { rec.abort() } catch { /* already stopped */ }
+      if (timer !== undefined) clearTimeout(timer)
+      try { rec?.abort() } catch { /* already stopped */ }
       resolve(value)
     }
 
-    const rec = new Ctor()
-    rec.lang = accent
-    rec.interimResults = false
-    rec.maxAlternatives = 1
-    rec.continuous = false
-    rec.onresult = e => finish(e.results?.[0]?.[0]?.transcript ?? '')
-    rec.onerror = () => finish('')
-    rec.onend = () => finish('')
-
-    const timer = setTimeout(() => finish(''), timeoutMs)
-
-    try { rec.start() } catch { finish('') }
+    try {
+      rec = new Ctor()
+      rec.lang = accent
+      rec.interimResults = false
+      rec.maxAlternatives = 1
+      rec.continuous = false
+      rec.onresult = e => finish(e.results?.[0]?.[0]?.transcript ?? '')
+      rec.onerror = () => finish('')
+      rec.onend = () => finish('')
+      timer = setTimeout(() => finish(''), timeoutMs)
+      rec.start()
+    } catch {
+      finish('')
+    }
   })
 }
