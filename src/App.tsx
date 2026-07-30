@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { warmUp } from './audio/speak'
 import { useStore } from './store/useStore'
+import { useSync } from './sync/useSync'
 import { LEVEL_NAMES } from './core/leveling'
-import { Button, ScreenHeader, Toast } from './components/ui'
+import { Button, Toast } from './components/ui'
 import { Name } from './screens/Name'
 import { Placement } from './screens/Placement'
 import { Home } from './screens/Home'
@@ -12,20 +13,11 @@ import { ConjugationTable } from './screens/ConjugationTable'
 import { Shadowing } from './screens/Shadowing'
 import { Plan } from './screens/Plan'
 import { Dialogues } from './screens/Dialogues'
+import { Settings } from './screens/Settings'
 
 export type Screen =
   | 'home' | 'name' | 'placement' | 'session' | 'dashboard'
   | 'plan' | 'dialogues' | 'shadowing' | 'settings' | 'done' | 'conjugation'
-
-/** A screen that has not landed yet (Tasks 20-25) — an honest placeholder, not a dead button. */
-function ComingSoon({ title, onBack }: { title: string; onBack: () => void }) {
-  return (
-    <div>
-      <ScreenHeader title={title} onBack={onBack} />
-      <p className="px-1 text-sm text-muted">Coming soon 🥝</p>
-    </div>
-  )
-}
 
 function Done({ onBack }: { onBack: () => void }) {
   return (
@@ -50,6 +42,13 @@ export default function App() {
   const placed = useStore(s => s.placed)
   const unlocked = useStore(s => s.unlocked)
   const clearUnlockToast = useStore(s => s.clearUnlockToast)
+  const retakePlacement = useStore(s => s.retakePlacement)
+
+  // Mounted once, for the whole session, regardless of which screen is
+  // showing — this is what keeps progress pushed to the cloud in the
+  // background. With no Supabase env vars it's a no-op: isSyncConfigured()
+  // is false, so every effect inside short-circuits before touching a client.
+  useSync()
 
   useEffect(() => {
     const unlock = () => { warmUp(); document.removeEventListener('pointerdown', unlock) }
@@ -76,6 +75,14 @@ export default function App() {
   function handleShadowFromDialogue(dialogueId: string) {
     setShadowDialogueId(dialogueId)
     setScreen('shadowing')
+  }
+
+  // placed=false makes renderScreen() show Placement regardless of `screen`
+  // (see below) — resetting to 'home' just keeps state tidy for when she
+  // finishes it and lands back on Home rather than on Settings.
+  function handleRetakePlacement() {
+    retakePlacement()
+    setScreen('home')
   }
 
   // She got to Shadowing either from Home's Explore row (no dialogue scope —
@@ -108,7 +115,7 @@ export default function App() {
       case 'shadowing':
         return <Shadowing dialogueId={shadowDialogueId} onBack={handleShadowingBack} />
       case 'settings':
-        return <ComingSoon title="Settings" onBack={goHome} />
+        return <Settings onBack={goHome} onRetakePlacement={handleRetakePlacement} />
       default:
         return <Home onNavigate={handleNavigate} onStudy={handleStudy} />
     }
