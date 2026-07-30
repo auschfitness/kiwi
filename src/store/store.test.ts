@@ -30,6 +30,38 @@ describe('store', () => {
     expect(s.cards.survival_0.reps).toBe(2)
   })
 
+  it('promotes on a retake that places higher', () => {
+    useStore.setState({ unlockedLevel: 1, cefrLevel: 1, placed: true })
+    useStore.getState().finishPlacement(3, {}, NOW)
+    expect(useStore.getState().unlockedLevel).toBe(3)
+    expect(useStore.getState().cefrLevel).toBe(3)
+  })
+
+  it('never re-locks content on a retake that places lower', () => {
+    // She reached B1, retakes on a bad day and scores A2. cefrLevel follows the
+    // new measurement, but content she earned stays unlocked.
+    useStore.setState({ unlockedLevel: 3, cefrLevel: 3, placed: true })
+    useStore.getState().finishPlacement(2, {}, NOW)
+    expect(useStore.getState().unlockedLevel).toBe(3)
+    expect(useStore.getState().cefrLevel).toBe(2)
+  })
+
+  it('does not crush real scheduling when a retake reseeds', () => {
+    const earned = { due: NOW + 40 * 86_400_000, interval: 40, ease: 2.7, reps: 9, lapses: 3 }
+    useStore.setState({ cards: { survival_0: { ...earned } }, unlockedLevel: 3, placed: true })
+
+    useStore.getState().finishPlacement(2, {
+      survival_0: { due: NOW, interval: 2, ease: 2.5, reps: 2, lapses: 0 },
+      survival_1: { due: NOW, interval: 2, ease: 2.5, reps: 2, lapses: 0 },
+    }, NOW)
+
+    const s = useStore.getState()
+    // Untouched: her 9 reps, 40-day interval and lapse history all survive.
+    expect(s.cards.survival_0).toEqual(earned)
+    // A card she has no history for is still seeded.
+    expect(s.cards.survival_1.reps).toBe(2)
+  })
+
   it('grades a correct item into the card, the skill and the day counter', () => {
     useStore.getState().gradeItem('survival_0', 'listen', true, false, NOW)
     const s = useStore.getState()

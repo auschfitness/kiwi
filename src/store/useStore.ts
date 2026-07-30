@@ -41,15 +41,29 @@ export const useStore = create<Store>()(
 
       setName: name => set({ profileName: name.trim(), updatedAt: Date.now() }),
 
+      /**
+       * A retake may promote her, never demote her. `cefrLevel` follows the
+       * latest test (it is what the test measured today), but `unlockedLevel`
+       * only ever climbs, and a card she has actually studied keeps its real
+       * scheduling — seeding only fills in cards she has no history for.
+       * Without both guards, one bad-day retake re-locks earned content and
+       * crushes e.g. reps 9 / interval 40 back to a fresh seed.
+       */
       finishPlacement: (startLevel, seeded, now) =>
-        set(s => ({
-          placed: true,
-          cefrLevel: startLevel,
-          unlockedLevel: startLevel,
-          cards: { ...s.cards, ...seeded },
-          startedAt: s.startedAt || now,
-          updatedAt: now,
-        })),
+        set(s => {
+          const cards = { ...s.cards }
+          for (const [id, state] of Object.entries(seeded)) {
+            if (!cards[id]) cards[id] = state
+          }
+          return {
+            placed: true,
+            cefrLevel: startLevel,
+            unlockedLevel: Math.max(s.unlockedLevel, startLevel) as Level,
+            cards,
+            startedAt: s.startedAt || now,
+            updatedAt: now,
+          }
+        }),
 
       gradeItem: (cardId, modality, correct, easy, now) => {
         const s = get()

@@ -37,6 +37,47 @@ describe('normalize', () => {
   it('collapses runs of whitespace', () => {
     expect(normalize('a   b\n c')).toBe('a b c')
   })
+
+  // Built from their codepoints on purpose, never pasted: U+2013/U+2014 and the
+  // curly quotes are visually identical to their ASCII cousins in most editors,
+  // and it is exactly these characters the shipped corpus contains.
+  const EM = String.fromCodePoint(0x2014) // em dash
+  const EN = String.fromCodePoint(0x2013) // en dash
+  const LDQ = String.fromCodePoint(0x201C) // left curly double quote
+  const RDQ = String.fromCodePoint(0x201D) // right curly double quote
+
+  it('strips the em dash the corpus actually contains (U+2014)', () => {
+    expect(normalize(`It's cold ${EM} wear a coat.`)).toBe('its cold wear a coat')
+    expect(normalize(`Danger ${EM} do not enter.`)).toBe('danger do not enter')
+  })
+
+  it('strips the en dash too (U+2013)', () => {
+    expect(normalize(`nine ${EN} ten`)).toBe('nine ten')
+  })
+
+  it('strips curly double quotes (U+201C/U+201D)', () => {
+    expect(normalize(`${LDQ}Thanks!${RDQ} ${EM} ${LDQ}No worries.${RDQ}`)).toBe('thanks no worries')
+  })
+
+  it('strips semicolons and colons', () => {
+    expect(normalize('He is my brother; she is my sister.')).toBe('he is my brother she is my sister')
+    expect(normalize('Past: worked')).toBe('past worked')
+  })
+
+  it('treats a slash as a separator, whatever the spacing', () => {
+    expect(normalize('He / She')).toBe('he she')
+    expect(normalize('he/she')).toBe('he she')
+    expect(normalize('CV / résumé')).toBe('cv résumé')
+  })
+
+  it('treats a standalone hyphen as the dash a learner types in its place', () => {
+    expect(normalize("It's cold - wear a coat.")).toBe('its cold wear a coat')
+  })
+
+  it('keeps hyphens inside words', () => {
+    expect(normalize('We signed a one-year tenancy.')).toBe('we signed a one-year tenancy')
+    expect(normalize('Plurals: add -s')).toBe('plurals add -s')
+  })
 })
 
 describe('stripTags', () => {
@@ -106,6 +147,34 @@ describe('looseMatch', () => {
 
   it('rejects an empty answer', () => {
     expect(looseMatch('   ', 'water')).toBe(false)
+  })
+
+  // The four cases below are the shipped corpus, character for character.
+  it('accepts a dictated sentence typed on a plain keyboard', () => {
+    const EM = String.fromCodePoint(0x2014)
+    const LDQ = String.fromCodePoint(0x201C)
+    const RDQ = String.fromCodePoint(0x201D)
+    const RSQ = String.fromCodePoint(0x2019)
+
+    // emergency_1
+    expect(looseMatch("Call 111 - it's an emergency.", `Call 111 ${EM} it${RSQ}s an emergency.`)).toBe(true)
+    expect(looseMatch("Call 111 it's an emergency", `Call 111 ${EM} it${RSQ}s an emergency.`)).toBe(true)
+    // smalltalk_6
+    expect(looseMatch('"Thanks!" - "No worries."', `${LDQ}Thanks!${RDQ} ${EM} ${LDQ}No worries.${RDQ}`)).toBe(true)
+    // kiwi_12
+    expect(looseMatch("It's a party - bring a plate.", `It${RSQ}s a party ${EM} bring a plate.`)).toBe(true)
+  })
+
+  it('accepts either spelling of a slashed answer', () => {
+    // people_14 / work_1
+    expect(looseMatch('he/she', 'He / She')).toBe(true)
+    expect(looseMatch('he she', 'He / She')).toBe(true)
+    expect(looseMatch('He / She', 'He / She')).toBe(true)
+    expect(looseMatch('cv/résumé', 'CV / résumé')).toBe(true)
+  })
+
+  it('still rejects the wrong words either side of a separator', () => {
+    expect(looseMatch('he/it', 'He / She')).toBe(false)
   })
 })
 

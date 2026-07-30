@@ -22,12 +22,33 @@ describe('Session', () => {
   it('advances through the queue and finishes', async () => {
     const onDone = vi.fn()
     render(<Session onDone={onDone} />)
-    for (let i = 0; i < 3; i++) {
-      const btn = screen.queryByRole('button', { name: /got it/i })
-      if (!btn) break
-      await userEvent.click(btn)
+    // newPerSession is 3 and nothing is studied, so the queue is 3 teaching
+    // items followed by buildQueue's recognition pass — a recall check over
+    // those same 3 cards (see src/core/queue.ts). The loop used to click
+    // "Got it" exactly 3 times and stop; it now walks whichever control the
+    // current item actually shows, so it reaches the end of the real queue.
+    for (let i = 0; i < 12 && onDone.mock.calls.length === 0; i++) {
+      const gotIt = screen.queryByRole('button', { name: /got it/i })
+      if (gotIt) { await userEvent.click(gotIt); continue }
+      const reveal = screen.queryByRole('button', { name: /show meaning/i })
+      if (reveal) { await userEvent.click(reveal); continue }
+      const knewIt = screen.queryByRole('button', { name: /knew it/i })
+      if (knewIt) { await userEvent.click(knewIt); continue }
+      break
     }
     expect(onDone).toHaveBeenCalled()
+  })
+
+  it('tests the cards it just taught instead of ending after the learns', async () => {
+    const onDone = vi.fn()
+    render(<Session onDone={onDone} />)
+    for (let i = 0; i < 3; i++) {
+      await userEvent.click(screen.getByRole('button', { name: /got it/i }))
+    }
+    // Before the recognition pass, three taps of "Got it" was the whole
+    // session and this called onDone.
+    expect(onDone).not.toHaveBeenCalled()
+    expect(screen.getByRole('button', { name: /show meaning/i })).toBeInTheDocument()
   })
 
   it('records progress in the store as she answers', async () => {

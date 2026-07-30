@@ -47,8 +47,11 @@ describe('buildQueue', () => {
       cards, states: {}, now: NOW, newPerSession: 2, cap: 20,
       canSpeak: false, cefrLevel: 1, levelOf: levelOf(cards),
     })
-    expect(q).toHaveLength(2)
-    expect(q.every(i => i.modality === 'learn')).toBe(true)
+    // Only two cards are *introduced*. The queue is longer than two items
+    // because the recognition pass below adds a recall check for each of them
+    // — but it never introduces a third card.
+    expect(q.filter(i => i.modality === 'learn')).toHaveLength(2)
+    expect(new Set(q.map(i => i.cardId))).toEqual(new Set(['a', 'b']))
   })
 
   it('prefers new cards at the learner current level', () => {
@@ -149,6 +152,127 @@ describe('buildQueue', () => {
     // ['recognize','listen','type','build','dictate'], so reps % 5 === 3 -> 'build'.
     const lastReviewAt = q.map(i => i.modality).lastIndexOf('build')
     expect(lastReviewAt).toBeGreaterThan(0)
+  })
+})
+
+describe('buildQueue — day one', () => {
+  // Nothing is seeded at A1 (Placement seeds only decks *below* startLevel, and
+  // nothing is below level 1), so there is no due pool and no backfill pool.
+  // Before the recognition pass this produced 8 items, all 'learn': eight taps
+  // of "Got it" and not one question.
+  const cards = Array.from({ length: 30 }, (_, i) => card('n' + i))
+  const dayOne = () => buildQueue({
+    cards, states: {}, now: NOW, newPerSession: 8, cap: 22,
+    canSpeak: false, cefrLevel: 1, levelOf: levelOf(cards),
+  })
+
+  it('is no longer a queue of nothing but learn items', () => {
+    const q = dayOne()
+    expect(q.every(i => i.modality === 'learn')).toBe(false)
+    expect(q.some(i => i.modality === 'learn')).toBe(true)
+    expect(q.some(i => i.modality === 'recognize')).toBe(true)
+  })
+
+  it('tests every new card it introduced, in the order it introduced them', () => {
+    const q = dayOne()
+    const learned = q.filter(i => i.modality === 'learn').map(i => i.cardId)
+    const recalled = q.filter(i => i.modality === 'recognize').map(i => i.cardId)
+    expect(learned).toHaveLength(8)
+    expect(recalled).toEqual(learned)
+  })
+
+  it('puts the recall check after the teaching, never before it', () => {
+    const q = dayOne()
+    for (const id of new Set(q.map(i => i.cardId))) {
+      const positions = q.map((it, idx) => (it.cardId === id ? idx : -1)).filter(i => i >= 0)
+      expect(q[positions[0]].modality).toBe('learn')
+    }
+  })
+
+  it('stays within the cap', () => {
+    const many = Array.from({ length: 40 }, (_, i) => card('m' + i))
+    const q = buildQueue({
+      cards: many, states: {}, now: NOW, newPerSession: 20, cap: 22,
+      canSpeak: false, cefrLevel: 1, levelOf: levelOf(many),
+    })
+    expect(q.length).toBeLessThanOrEqual(22)
+    expect(q).toHaveLength(22)
+    expect(dayOne().length).toBeLessThanOrEqual(22)
+  })
+
+  it('does not shadow a card the session already reviews in another modality', () => {
+    const cs = [card('n1'), card('r1')]
+    const q = buildQueue({
+      cards: cs, states: { r1: studied(NOW - 1, 5) }, now: NOW, newPerSession: 1,
+      cap: 20, canSpeak: false, cefrLevel: 1, levelOf: levelOf(cs),
+    })
+    expect(q.filter(i => i.cardId === 'r1')).toHaveLength(1)
+    expect(q.filter(i => i.cardId === 'n1').map(i => i.modality)).toEqual(['learn', 'recognize'])
+  })
+
+  it('adds nothing when the session is already full', () => {
+    const cs = Array.from({ length: 30 }, (_, i) => card('d' + i))
+    const states = Object.fromEntries(cs.map(c => [c.id, studied(NOW - 1)]))
+    const q = buildQueue({
+      cards: cs, states, now: NOW, newPerSession: 0, cap: 22,
+      canSpeak: false, cefrLevel: 1, levelOf: levelOf(cs),
+    })
+    expect(q).toHaveLength(22)
+    expect(q.some(i => i.modality === 'learn')).toBe(false)
+  })
+})
+
+describe('buildQueue — weak-skill bias', () => {
+  // 30 mature cards, each supporting all six modalities, ordered by due date so
+  // the queue is deterministic. reps cycles 1..6 so the unbiased rotation
+  // spreads evenly.
+  const cards = Array.from({ length: 30 }, (_, i) => card('c' + i))
+  const states = Object.fromEntries(cards.map((c, i) => [
+    c.id, { due: NOW - (30 - i) * 1000, interval: 5, ease: 2.5, reps: (i % 6) + 1, lapses: 0 },
+  ]))
+  const build = (bias?: 'speaking' | 'listening' | 'vocab' | 'grammar') => buildQueue({
+    cards, states, now: NOW, newPerSession: 0, cap: 22,
+    canSpeak: true, cefrLevel: 1, levelOf: levelOf(cards), bias,
+  })
+
+  it('is a nudge, not a takeover', () => {
+    const plain = build()
+    const biased = build('speaking')
+    expect(biased).toHaveLength(22)
+
+    const before = plain.filter(i => i.modality === 'speak').length
+    const after = biased.filter(i => i.modality === 'speak').length
+
+    // More than she would have got without the nudge...
+    expect(after).toBeGreaterThan(before)
+    // ...but never a session of nothing but the microphone. Before this fix
+    // this was 22 of 22.
+    expect(after).toBeLessThanOrEqual(Math.ceil(biased.length / 2))
+    // ...and the session is still a language lesson, not one drill.
+    expect(new Set(biased.map(i => i.modality)).size).toBeGreaterThanOrEqual(3)
+  })
+
+  it('touches at most one in three review items', () => {
+    for (const bias of ['speaking', 'listening', 'vocab', 'grammar'] as const) {
+      const plain = build()
+      const biased = build(bias)
+      const changed = biased.filter((it, i) => it.modality !== plain[i].modality).length
+      expect(changed).toBeLessThanOrEqual(Math.floor(biased.length / 3))
+      expect(new Set(biased.map(i => i.modality)).size).toBeGreaterThanOrEqual(3)
+    }
+  })
+
+  it('leaves the order and the cards themselves alone', () => {
+    expect(build('vocab').map(i => i.cardId)).toEqual(build().map(i => i.cardId))
+  })
+
+  it('never rewrites a teaching item', () => {
+    const mixed = [...cards.slice(0, 4), card('fresh')]
+    const q = buildQueue({
+      cards: mixed, states, now: NOW, newPerSession: 1, cap: 22,
+      canSpeak: true, cefrLevel: 1, levelOf: levelOf(mixed), bias: 'speaking',
+    })
+    expect(q.find(i => i.cardId === 'fresh')?.modality).toBe('learn')
   })
 })
 
