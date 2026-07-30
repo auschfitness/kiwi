@@ -152,4 +152,18 @@ describe('mergeSnapshots', () => {
     const later = snap({ updatedAt: 1000, doneToday: 4, doneDate: '2026-7-10' })
     expect(mergeSnapshots(older, later).doneDate).toBe('2026-7-10')
   })
+
+  it('resolves a total tie identically in both directions', () => {
+    const base = {
+      updatedAt: 1000, bestDay: 5, streak: 3, doneToday: 10,
+      doneDate: '2026-7-9', profileName: 'Ana',
+    } as const
+    const x = snap({ ...base, dailyGoal: 20, syncCode: 'AAA', accent: 'en-NZ' })
+    const y = snap({ ...base, dailyGoal: 99, syncCode: 'ZZZ', accent: 'en-AU' })
+    const xy = mergeSnapshots(x, y)
+    const yx = mergeSnapshots(y, x)
+    expect(xy.dailyGoal).toBe(yx.dailyGoal)
+    expect(xy.syncCode).toBe(yx.syncCode)
+    expect(xy.accent).toBe(yx.accent)
+  })
 })

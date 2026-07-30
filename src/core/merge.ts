@@ -31,6 +31,14 @@ function dayRank(key: string | null): number {
   return y * 10_000 + m * 100 + d
 }
 
+/** Stable string key over the scalar fields `preferred` selects between. */
+function scalarKey(s: AppState): string {
+  return JSON.stringify([
+    s.profileName, s.syncCode, s.dailyGoal, s.newPerSession,
+    s.accent, s.showPortuguese, s.autoPlayAudio, s.lastStudyDay,
+  ])
+}
+
 /**
  * Which snapshot's scalar fields win. Recency decides it in every real case;
  * the later comparisons exist so an exact `updatedAt` tie still resolves the
@@ -44,7 +52,11 @@ function preferred(local: AppState, remote: AppState): AppState {
   const remoteDay = dayRank(remote.doneDate)
   if (localDay !== remoteDay) return localDay > remoteDay ? local : remote
   if (local.doneToday !== remote.doneToday) return local.doneToday > remote.doneToday ? local : remote
-  return local.profileName <= remote.profileName ? local : remote
+  // Final fallback: a stable comparison over exactly the fields this choice
+  // drives, so a tie on every ranking signal above still resolves the same way
+  // whichever snapshot was passed first. If these keys are equal too, the two
+  // snapshots agree on all eight fields and either answer is the same answer.
+  return scalarKey(local) <= scalarKey(remote) ? local : remote
 }
 
 /** Deterministic, order-independent, never destructive. */
