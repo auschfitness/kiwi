@@ -3,7 +3,7 @@ import { useStore, cardIdsByLevel } from '../store/useStore'
 import { totalKnown, totalDue } from '../core/srs'
 import { levelProgress, LEVEL_NAMES, LEVEL_EMOJI, LEVEL_TITLES } from '../core/leveling'
 import { skillSummary, weakestSkill, levelBreakdown } from '../core/stats'
-import { Card, Chip, ScreenHeader } from '../components/ui'
+import { Card, Chip, Meter, ScreenHeader } from '../components/ui'
 
 export interface DashboardProps {
   onBack: () => void
@@ -17,10 +17,6 @@ const SKILL_TONE: Record<Skill, 'brand' | 'good' | 'gold' | 'hard'> = {
   vocab: 'brand', listening: 'good', grammar: 'gold', speaking: 'hard',
 }
 
-const TONE_BAR: Record<'brand' | 'good' | 'gold' | 'hard', string> = {
-  brand: 'bg-brand', good: 'bg-good', gold: 'bg-gold', hard: 'bg-hard',
-}
-
 const LEVELS: Level[] = [1, 2, 3, 4]
 
 /** One skill row. Practised skills show accuracy and a filled bar; an
@@ -30,21 +26,13 @@ const LEVELS: Level[] = [1, 2, 3, 4]
 function SkillRow({ skill, total, accuracy }: {
   skill: Skill; total: number; accuracy: number | null
 }) {
-  const tone = SKILL_TONE[skill]
-  const label = SKILL_LABELS[skill]
-  const pct = accuracy === null ? 0 : accuracy
-
   return (
-    <div>
-      <p className="mb-1 text-sm text-ink">
-        {accuracy === null
-          ? <>{label} — <span className="text-muted">not practised yet</span></>
-          : <>{label} — <span className="font-bold">{accuracy}% · {total} reviews</span></>}
-      </p>
-      <div className="h-2 w-full overflow-hidden rounded-full bg-card2">
-        <div className={`h-full rounded-full ${TONE_BAR[tone]}`} style={{ width: `${pct}%` }} />
-      </div>
-    </div>
+    <Meter
+      label={SKILL_LABELS[skill]}
+      tone={SKILL_TONE[skill]}
+      value={accuracy === null ? 0 : accuracy / 100}
+      valueText={accuracy === null ? 'not practised yet' : `${accuracy}% · ${total} reviews`}
+    />
   )
 }
 
@@ -76,21 +64,15 @@ export function Dashboard({ onBack }: DashboardProps) {
         {atTopLevel ? (
           <p className="text-sm font-bold text-ink">Top level — keep it sharp 🏔️</p>
         ) : (
-          <div>
-            {/* No numeric readout here: on a fresh profile this bar sits at
-             * 0 progress, and printing "0%" would trip the same rule that
-             * protects the skill rows below — a bar with no number is still
-             * honest, and the label already says what it's measuring. */}
-            <p className="mb-1 text-xs text-muted">
-              Progress toward {LEVEL_NAMES[(unlockedLevel + 1) as Level]}
-            </p>
-            <div className="h-2 w-full overflow-hidden rounded-full bg-card2">
-              <div
-                className="h-full rounded-full bg-brand"
-                style={{ width: `${Math.min(1, Math.max(0, progress)) * 100}%` }}
-              />
-            </div>
-          </div>
+          // valueText={null}: on a fresh profile this bar sits at 0 progress,
+          // and printing "0%" would trip the same rule that protects the
+          // skill rows below — a bar with no number is still honest, and the
+          // label already says what it's measuring.
+          <Meter
+            label={`Progress toward ${LEVEL_NAMES[(unlockedLevel + 1) as Level]}`}
+            value={progress}
+            valueText={null}
+          />
         )}
       </Card>
 
