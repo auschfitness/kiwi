@@ -9,9 +9,16 @@ type Result = 'pending' | 'right' | 'wrong'
 export function Type({ card, onAnswer }: ModalityProps) {
   const [value, setValue] = useState('')
   const [result, setResult] = useState<Result>('pending')
+  const [answered, setAnswered] = useState(false)
 
   const check = () => {
     setResult(looseMatch(value, card.en) ? 'right' : 'wrong')
+  }
+
+  function finish(correct: boolean) {
+    if (answered) return
+    setAnswered(true)
+    onAnswer(correct)
   }
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
@@ -53,7 +60,7 @@ export function Type({ card, onAnswer }: ModalityProps) {
               </p>
             )}
           </Card>
-          <Button variant="primary" onClick={() => onAnswer(result === 'right')}>
+          <Button variant="primary" onClick={() => finish(result === 'right')} disabled={answered}>
             Continue
           </Button>
         </>

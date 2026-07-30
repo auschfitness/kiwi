@@ -33,6 +33,15 @@ describe('Learn', () => {
     render(<Learn card={card} onAnswer={vi.fn()} />)
     expect(screen.queryByText('água')).not.toBeInTheDocument()
   })
+
+  it('reports the exposure only once when tapped twice', async () => {
+    const onAnswer = vi.fn()
+    render(<Learn card={card} onAnswer={onAnswer} />)
+    const btn = screen.getByRole('button', { name: /got it/i })
+    await userEvent.click(btn)
+    await userEvent.click(btn)
+    expect(onAnswer).toHaveBeenCalledTimes(1)
+  })
 })
 
 describe('Recognize', () => {
@@ -52,6 +61,16 @@ describe('Recognize', () => {
     await userEvent.click(screen.getByRole('button', { name: /show meaning/i }))
     await userEvent.click(screen.getByRole('button', { name: /didn't/i }))
     expect(onAnswer).toHaveBeenCalledWith(false)
+  })
+
+  it('does not record a second, contradictory grade', async () => {
+    const onAnswer = vi.fn()
+    render(<Recognize card={card} onAnswer={onAnswer} />)
+    await userEvent.click(screen.getByRole('button', { name: /show meaning/i }))
+    await userEvent.click(screen.getByRole('button', { name: /knew it/i }))
+    await userEvent.click(screen.getByRole('button', { name: /didn't/i }))
+    expect(onAnswer).toHaveBeenCalledTimes(1)
+    expect(onAnswer).toHaveBeenCalledWith(true)
   })
 })
 
@@ -86,5 +105,16 @@ describe('Type', () => {
     await userEvent.click(screen.getByRole('button', { name: /check/i }))
     await userEvent.click(screen.getByRole('button', { name: /continue/i }))
     expect(onAnswer).toHaveBeenCalledWith(false)
+  })
+
+  it('grades only once when Continue is double-tapped', async () => {
+    const onAnswer = vi.fn()
+    render(<Type card={card} onAnswer={onAnswer} />)
+    await userEvent.type(screen.getByRole('textbox'), 'water')
+    await userEvent.click(screen.getByRole('button', { name: /check/i }))
+    const cont = screen.getByRole('button', { name: /continue/i })
+    await userEvent.click(cont)
+    await userEvent.click(cont)
+    expect(onAnswer).toHaveBeenCalledTimes(1)
   })
 })

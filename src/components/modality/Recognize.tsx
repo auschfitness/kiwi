@@ -7,6 +7,13 @@ import type { ModalityProps } from './types'
 export function Recognize({ card, onAnswer }: ModalityProps) {
   const showPortuguese = useStore(s => s.showPortuguese)
   const [revealed, setRevealed] = useState(false)
+  const [answered, setAnswered] = useState(false)
+
+  function finish(correct: boolean) {
+    if (answered) return
+    setAnswered(true)
+    onAnswer(correct)
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -31,10 +38,10 @@ export function Recognize({ card, onAnswer }: ModalityProps) {
         </Button>
       ) : (
         <div className="flex gap-3">
-          <Button variant="again" onClick={() => onAnswer(false)}>
+          <Button variant="again" onClick={() => finish(false)} disabled={answered}>
             ❌ Didn't
           </Button>
-          <Button variant="good" onClick={() => onAnswer(true)}>
+          <Button variant="good" onClick={() => finish(true)} disabled={answered}>
             ✅ Knew it
           </Button>
         </div>

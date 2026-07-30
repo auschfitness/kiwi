@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Card, SpeakerButton, Button } from '../ui'
 import { useStore } from '../../store/useStore'
 import { stripTags } from '../../core/text'
@@ -9,11 +9,18 @@ export function Learn({ card, onAnswer }: ModalityProps) {
   const showPortuguese = useStore(s => s.showPortuguese)
   const autoPlayAudio = useStore(s => s.autoPlayAudio)
   const accent = useStore(s => s.accent)
+  const [answered, setAnswered] = useState(false)
 
   useEffect(() => {
     if (!autoPlayAudio) return
     speak(card.en, accent)
   }, [card.en, accent, autoPlayAudio])
+
+  function finish(correct: boolean) {
+    if (answered) return
+    setAnswered(true)
+    onAnswer(correct)
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -31,7 +38,7 @@ export function Learn({ card, onAnswer }: ModalityProps) {
         {showPortuguese && <p className="text-sm text-muted">{card.examplePt}</p>}
       </Card>
 
-      <Button variant="primary" onClick={() => onAnswer(true)}>
+      <Button variant="primary" onClick={() => finish(true)} disabled={answered}>
         Got it 👍
       </Button>
     </div>
