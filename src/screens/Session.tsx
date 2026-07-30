@@ -4,6 +4,7 @@ import { buildQueue, requeueWrong } from '../core/queue'
 import { cardById, decksForLevel, deckById, levelOfCard } from '../content'
 import { weakestSkill } from '../core/stats'
 import { useStore } from '../store/useStore'
+import { speechRecognitionAvailable } from '../audio/capabilities'
 import { Button, Meter } from '../components/ui'
 import { Learn } from '../components/modality/Learn'
 import { Recognize } from '../components/modality/Recognize'
@@ -11,6 +12,7 @@ import { Type } from '../components/modality/Type'
 import { Listen } from '../components/modality/Listen'
 import { Dictate } from '../components/modality/Dictate'
 import { Build } from '../components/modality/Build'
+import { Speak } from '../components/modality/Speak'
 
 export interface SessionProps {
   deckId?: string
@@ -38,9 +40,10 @@ export function Session({ deckId, onDone }: SessionProps) {
       now: Date.now(),
       newPerSession,
       cap: CAP,
-      // Speak arrives in Task 23 — the Speak component doesn't exist yet, so
-      // forcing this false keeps pickModality from ever choosing 'speak'.
-      canSpeak: false,
+      // True whenever the browser exposes SpeechRecognition (absent on iOS
+      // Safari). jsdom has none either, so this stays false in tests and the
+      // queue composition they assert on is unchanged.
+      canSpeak: speechRecognitionAvailable(),
       cefrLevel,
       levelOf: id => levelOfCard(id) ?? 1,
       bias: weakestSkill(skills) ?? undefined,
@@ -123,7 +126,6 @@ function renderModality(
     case 'build':
       return <Build key={key} card={card} onAnswer={onAnswer} />
     case 'speak':
-      // Not reachable while canSpeak is forced false above — Speak arrives in Task 23.
-      return null
+      return <Speak key={key} card={card} onAnswer={onAnswer} />
   }
 }

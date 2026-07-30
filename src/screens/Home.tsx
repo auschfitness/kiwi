@@ -145,6 +145,11 @@ export function Home({ onNavigate, onStudy }: HomeProps) {
             🗣️ Dialogues
           </Button>
         </div>
+        <div className="flex-1">
+          <Button variant="ghost" size="md" onClick={() => onNavigate('shadowing')}>
+            🐢 Shadowing
+          </Button>
+        </div>
       </div>
 
       <div className="flex flex-col gap-4">

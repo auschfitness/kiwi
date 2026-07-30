@@ -9,6 +9,7 @@ import { Home } from './screens/Home'
 import { Session } from './screens/Session'
 import { Dashboard } from './screens/Dashboard'
 import { ConjugationTable } from './screens/ConjugationTable'
+import { Shadowing } from './screens/Shadowing'
 
 export type Screen =
   | 'home' | 'name' | 'placement' | 'session' | 'dashboard'
@@ -76,7 +77,7 @@ export default function App() {
       case 'dialogues':
         return <ComingSoon title="Dialogues" onBack={goHome} />
       case 'shadowing':
-        return <ComingSoon title="Shadowing" onBack={goHome} />
+        return <Shadowing onBack={goHome} />
       case 'settings':
         return <ComingSoon title="Settings" onBack={goHome} />
       default:
