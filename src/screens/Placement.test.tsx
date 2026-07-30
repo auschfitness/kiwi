@@ -1,12 +1,22 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Placement } from './Placement'
 import { useStore } from '../store/useStore'
 import { createInitialState } from '../store/defaults'
 
+// buildPlacementTest shuffles with Fisher-Yates: j = floor(rand() * (i + 1)).
+// A value just under 1 makes j === i every time, so the shuffle is the identity
+// and the correct answer always lands at options[0]. answerAllWrong() clicks the
+// LAST option, which is therefore always a distractor — deterministically wrong.
+// With real Math.random this test failed about 1 run in 93.
 beforeEach(() => {
+  vi.spyOn(Math, 'random').mockReturnValue(0.999999)
   useStore.setState({ ...createInitialState(Date.now()), unlocked: null })
+})
+
+afterEach(() => {
+  vi.restoreAllMocks()
 })
 
 async function answerAllWrong() {
