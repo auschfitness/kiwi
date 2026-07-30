@@ -53,13 +53,22 @@ describe('store', () => {
     expect(s.cards.survival_0.reps).toBe(1)
   })
 
-  it('unlocks the next level once the current one is 80 percent solid', () => {
+  it('unlocks the next level when the graded card is the one that crosses 80 percent', () => {
     const ids = cardIdsByLevel[1]
-    const cards = Object.fromEntries(
-      ids.slice(0, Math.ceil(ids.length * 0.8)).map(id => [id, { due: NOW, interval: 1, ease: 2.5, reps: 2, lapses: 0 }]),
-    )
-    useStore.setState({ cards, unlockedLevel: 1 })
+    const need = Math.ceil(ids.length * 0.8)
+    const solid = ids.slice(1, need) // need - 1 cards already solid
+    const cards = Object.fromEntries([
+      ...solid.map(id => [id, { due: NOW, interval: 1, ease: 2.5, reps: 2, lapses: 0 }]),
+      // the card we are about to grade is one rep short of counting
+      [ids[0], { due: NOW, interval: 1, ease: 2.5, reps: 1, lapses: 0 }],
+    ])
+    useStore.setState({ cards, unlockedLevel: 1, unlocked: null })
+
+    // Not yet: only need - 1 cards are solid.
+    expect(useStore.getState().unlockedLevel).toBe(1)
+
     useStore.getState().gradeItem(ids[0], 'recognize', true, false, NOW)
+
     expect(useStore.getState().unlockedLevel).toBe(2)
     expect(useStore.getState().unlocked).toBe(2)
     useStore.getState().clearUnlockToast()
