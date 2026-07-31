@@ -3,6 +3,7 @@ import type { Accent } from '../types'
 import { Button, Card, Chip, Meter, ScreenHeader, SpeakerButton } from '../components/ui'
 import { useStore } from '../store/useStore'
 import { pickVoice, speak } from '../audio/speak'
+import { accentName, isKiwiVoice } from '../audio/accents'
 import { speechSynthesisAvailable } from '../audio/capabilities'
 import { MINIMAL_PAIRS, PAIR_GROUPS } from '../content'
 import type { MinimalPair } from '../content'
@@ -39,13 +40,6 @@ const QUIZZABLE = quizzablePairs(MINIMAL_PAIRS)
  * the note, which is text and sounds the same on every device.
  * ------------------------------------------------------------------------- */
 
-const VOICE_NAMES: Record<string, string> = {
-  'en-nz': 'New Zealand',
-  'en-au': 'Australian',
-  'en-gb': 'British',
-  'en-us': 'American',
-}
-
 /** The language tag of the voice `speak()` will pick, once the list has loaded. */
 function useVoiceLang(accent: Accent): string | null {
   const [lang, setLang] = useState<string | null>(null)
@@ -69,9 +63,8 @@ function useVoiceLang(accent: Accent): string | null {
 
 function VoiceNote({ accent }: { accent: Accent }) {
   const lang = useVoiceLang(accent)
-  const key = lang?.toLowerCase() ?? ''
-  const kiwi = key === 'en-nz'
-  const name = VOICE_NAMES[key]
+  const kiwi = isKiwiVoice(lang)
+  const name = accentName(lang)
 
   let line: string
   if (kiwi) {

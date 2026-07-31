@@ -46,11 +46,25 @@ export function bestSimilarity(heard: string, turn: RoleplayTurn): number {
 }
 
 /**
+ * True when `needle` appears inside `haystack` as whole words.
+ *
+ * Raw substring containment was too generous in one direction that matters:
+ * the supermarket scene accepts the single word `no`, and "I know" contains
+ * the letters n-o, so a completely different sentence sailed through. Both
+ * sides are already normalised to space-separated words, so padding the pair
+ * with spaces is all a word boundary needs to be.
+ */
+function containsPhrase(haystack: string, needle: string): boolean {
+  if (needle.length === 0) return false
+  return ` ${haystack} `.includes(` ${needle} `)
+}
+
+/**
  * True when she said the line. Generous by design — three ways in:
  *
  *  1. an exact match against the script or any `accept` variant,
- *  2. *containment*, so padding either side ("um, a flat white please mate")
- *     still counts,
+ *  2. whole-word *containment*, so padding either side ("um, a flat white
+ *     please mate") still counts,
  *  3. a fuzzy near-miss at or above MATCH_THRESHOLD, which covers the small
  *     mishearings the browser's recogniser makes on a Brazilian accent.
  *
@@ -65,7 +79,7 @@ export function matchesExpected(heard: string, turn: RoleplayTurn): boolean {
   for (const candidate of candidatesFor(turn)) {
     for (const c of forms(candidate)) {
       for (const h of heardForms) {
-        if (h === c || h.includes(c)) return true
+        if (h === c || containsPhrase(h, c)) return true
       }
     }
   }

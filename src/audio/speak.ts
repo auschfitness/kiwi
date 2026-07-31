@@ -5,8 +5,24 @@ const FALLBACKS: Accent[] = ['en-NZ', 'en-AU', 'en-GB', 'en-US']
 
 const MIN_RATE = 0.5
 const MAX_RATE = 1.2
+/** Today's speed, and the answer whenever the rate on hand is not a number. */
+const DEFAULT_RATE = 0.95
 
+/**
+ * A usable rate, whatever arrives.
+ *
+ * The type says `number`, and at every call site it is one — but the value
+ * behind it has travelled through localStorage and, once cloud sync is wired,
+ * through a JSON snapshot written by an older build that had no `speechRate`
+ * at all. `undefined` there makes `Math.max` return NaN, and
+ * `SpeechSynthesisUtterance.rate` is a WebIDL *restricted* float: assigning
+ * NaN throws a TypeError. That throw would come out of an effect and an
+ * onClick with no error boundary above either, and every sound in the app
+ * would stop. `src/core/reminder.ts` already parses rather than trusts the
+ * same class of value for exactly this reason.
+ */
 function clampRate(rate: number): number {
+  if (!Number.isFinite(rate)) return DEFAULT_RATE
   return Math.min(MAX_RATE, Math.max(MIN_RATE, rate))
 }
 
@@ -15,7 +31,7 @@ function clampRate(rate: number): number {
 // a cycle). App.tsx keeps this in sync with her `speechRate` preference via
 // an effect. Clamped so a corrupt persisted value can never make speech too
 // fast to follow or too slow to be speech at all.
-let defaultRate = 0.95
+let defaultRate = DEFAULT_RATE
 
 /** Sets the rate every future `speak()` call uses when it isn't given one explicitly. */
 export function setDefaultRate(rate: number): void {

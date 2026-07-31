@@ -38,7 +38,9 @@ function SkillRow({ skill, total, accuracy }: {
       label={SKILL_LABELS[skill]}
       tone={SKILL_TONE[skill]}
       value={accuracy === null ? 0 : accuracy / 100}
-      valueText={accuracy === null ? 'not practised yet' : `${accuracy}% · ${total} reviews`}
+      // "reps", not "reviews": drills and role-play feed these same counters
+      // and neither of them is a card review.
+      valueText={accuracy === null ? 'not practised yet' : `${accuracy}% · ${total} reps`}
     />
   )
 }

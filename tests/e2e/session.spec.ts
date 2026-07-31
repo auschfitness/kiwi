@@ -104,7 +104,9 @@ test('dashboard reflects what she practised', async ({ page }) => {
   })
   await page.reload()
   await page.getByRole('button', { name: /progress/i }).click()
-  await expect(page.getByText(/30% · 10 reviews/)).toBeVisible()
+  // "reps", not "reviews": drills and role-play feed these same skill
+  // counters, and neither of them is a card review.
+  await expect(page.getByText(/30% · 10 reps/)).toBeVisible()
   await expect(page.getByText(/listening could use some love/i)).toBeVisible()
 
   // The brief's original assertion here was getByText(/speaking — not

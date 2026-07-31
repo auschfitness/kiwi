@@ -21,7 +21,8 @@ export interface RoleplayProps {
  *  - **A microphone that hears nothing never grades her.** `recognizeOnce`
  *    resolves '' on error, silence, timeout or a missing API. That is
  *    "didn't catch that", never "wrong" — so a line where the mic produced no
- *    words at all is skipped past without a failure being recorded.
+ *    words at all is skipped past without a failure being recorded, and a run
+ *    where it never produced words at all ends without a score.
  *  - **There is never a dead end.** After MAX_TRIES she gets the English, a
  *    chance to hear it, and a way onward. She can always reach the end of the
  *    conversation, which is the only thing that makes it a conversation.
@@ -120,6 +121,13 @@ function Play({
   const recordedRef = useRef<Set<number>>(new Set())
   // Whether the microphone produced *any* words on this line, across tries.
   const heardWordsRef = useRef(false)
+  // The same question asked of the whole run, and never reset between lines.
+  // `speechRecognitionAvailable()` only says the API exists; Chrome's Web
+  // Speech API needs the network, so offline — on a plane, on a bus, the exact
+  // places this app is for — every call resolves '' and she reaches the end
+  // card having been heard exactly never. Grading that run prints "You nailed
+  // 0 of 5 lines", which is a score for her browser, not for her.
+  const heardAnythingRef = useRef(false)
 
   const turn: RoleplayTurn | undefined = turns[cursor]
   const done = cursor >= turns.length
@@ -167,7 +175,10 @@ function Play({
 
     setListening(false)
     busyRef.current = false
-    if (!heardNothing(heard)) heardWordsRef.current = true
+    if (!heardNothing(heard)) {
+      heardWordsRef.current = true
+      heardAnythingRef.current = true
+    }
 
     if (matchesExpected(heard, turn)) {
       recordOnce(index, true)
@@ -259,7 +270,10 @@ function Play({
         <EndCard
           nailed={nailed}
           total={total}
-          graded={canListen}
+          // A microphone that never returned a single word did not test her,
+          // so the run is not scored — the same rule the per-line grading
+          // above already follows, applied to the number on the end card.
+          graded={canListen && heardAnythingRef.current}
           onReplay={onReplay}
           onBack={onBack}
         />

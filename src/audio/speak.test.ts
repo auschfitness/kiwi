@@ -103,4 +103,37 @@ describe('speak rate', () => {
     speak('hello', 'en-NZ', { rate: 10 })
     expect(utterances[0].rate).toBe(1.2)
   })
+
+  /**
+   * A rate that is not a number at all.
+   *
+   * `loadProgress` casts network JSON straight to `AppState`; a snapshot from
+   * a build that predates `speechRate` merges as `undefined`, and App.tsx
+   * hands that to `setDefaultRate`. `Math.max(0.5, undefined)` is NaN, and
+   * `SpeechSynthesisUtterance.rate` is a WebIDL *restricted* float — assigning
+   * NaN throws a TypeError out of an effect and an onClick with no error
+   * boundary above them, and every sound in the app stops.
+   */
+  const NOT_A_RATE: number[] = [
+    undefined as unknown as number,
+    null as unknown as number,
+    NaN,
+    Infinity,
+    -Infinity,
+    'fast' as unknown as number,
+  ]
+
+  for (const bad of NOT_A_RATE) {
+    it(`falls back to 0.95 rather than NaN for a default rate of ${String(bad)}`, () => {
+      setDefaultRate(bad)
+      expect(() => speak('hello', 'en-NZ')).not.toThrow()
+      expect(utterances[0].rate).toBe(0.95)
+      expect(Number.isFinite(utterances[0].rate)).toBe(true)
+    })
+
+    it(`falls back to 0.95 for an explicit rate of ${String(bad)}`, () => {
+      expect(() => speak('hello', 'en-NZ', { rate: bad })).not.toThrow()
+      expect(utterances[0].rate).toBe(0.95)
+    })
+  }
 })

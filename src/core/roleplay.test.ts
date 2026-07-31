@@ -60,6 +60,29 @@ describe('matchesExpected', () => {
     expect(heardNothing('no')).toBe(false)
   })
 
+  it('matches a short accept variant on whole words, not on letters', () => {
+    // The supermarket scene accepts the single word `no`. Raw substring
+    // containment made "I know" — a completely different sentence, and one a
+    // recogniser produces easily — sail straight through.
+    const noCard: RoleplayTurn = {
+      speaker: 'you', en: "No, I don't.", pt: 'Diga que não tem.',
+      accept: ['no', 'not yet', "no I haven't got one", 'no sorry'],
+    }
+    expect(matchesExpected('I know', noCard)).toBe(false)
+    expect(matchesExpected('nobody', noCard)).toBe(false)
+    expect(matchesExpected('a piano', noCard)).toBe(false)
+
+    // Still err toward passing her: the word itself, and the word with the
+    // padding a real answer comes wrapped in, both count.
+    expect(matchesExpected('no', noCard)).toBe(true)
+    expect(matchesExpected('um, no sorry mate', noCard)).toBe(true)
+    expect(matchesExpected("no I don't", noCard)).toBe(true)
+  })
+
+  it('still takes a whole scripted line buried in padding', () => {
+    expect(matchesExpected('sorry — can I have a flat white, please? cheers', coffee)).toBe(true)
+  })
+
   it('works on a turn with no accept list at all', () => {
     const bare: RoleplayTurn = { speaker: 'you', en: 'Card, please.', pt: 'Cartão.' }
     expect(candidatesFor(bare)).toEqual(['Card, please.'])

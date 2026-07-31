@@ -149,13 +149,28 @@ describe('time drill', () => {
     expect(checkDrillAnswer('3:30', item)).toBe(false)
   })
 
+  // Was `toHaveLength(2)`. Every generated item now also takes the words it
+  // was said in (see "writing down what she heard"), so the length is 2 or 3.
+  // The assertion that matters — both digit readings, in that order, and
+  // nothing else numeric — is spelled out instead of implied by a count.
   it('gives every item a 12-hour and a 24-hour answer', () => {
     for (const item of many('time')) {
-      expect(item.accept).toHaveLength(2)
       expect(item.accept[0]).toMatch(/^\d{1,2}:\d{2}$/)
       expect(item.accept[1]).toMatch(/^\d{2}:\d{2}$/)
+      expect(item.accept.filter(a => /\d/.test(a))).toHaveLength(2)
       expect(item.display).toBe('__:__')
     }
+  })
+
+  it('says midnight as "twelve", never "zero"', () => {
+    // 00:05 read out as "zero oh five" is a sentence no Kiwi will ever say.
+    const items = many('time', 400)
+    for (const item of items) expect(item.spoken).not.toMatch(/\bzero\b/)
+
+    const analogue = /past|\bto\b|o'clock/
+    const midnight24 = items.filter(i => i.accept[1].startsWith('00:') && !analogue.test(i.spoken))
+    expect(midnight24.length).toBeGreaterThan(0)
+    for (const item of midnight24) expect(item.spoken).toMatch(/^twelve /)
   })
 })
 
@@ -230,6 +245,59 @@ describe('quantity drill', () => {
     }
     expect(checkDrillAnswer('7', item)).toBe(false)
     expect(checkDrillAnswer('a week', item)).toBe(false)
+  })
+
+  it('says what shape of answer it wants, before she answers', () => {
+    // Every other kind shows "$____", "__:__", "___ ___ ____". An amount had
+    // nothing, so the only instruction on screen was "write what you heard" —
+    // which is exactly what got marked wrong.
+    for (const item of many('quantity')) expect(item.display).toBe('how many?')
+  })
+})
+
+describe('writing down exactly what she heard', () => {
+  /**
+   * The bug this covers, in full: she hears "a fortnight", types "a fortnight",
+   * and is told `Not quite. It was 14` — with `recordListeningPractice(false)`
+   * fired against a rep she heard perfectly. Nine of the eleven amounts did
+   * this, and so did every other generated kind.
+   *
+   * 400 items per kind with a pinned seed walks the whole space several times
+   * over; the count assertion below proves the quantity table is covered
+   * end to end rather than by luck.
+   */
+  for (const kind of GENERATED_KINDS) {
+    it(`never rejects the words a ${kind} item was said in`, () => {
+      for (const item of many(kind, 400)) {
+        expect(checkDrillAnswer(item.spoken, item)).toBe(true)
+      }
+    })
+  }
+
+  it('covers every amount in the table, not just the ones that got lucky', () => {
+    const items = many('quantity', 400)
+    // Eleven distinct amounts are authored; a seeded run of 400 hits them all.
+    expect(new Set(items.map(i => i.spoken)).size).toBe(11)
+    for (const item of items) expect(checkDrillAnswer(item.spoken, item)).toBe(true)
+  })
+
+  it('spelling already took its own letters, and still does', () => {
+    const rand = seeded(11)
+    for (let i = 0; i < 60; i++) {
+      const item = generateSpellingItem(WORDS, rand)
+      expect(checkDrillAnswer(item.spoken, item)).toBe(true)
+    }
+  })
+
+  it('is the only thing it widens — a wrong answer is still wrong', () => {
+    const rand = seeded(23)
+    for (let i = 0; i < 60; i++) {
+      const item = generateDrill('quantity', rand)
+      expect(checkDrillAnswer('a wheelbarrow', item)).toBe(false)
+    }
+    // And the canonical answer is still the one shown on a miss.
+    expect(generateDrill('number', seeded(4)).accept[0]).toMatch(/^\d+$/)
+    expect(generateDrill('price', seeded(4)).accept[0]).toMatch(/^\d{1,2}\.\d{2}$/)
   })
 })
 

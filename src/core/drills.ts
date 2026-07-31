@@ -213,8 +213,12 @@ function timeDrill(rand: () => number): DrillItem {
   const minute = pick(twentyFour ? MINUTES_24 : MINUTES_ANALOGUE, rand)
   const hour24 = pm ? (hour12 % 12) + 12 : hour12 % 12
 
+  // Midnight is said "twelve oh five", never "zero oh five" — nobody says that,
+  // and hearing it would teach her a sentence no Kiwi will ever say to her.
+  // Both readings are accepted below, so 12:05 and 00:05 are still both right.
+  const spokenHour = hour24 === 0 ? 12 : hour24
   const spoken = twentyFour
-    ? `${numberToWords(hour24)} ${minute < 10 ? `oh ${numberToWords(minute)}` : numberToWords(minute)}`
+    ? `${numberToWords(spokenHour)} ${minute < 10 ? `oh ${numberToWords(minute)}` : numberToWords(minute)}`
     : analogueTime(hour12, minute)
 
   // Both readings are accepted whichever way it was said: "half past two" never
@@ -296,7 +300,32 @@ const QUANTITIES: ReadonlyArray<{ spoken: string; accept: string[] }> = [
 
 function quantityDrill(rand: () => number): DrillItem {
   const q = pick(QUANTITIES, rand)
-  return { kind: 'quantity', spoken: q.spoken, accept: [...q.accept] }
+  // Unlike every other kind, an amount has no obvious written shape — there is
+  // no "$____" or "__:__" to look at — so say what is being asked for. Without
+  // it the screen's "write what you heard" is the only instruction she has,
+  // and it is the wrong one.
+  return { kind: 'quantity', spoken: q.spoken, display: 'how many?', accept: [...q.accept] }
+}
+
+/**
+ * Writing down exactly what she heard is never wrong.
+ *
+ * Every generator here converts speech into some other written shape — words
+ * to digits, "half past two" to 2:30 — and each of them used to reject its own
+ * spoken text. The screen says "Listen, then write what you heard", so a
+ * learner who hears "a fortnight" and types "a fortnight" heard it perfectly
+ * and was told `Not quite`, with a listening failure recorded against her.
+ * That is a mark for guessing the format, not for listening.
+ *
+ * Applied centrally rather than in each generator so a kind added later cannot
+ * quietly reopen the hole. It only ever widens what is accepted, and only for
+ * the one string the item itself just said out loud; `checkDrillAnswer` is the
+ * dedupe, so items that already took their spoken form are left untouched.
+ */
+function acceptItsOwnWords(item: DrillItem): DrillItem {
+  const spoken = item.spoken.trim()
+  if (!spoken || checkDrillAnswer(spoken, item)) return item
+  return { ...item, accept: [...item.accept, spoken] }
 }
 
 const GENERATORS: Record<GeneratedKind, (rand: () => number) => DrillItem> = {
@@ -309,7 +338,7 @@ const GENERATORS: Record<GeneratedKind, (rand: () => number) => DrillItem> = {
 }
 
 export function generateDrill(kind: GeneratedKind, rand: () => number): DrillItem {
-  return GENERATORS[kind](rand)
+  return acceptItsOwnWords(GENERATORS[kind](rand))
 }
 
 // ---------------------------------------------------------------------------
@@ -366,12 +395,12 @@ export function generateSpellingItem(words: string[], rand: () => number): Drill
   }
   const word = pool.length > 0 ? pick(pool, rand) : 'Auckland'
   const letters = word.replace(/\s+/g, '')
-  return {
+  return acceptItsOwnWords({
     kind: 'spelling',
     spoken: spellOut(word),
     display: `${letters.length} letters`,
     accept: [word],
-  }
+  })
 }
 
 // ---------------------------------------------------------------------------

@@ -24,7 +24,9 @@ describe('Dashboard', () => {
   it('reports accuracy for a practised skill', () => {
     useStore.setState({ skills: { ...useStore.getState().skills, listening: { correct: 41, total: 50 } } })
     render(<Dashboard onBack={vi.fn()} onRetakePlacement={vi.fn()} />)
-    expect(screen.getByText(/82% · 50 reviews/)).toBeInTheDocument()
+    // "reps", not "reviews" — drills and role-play feed these counters too.
+    expect(screen.getByText(/82% · 50 reps/)).toBeInTheDocument()
+    expect(screen.queryByText(/reviews/)).not.toBeInTheDocument()
   })
 
   it('nudges the weakest practised skill only', () => {

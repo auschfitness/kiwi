@@ -171,6 +171,46 @@ describe('Role-play when she gets it wrong', () => {
     expect(speaking()).toEqual({ correct: 0, total: 0 })
   })
 
+  it('does not score a whole run the microphone never heard a word of', async () => {
+    // Not exotic: Chrome's Web Speech API needs the network, and this is an
+    // app for a plane and a bus. Offline, every `recognizeOnce` resolves ''
+    // and she reaches the end card having been heard exactly never. The old
+    // end card printed "You nailed 0 of 5 lines" — a mark for her browser.
+    listen.mockResolvedValue('')
+    await openCafe()
+
+    const mine = youTurnCount(CAFE.turns)
+    for (let i = 0; i < mine; i++) {
+      // Two "didn't catch that", then the reveal, then onward. Every line.
+      await userEvent.click(await screen.findByTestId('roleplay-say'))
+      await userEvent.click(await screen.findByTestId('roleplay-say'))
+      await userEvent.click(await screen.findByRole('button', { name: /carry on/i }))
+    }
+
+    const score = await screen.findByTestId('roleplay-score')
+    expect(score).not.toHaveTextContent(/nailed/i)
+    expect(score).toHaveTextContent(`all ${mine} of your lines`)
+    expect(speaking()).toEqual({ correct: 0, total: 0 })
+  })
+
+  it('still scores the run when the microphone heard her even once', async () => {
+    // The guard is about a dead microphone, not about a bad day: one line
+    // heard is enough to make the number mean something, and she keeps it.
+    const first = CAFE.turns.find(t => t.speaker === 'you')!.en
+    listen.mockResolvedValueOnce(first).mockResolvedValue('')
+    await openCafe()
+
+    const mine = youTurnCount(CAFE.turns)
+    await userEvent.click(await screen.findByTestId('roleplay-say'))
+    for (let i = 1; i < mine; i++) {
+      await userEvent.click(await screen.findByTestId('roleplay-say'))
+      await userEvent.click(await screen.findByTestId('roleplay-say'))
+      await userEvent.click(await screen.findByRole('button', { name: /carry on/i }))
+    }
+
+    expect(await screen.findByTestId('roleplay-score')).toHaveTextContent(`You nailed 1 of ${mine} lines`)
+  })
+
   it('shows the line with fresh state on the next turn, not the last one revealed', async () => {
     listen.mockResolvedValueOnce('where is the train station')
       .mockResolvedValueOnce('where is the train station')

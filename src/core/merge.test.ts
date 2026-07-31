@@ -190,3 +190,65 @@ describe('mergeSnapshots', () => {
     expect(xy.accent).toBe(yx.accent)
   })
 })
+
+/**
+ * `loadProgress` casts the JSON that comes back off the network straight to
+ * `AppState` — no shape check anywhere. A snapshot written by an older build
+ * is genuinely missing the fields that build did not have, and if it wins on
+ * `updatedAt` those `undefined`s go into `replaceState` and out to
+ * `setDefaultRate(undefined)` and `shouldNudge`. `speechRate: undefined` is
+ * the sharp one: it made every `speak()` in the app throw a TypeError.
+ *
+ * The cast is what makes these tests possible and is exactly the situation
+ * being defended against — the type says these fields are always there, and
+ * for anything the app itself wrote they are.
+ */
+function preToday(over: Partial<AppState> = {}): AppState {
+  const { speechRate: _rate, reminderEnabled: _on, reminderTime: _at, ...older } = snap(over)
+  return older as AppState
+}
+
+describe('mergeSnapshots with a snapshot from an older build', () => {
+  it('never hands back an undefined speech rate, reminder flag or reminder time', () => {
+    // The remote snapshot is newer, so it wins every scalar — including three
+    // fields it does not have.
+    const local = snap({ updatedAt: T, speechRate: 0.75, reminderEnabled: true, reminderTime: '07:30' })
+    const remote = preToday({ updatedAt: T + DAY })
+
+    const merged = mergeSnapshots(local, remote)
+
+    // Her local values survive rather than being overwritten with nothing.
+    expect(merged.speechRate).toBe(0.75)
+    expect(merged.reminderEnabled).toBe(true)
+    expect(merged.reminderTime).toBe('07:30')
+  })
+
+  it('falls back to the defaults when neither side has them', () => {
+    const merged = mergeSnapshots(preToday({ updatedAt: T }), preToday({ updatedAt: T + DAY }))
+    expect(merged.speechRate).toBe(0.95)
+    expect(merged.reminderEnabled).toBe(false)
+    expect(merged.reminderTime).toBe('19:00')
+  })
+
+  it('produces a rate speak() can actually use', () => {
+    const merged = mergeSnapshots(snap({ updatedAt: T }), preToday({ updatedAt: T + DAY }))
+    expect(Number.isFinite(merged.speechRate)).toBe(true)
+    expect(Number.isFinite(Math.min(1.2, Math.max(0.5, merged.speechRate)))).toBe(true)
+  })
+
+  it('still lets a newer snapshot that does have them win', () => {
+    const local = snap({ updatedAt: T, speechRate: 0.75, reminderEnabled: false, reminderTime: '07:30' })
+    const remote = snap({ updatedAt: T + DAY, speechRate: 1.1, reminderEnabled: true, reminderTime: '21:15' })
+    const merged = mergeSnapshots(local, remote)
+    expect(merged.speechRate).toBe(1.1)
+    expect(merged.reminderEnabled).toBe(true)
+    expect(merged.reminderTime).toBe('21:15')
+  })
+
+  it('stays order-independent when a field is missing on one side', () => {
+    const local = snap({ updatedAt: T + DAY, speechRate: 0.75 })
+    const remote = preToday({ updatedAt: T + DAY })
+    expect(mergeSnapshots(local, remote).speechRate)
+      .toBe(mergeSnapshots(remote, local).speechRate)
+  })
+})

@@ -32,7 +32,7 @@ export default defineConfig({
         // exactly as it was. See the long note at the top of
         // public/push-sw.js for why this rather than `injectManifest`.
         importScripts: ['push-sw.js'],
-        // Note what is *not* here: webp. The 150 card photographs in
+        // Note what is *not* here: webp. The 148 card photographs in
         // public/photos are deliberately left out of the precache.
         //
         // The promise of this app is that she can study on a plane. Precaching

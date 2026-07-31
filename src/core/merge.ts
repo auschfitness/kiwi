@@ -32,6 +32,50 @@ function dayRank(key: string | null): number {
 }
 
 /**
+ * What a snapshot that predates a field should be read as.
+ *
+ * `loadProgress` casts the JSON that comes back off the network straight to
+ * `AppState` without checking its shape, so a snapshot written by an older
+ * build is missing whichever fields that build did not have. If it wins on
+ * `updatedAt`, `newer.speechRate` is `undefined` and the merged state carries
+ * that `undefined` all the way to `setDefaultRate` and `shouldNudge`. The
+ * store's own `migrate` fills these in for a *local* save; nothing was doing
+ * it for a remote one.
+ *
+ * These three are the fields added after the first release, and they must
+ * agree with `createInitialState` in `src/store/defaults.ts` — repeated rather
+ * than imported because `src/core/` stays free of store imports.
+ */
+const FIELD_DEFAULTS: Pick<AppState, 'speechRate' | 'reminderEnabled' | 'reminderTime'> = {
+  speechRate: 0.95,
+  reminderEnabled: false,
+  reminderTime: '19:00',
+}
+
+/**
+ * The winner's value for `key`, falling back to the *other* snapshot's and
+ * then to the default when the winning snapshot simply does not have it.
+ *
+ * Falling back to the other side rather than to "the local one" specifically
+ * is what keeps this function order-independent, which is the promise
+ * `mergeSnapshots` makes in its own docstring. In the case this exists for —
+ * a newer remote snapshot from an older build — the other side *is* her local
+ * state, so she keeps the setting she chose.
+ *
+ * Reading through `Partial<AppState>` is the point: the declared type promises
+ * these are always present, and for anything the app itself wrote they are.
+ * This function exists for the snapshots the app did not write.
+ */
+function scalar<K extends keyof AppState>(
+  key: K, newer: AppState, other: AppState, fallback: AppState[K],
+): AppState[K] {
+  const fromNewer = (newer as Partial<AppState>)[key]
+  if (fromNewer !== undefined) return fromNewer
+  const fromOther = (other as Partial<AppState>)[key]
+  return fromOther !== undefined ? fromOther : fallback
+}
+
+/**
  * Stable string key over the scalar fields `preferred` selects between.
  *
  * This list must stay in step with every `newer.*` read in `mergeSnapshots`
@@ -40,6 +84,10 @@ function dayRank(key: string | null): number {
  * in that field would compare equal here, and `<=` would then hand back
  * whichever one happened to be passed first, quietly reintroducing the
  * order-dependence this function exists to remove.
+ *
+ * The three fields `scalar()` coalesces stay in this list: the winner still
+ * decides them whenever it actually has them, so they are still fields
+ * `preferred` selects between.
  */
 function scalarKey(s: AppState): string {
   return JSON.stringify([
@@ -72,6 +120,8 @@ function preferred(local: AppState, remote: AppState): AppState {
 /** Deterministic, order-independent, never destructive. */
 export function mergeSnapshots(local: AppState, remote: AppState): AppState {
   const newer = preferred(local, remote)
+  /** The snapshot that lost, and the stand-in for anything the winner lacks. */
+  const older = newer === local ? remote : local
 
   const cards: Record<string, CardState> = {}
   for (const id of new Set([...Object.keys(local.cards), ...Object.keys(remote.cards)])) {
@@ -98,9 +148,11 @@ export function mergeSnapshots(local: AppState, remote: AppState): AppState {
     accent: newer.accent,
     showPortuguese: newer.showPortuguese,
     autoPlayAudio: newer.autoPlayAudio,
-    speechRate: newer.speechRate,
-    reminderEnabled: newer.reminderEnabled,
-    reminderTime: newer.reminderTime,
+    // Coalesced, not read straight off the winner: these three postdate the
+    // first release, so a snapshot from an older build has none of them.
+    speechRate: scalar('speechRate', newer, older, FIELD_DEFAULTS.speechRate),
+    reminderEnabled: scalar('reminderEnabled', newer, older, FIELD_DEFAULTS.reminderEnabled),
+    reminderTime: scalar('reminderTime', newer, older, FIELD_DEFAULTS.reminderTime),
     streak: Math.max(local.streak, remote.streak),
     lastStudyDay: newer.lastStudyDay,
     doneToday: dayOwner.doneToday,
