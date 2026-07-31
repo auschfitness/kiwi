@@ -28,6 +28,36 @@ const SPEECH_RATES: { value: number; label: string }[] = [
   { value: 1.1, label: 'Faster' },
 ]
 
+/**
+ * Honest about the platform, never about her.
+ *
+ * Web push on iPhone needs the app installed to the Home Screen and iOS 16.4
+ * or newer — Safari in a normal tab simply cannot do it. Saying so up front
+ * beats a permission prompt that never appears and a reminder that never
+ * arrives. "Add to Home Screen" is the exact wording of the iOS Share-sheet
+ * button, so she has something to look for.
+ */
+const IOS_NOTE =
+  'On iPhone, phone notifications only work if you first add this app to your Home Screen (Share → Add to Home Screen), on iOS 16.4 or newer. The in-app reminder below works either way.'
+
+/**
+ * Shown only after the browser actually says no. It never asks her to fix
+ * anything urgently, and it says plainly that the feature still works — the
+ * permission is groundwork for phone notifications later, and Layer 1 needs
+ * none of it.
+ */
+const DENIED_NOTE =
+  "Your browser said no to notifications. You can turn them back on in your browser settings whenever you like. Either way, the reminder still shows up inside the app — nothing is lost."
+
+/**
+ * `Notification` is missing in plenty of real contexts — iOS Safari before
+ * 16.4, some in-app browsers, and the test environment — and touching it
+ * blind is a crash. Never reference the global without going through here.
+ */
+function notificationApi(): typeof Notification | null {
+  return typeof Notification === 'undefined' ? null : Notification
+}
+
 type LiveStatus = 'syncing' | 'synced' | 'offline' | 'error'
 
 const STATUS_LABEL: Record<LiveStatus, string> = {
@@ -144,6 +174,8 @@ export function Settings({ onBack, onRetakePlacement, syncStatus, onRestore }: S
   const speechRate = useStore(s => s.speechRate)
   const autoPlayAudio = useStore(s => s.autoPlayAudio)
   const showPortuguese = useStore(s => s.showPortuguese)
+  const reminderEnabled = useStore(s => s.reminderEnabled)
+  const reminderTime = useStore(s => s.reminderTime)
   const setPref = useStore(s => s.setPref)
   const resetProgress = useStore(s => s.resetProgress)
 
@@ -155,6 +187,35 @@ export function Settings({ onBack, onRetakePlacement, syncStatus, onRestore }: S
   const [restoring, setRestoring] = useState(false)
   const [outcome, setOutcome] = useState<SyncOutcome | null>(null)
   const [confirmingReset, setConfirmingReset] = useState(false)
+  const [notificationsDenied, setNotificationsDenied] = useState(false)
+
+  /**
+   * Turning the reminder on saves the preference first and asks the browser
+   * second — deliberately in that order. The in-app nudge (Layer 1) needs no
+   * permission at all, so it must switch on even if the prompt is dismissed,
+   * blocked, or never appears because this browser has no Notification API.
+   * The permission is groundwork for the later phone-notification layers.
+   */
+  async function handleReminderToggle(next: boolean) {
+    setPref('reminderEnabled', next)
+    if (!next) { setNotificationsDenied(false); return }
+
+    const api = notificationApi()
+    if (!api) return
+    if (api.permission === 'granted') { setNotificationsDenied(false); return }
+
+    try {
+      // Safari once returned undefined here and took a callback instead —
+      // `await` copes with both, and an old browser that ignores us simply
+      // leaves the in-app reminder as the whole feature.
+      const result = await api.requestPermission()
+      setNotificationsDenied(result === 'denied')
+    } catch {
+      // A browser that throws rather than answers is not her problem, and
+      // not a reason to leave the reminder off.
+      setNotificationsDenied(false)
+    }
+  }
 
   function commitName() {
     const trimmed = name.trim()
@@ -268,6 +329,36 @@ export function Settings({ onBack, onRetakePlacement, syncStatus, onRestore }: S
         unit="new cards"
         onChange={next => setPref('newPerSession', next)}
       />
+
+      <Card className="flex flex-col gap-3">
+        <Toggle
+          label="Daily reminder"
+          checked={reminderEnabled}
+          onChange={handleReminderToggle}
+        />
+        <p className="text-sm text-muted">
+          A friendly nudge when you open the app, so your streak stays alive.
+        </p>
+        <label className="flex min-h-[44px] items-center justify-between gap-3">
+          <span className="font-bold text-ink">Reminder time</span>
+          <input
+            type="time"
+            value={reminderTime}
+            /* A cleared time input reports '' — that is her mid-edit, not a
+             * choice, and saving it would silently switch the nudge off
+             * (see shouldNudge). Keep the last good time until she picks a
+             * new one, the same way the name field refuses to be emptied. */
+            onChange={e => { if (e.target.value) setPref('reminderTime', e.target.value) }}
+            className="min-h-[44px] rounded-2xl border border-line bg-card2 px-4 text-ink"
+          />
+        </label>
+        <p className="text-xs text-muted">{IOS_NOTE}</p>
+        {notificationsDenied && (
+          <p role="status" className="text-sm text-ink">
+            {DENIED_NOTE}
+          </p>
+        )}
+      </Card>
 
       <div
         role="radiogroup"

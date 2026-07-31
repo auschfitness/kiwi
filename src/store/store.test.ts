@@ -1,6 +1,7 @@
-import { describe, it, expect, beforeEach } from 'vitest'
-import { useStore, cardIdsByLevel } from './useStore'
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { useStore, cardIdsByLevel, migrate, PERSIST_VERSION } from './useStore'
 import { createInitialState } from './defaults'
+import type { AppState } from '../types'
 
 const NOW = 1_700_000_000_000
 
@@ -213,5 +214,107 @@ describe('store', () => {
 
     expect(useStore.getState().speechRate).toBe(0.95)
     localStorage.removeItem('english-nz')
+  })
+})
+
+describe('persisted-state migration (v1 -> v2, the daily reminder)', () => {
+  beforeEach(() => {
+    useStore.setState({ ...createInitialState(NOW), unlocked: null })
+    localStorage.removeItem('english-nz')
+  })
+
+  afterEach(() => {
+    localStorage.removeItem('english-nz')
+  })
+
+  /**
+   * A profile exactly as it was written to localStorage before the reminder
+   * existed: today's shape minus the two new keys, carrying real progress —
+   * a streak, a best day, graded cards, an unlocked level.
+   */
+  function v1Profile(): Omit<AppState, 'reminderEnabled' | 'reminderTime'> {
+    const {
+      reminderEnabled: _off, reminderTime: _at, ...oldShape
+    } = createInitialState(NOW)
+    return {
+      ...oldShape,
+      profileName: 'Ana',
+      placed: true,
+      cefrLevel: 2,
+      unlockedLevel: 3,
+      cards: { survival_0: { due: NOW + 40 * 86_400_000, interval: 40, ease: 2.7, reps: 9, lapses: 3 } },
+      skills: { ...oldShape.skills, vocab: { correct: 210, total: 260 } },
+      dailyGoal: 30,
+      speechRate: 0.75,
+      streak: 12,
+      lastStudyDay: '2026-7-29',
+      doneToday: 18,
+      doneDate: '2026-7-29',
+      bestDay: 44,
+    }
+  }
+
+  it('is on version 2 — the reminder fields shipped with a real bump, not a shallow-merge accident', () => {
+    expect(PERSIST_VERSION).toBe(2)
+    expect(useStore.persist.getOptions().version).toBe(2)
+  })
+
+  it('rehydrates a v1 profile with the reminder defaults and every scrap of progress intact', async () => {
+    const old = v1Profile()
+    localStorage.setItem('english-nz', JSON.stringify({ state: old, version: 1 }))
+
+    await useStore.persist.rehydrate()
+    const s = useStore.getState()
+
+    // The new fields arrive at their defaults — off, at 19:00. She is never
+    // opted in to a reminder she did not ask for.
+    expect(s.reminderEnabled).toBe(false)
+    expect(s.reminderTime).toBe('19:00')
+
+    // ...and nothing she had is disturbed. This is the whole point of the
+    // migration: it must not look like the app forgot her.
+    expect(s.profileName).toBe('Ana')
+    expect(s.placed).toBe(true)
+    expect(s.cefrLevel).toBe(2)
+    expect(s.unlockedLevel).toBe(3)
+    expect(s.cards.survival_0).toEqual(old.cards.survival_0)
+    expect(s.skills.vocab).toEqual({ correct: 210, total: 260 })
+    expect(s.dailyGoal).toBe(30)
+    expect(s.speechRate).toBe(0.75)
+    expect(s.streak).toBe(12)
+    expect(s.lastStudyDay).toBe('2026-7-29')
+    expect(s.doneToday).toBe(18)
+    expect(s.doneDate).toBe('2026-7-29')
+    expect(s.bestDay).toBe(44)
+    expect(s.startedAt).toBe(old.startedAt)
+  })
+
+  it('leaves a v2 profile exactly as saved, reminder settings included', async () => {
+    const current = { ...createInitialState(NOW), profileName: 'Ana', reminderEnabled: true, reminderTime: '07:30', streak: 4 }
+    localStorage.setItem('english-nz', JSON.stringify({ state: current, version: PERSIST_VERSION }))
+
+    await useStore.persist.rehydrate()
+    const s = useStore.getState()
+
+    expect(s.reminderEnabled).toBe(true)
+    expect(s.reminderTime).toBe('07:30')
+    expect(s.streak).toBe(4)
+  })
+
+  it('never resets a saved `false` — migrate fills only genuinely absent fields', () => {
+    // The `??`-not-`||` guarantee. A v1 blob cannot contain these keys, but
+    // migrate also runs over hand-repaired and partially-written blobs, and a
+    // deliberate "off" must not be read as "missing" and re-defaulted.
+    const half = { ...v1Profile(), reminderEnabled: false, reminderTime: '06:00' }
+    const out = migrate(half, 1)
+    expect(out.reminderEnabled).toBe(false)
+    expect(out.reminderTime).toBe('06:00')
+  })
+
+  it('survives a corrupt or empty persisted blob instead of throwing', () => {
+    expect(() => migrate(undefined, 1)).not.toThrow()
+    expect(() => migrate(null, 0)).not.toThrow()
+    expect(migrate({}, 1).reminderTime).toBe('19:00')
+    expect(migrate({}, 1).reminderEnabled).toBe(false)
   })
 })

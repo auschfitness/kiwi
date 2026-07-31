@@ -20,6 +20,8 @@ export function createInitialState(now: number): AppState {
     showPortuguese: true,
     autoPlayAudio: true,
     speechRate: 0.95,
+    reminderEnabled: false,
+    reminderTime: '19:00',
     streak: 0,
     lastStudyDay: null,
     doneToday: 0,

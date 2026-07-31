@@ -71,6 +71,10 @@ export interface AppState {
   autoPlayAudio: boolean
   /** Passed straight to SpeechSynthesisUtterance.rate. 0.95 is today's speed. */
   speechRate: number
+  /** Off until she asks for it — an app that nags uninvited gets deleted. */
+  reminderEnabled: boolean
+  /** `"HH:MM"`, 24-hour, in her own local time. Default `"19:00"`. */
+  reminderTime: string
   streak: number
   lastStudyDay: string | null
   doneToday: number

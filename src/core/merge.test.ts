@@ -14,6 +14,7 @@ function snap(over: Partial<AppState> = {}): AppState {
     },
     dailyGoal: 20, newPerSession: 8, accent: 'en-NZ',
     showPortuguese: true, autoPlayAudio: true, speechRate: 0.95,
+    reminderEnabled: false, reminderTime: '19:00',
     streak: 0, lastStudyDay: null, doneToday: 0, doneDate: null, bestDay: 0,
     startedAt: T, updatedAt: T, ...over,
   }
@@ -151,6 +152,28 @@ describe('mergeSnapshots', () => {
     const older = snap({ updatedAt: 5000, doneToday: 30, doneDate: '2026-7-9' })
     const later = snap({ updatedAt: 1000, doneToday: 4, doneDate: '2026-7-10' })
     expect(mergeSnapshots(older, later).doneDate).toBe('2026-7-10')
+  })
+
+  it('takes the reminder settings from the more recently updated snapshot', () => {
+    const local = snap({ updatedAt: T, reminderEnabled: false, reminderTime: '19:00' })
+    const remote = snap({ updatedAt: T + 1000, reminderEnabled: true, reminderTime: '07:30' })
+    const m = mergeSnapshots(local, remote)
+    expect(m.reminderEnabled).toBe(true)
+    expect(m.reminderTime).toBe('07:30')
+  })
+
+  it('resolves a reminder-only tie identically in both directions', () => {
+    // The tie-break must be total over every field `preferred` supplies. If
+    // scalarKey ignored the reminder fields, these two snapshots — identical
+    // on every ranking signal and differing only here — would compare equal
+    // and the answer would depend on argument order.
+    const base = { updatedAt: 1000, bestDay: 5, streak: 3, doneToday: 10, doneDate: '2026-7-9' } as const
+    const x = snap({ ...base, reminderEnabled: true, reminderTime: '07:30' })
+    const y = snap({ ...base, reminderEnabled: false, reminderTime: '21:15' })
+    const xy = mergeSnapshots(x, y)
+    const yx = mergeSnapshots(y, x)
+    expect(xy.reminderEnabled).toBe(yx.reminderEnabled)
+    expect(xy.reminderTime).toBe(yx.reminderTime)
   })
 
   it('resolves a total tie identically in both directions', () => {

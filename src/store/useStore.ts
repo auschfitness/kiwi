@@ -44,6 +44,44 @@ interface Actions {
 
 export type Store = AppState & Actions
 
+/**
+ * Bumped to 2 when the daily reminder shipped (`reminderEnabled`,
+ * `reminderTime`). Bump this every time `AppState` gains or changes a field
+ * and teach `migrate` below how to fill it — do not lean on zustand's shallow
+ * merge to paper over the gap, the way `speechRate` once did. She has real
+ * progress in localStorage; a migration that drops a key looks to her like
+ * the app forgot her streak.
+ */
+export const PERSIST_VERSION = 2
+
+/**
+ * Upgrade a profile saved under an older `version` to today's shape.
+ *
+ * The rule is additive and never destructive: everything she had is copied
+ * through untouched, and only genuinely absent fields are filled from
+ * `createInitialState`. `??` (not `||`) does the filling, so a legitimately
+ * falsy saved value — `reminderEnabled: false`, a `0` counter — survives
+ * instead of being "helpfully" reset.
+ *
+ * zustand then shallow-merges the result over the live initial state, so the
+ * actions and any field this function forgot still resolve; the point of
+ * doing it explicitly is that the defaults are stated here rather than
+ * implied.
+ */
+export function migrate(persisted: unknown, version: number): Store {
+  const saved = (persisted ?? {}) as Partial<AppState>
+  if (version >= PERSIST_VERSION) return saved as Store
+
+  const defaults = createInitialState(Date.now())
+  return {
+    ...saved,
+    // v1 -> v2: the daily reminder. Off, at 19:00, for everyone who was
+    // already here — she opts in from Settings, she is not opted in for her.
+    reminderEnabled: saved.reminderEnabled ?? defaults.reminderEnabled,
+    reminderTime: saved.reminderTime ?? defaults.reminderTime,
+  } as Store
+}
+
 export const useStore = create<Store>()(
   persist(
     (set, get) => ({
@@ -114,11 +152,12 @@ export const useStore = create<Store>()(
     }),
     {
       name: 'english-nz',
-      version: 1,
+      version: PERSIST_VERSION,
       partialize: state => {
         const { unlocked: _unlocked, ...rest } = state
         return rest as AppState
       },
+      migrate,
     },
   ),
 )

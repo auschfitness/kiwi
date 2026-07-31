@@ -3,6 +3,8 @@ import { setDefaultRate, warmUp } from './audio/speak'
 import { useStore } from './store/useStore'
 import { useSync } from './sync/useSync'
 import { LEVEL_NAMES } from './core/leveling'
+import { shouldNudge } from './core/reminder'
+import { dayKey } from './core/time'
 import { Button, Toast } from './components/ui'
 import { Name } from './screens/Name'
 import { Placement } from './screens/Placement'
@@ -18,6 +20,9 @@ import { EarTraining } from './screens/EarTraining'
 import { Plan } from './screens/Plan'
 import { Dialogues } from './screens/Dialogues'
 import { Settings } from './screens/Settings'
+
+/** Warm, short, and gone in four seconds. It nudges; it never blocks. */
+const NUDGE_MESSAGE = 'Time for a little English 🥝 — keep your 🔥 streak alive'
 
 export type Screen =
   | 'home' | 'name' | 'placement' | 'session' | 'dashboard'
@@ -49,6 +54,17 @@ export default function App() {
   const clearUnlockToast = useStore(s => s.clearUnlockToast)
   const retakePlacement = useStore(s => s.retakePlacement)
   const speechRate = useStore(s => s.speechRate)
+  const doneToday = useStore(s => s.doneToday)
+  const doneDate = useStore(s => s.doneDate)
+
+  // Layer 1 of the daily reminder: the in-app nudge. Decided once, when the
+  // app opens — an empty dep array, and `getState()` rather than a
+  // subscription, so no re-render can re-ask the question and no store change
+  // can re-raise a toast she has already seen this visit.
+  const [nudging, setNudging] = useState(false)
+  useEffect(() => {
+    if (shouldNudge(useStore.getState(), Date.now())) setNudging(true)
+  }, [])
 
   // Mounted once, for the whole session, regardless of which screen is
   // showing — this is what keeps progress pushed to the cloud in the
@@ -162,16 +178,26 @@ export default function App() {
     }
   }
 
+  // The moment she answers her first card the nudge has done its job, so it
+  // gets out of the way mid-visit too — derived, not a second piece of state
+  // to keep in step.
+  const showNudge = nudging && !(doneDate === dayKey(Date.now()) && doneToday > 0)
+
   return (
     <div className="min-h-full bg-bg text-ink safe-top safe-bottom">
       <main className="mx-auto w-full max-w-md px-4 pb-8">
         {renderScreen()}
       </main>
-      {unlocked !== null && (
+      {/* One toast slot: both of these are pinned to the same corner, so an
+        * unlock — which she earned — takes it, and the nudge waits for her
+        * next visit rather than stacking on top of the celebration. */}
+      {unlocked !== null ? (
         <Toast
           message={`🎉 New level unlocked: ${LEVEL_NAMES[unlocked]}`}
           onDismiss={clearUnlockToast}
         />
+      ) : (
+        showNudge && <Toast message={NUDGE_MESSAGE} onDismiss={() => setNudging(false)} />
       )}
     </div>
   )

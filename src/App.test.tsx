@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { render, screen, cleanup } from '@testing-library/react'
+import { render, screen, cleanup, act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import App from './App'
 import { useStore } from './store/useStore'
@@ -62,6 +62,70 @@ describe('App', () => {
     vi.advanceTimersByTime(4000)
 
     expect(useStore.getState().unlocked).toBeNull()
+  })
+
+  it('nudges her on open when the reminder is due and she has not studied today', () => {
+    useStore.setState({
+      profileName: 'Ana', placed: true, cefrLevel: 1, unlockedLevel: 1,
+      reminderEnabled: true, reminderTime: '00:00', doneToday: 0, doneDate: null,
+    })
+    render(<App />)
+    // "00:00" is at-or-past whatever time this suite happens to run at.
+    expect(screen.getByText(/time for a little english/i)).toBeInTheDocument()
+    // And it blocks nothing — Home is right there behind it.
+    expect(screen.getByTestId('study-now')).toBeInTheDocument()
+  })
+
+  it('stays quiet on open when the reminder is switched off', () => {
+    useStore.setState({
+      profileName: 'Ana', placed: true, cefrLevel: 1, unlockedLevel: 1,
+      reminderEnabled: false, reminderTime: '00:00',
+    })
+    render(<App />)
+    expect(screen.queryByText(/time for a little english/i)).not.toBeInTheDocument()
+  })
+
+  it('stays quiet on open when the reminder time has not arrived yet', () => {
+    useStore.setState({
+      profileName: 'Ana', placed: true, cefrLevel: 1, unlockedLevel: 1,
+      reminderEnabled: true, reminderTime: '23:59', doneToday: 0, doneDate: null,
+    })
+    render(<App />)
+    // Unless the suite is run in the last minute of the day, this is "not yet".
+    const lastMinuteOfTheDay = new Date().getHours() === 23 && new Date().getMinutes() === 59
+    if (!lastMinuteOfTheDay) {
+      expect(screen.queryByText(/time for a little english/i)).not.toBeInTheDocument()
+    }
+  })
+
+  it('drops the nudge the moment she starts studying, and does not raise it again', async () => {
+    useStore.setState({
+      profileName: 'Ana', placed: true, cefrLevel: 1, unlockedLevel: 1,
+      reminderEnabled: true, reminderTime: '00:00', doneToday: 0, doneDate: null,
+    })
+    render(<App />)
+    expect(screen.getByText(/time for a little english/i)).toBeInTheDocument()
+
+    await userEvent.click(screen.getByTestId('study-now'))
+    act(() => { useStore.getState().gradeItem('survival_0', 'recognize', 2, Date.now()) })
+
+    expect(screen.queryByText(/time for a little english/i)).not.toBeInTheDocument()
+
+    // Back to Home: the question was answered once, when the app opened —
+    // re-rendering the same visit must not re-ask it.
+    await userEvent.click(screen.getByRole('button', { name: /finish session/i }))
+    await userEvent.click(screen.getByRole('button', { name: /back home/i }))
+    expect(screen.queryByText(/time for a little english/i)).not.toBeInTheDocument()
+  })
+
+  it('gives the toast slot to an earned unlock rather than stacking a nudge on top of it', () => {
+    useStore.setState({
+      profileName: 'Ana', placed: true, cefrLevel: 1, unlockedLevel: 2, unlocked: 2,
+      reminderEnabled: true, reminderTime: '00:00', doneToday: 0, doneDate: null,
+    })
+    render(<App />)
+    expect(screen.getByText(/new level unlocked: a2/i)).toBeInTheDocument()
+    expect(screen.queryByText(/time for a little english/i)).not.toBeInTheDocument()
   })
 
   it('walks from Home through a session to Done and back to Home', async () => {

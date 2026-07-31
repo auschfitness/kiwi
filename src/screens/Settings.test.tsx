@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { render, screen, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Settings } from './Settings'
 import { useStore } from '../store/useStore'
@@ -12,6 +12,12 @@ vi.mock('../sync/client', async importOriginal => ({
 
 beforeEach(() => {
   useStore.setState({ ...createInitialState(Date.now()), unlocked: null, placed: true, profileName: 'Ana' })
+})
+
+afterEach(() => {
+  // Several reminder tests stub a `Notification` global that jsdom does not
+  // have. Leaving one behind would quietly change what every later test sees.
+  vi.unstubAllGlobals()
 })
 
 describe('Settings without Supabase configured', () => {
@@ -121,6 +127,113 @@ describe('Settings — additional behaviour (still unconfigured)', () => {
     const faster = screen.getByRole('radio', { name: /faster/i })
     await userEvent.click(faster)
     expect(useStore.getState().speechRate).toBe(1.1)
+  })
+
+  it('offers the daily reminder switched off, at 19:00, with the iPhone caveat stated up front', () => {
+    render(<Settings onBack={vi.fn()} onRetakePlacement={vi.fn()} syncStatus="unconfigured" onRestore={vi.fn()} />)
+    expect(screen.getByLabelText(/daily reminder/i)).not.toBeChecked()
+    expect(screen.getByLabelText(/reminder time/i)).toHaveValue('19:00')
+    // Honest about the platform: never promise what iOS cannot do.
+    expect(screen.getByText(/add this app to your home screen/i)).toBeInTheDocument()
+    expect(screen.getByText(/ios 16\.4 or newer/i)).toBeInTheDocument()
+  })
+
+  it('turns the reminder on and saves a new time', async () => {
+    render(<Settings onBack={vi.fn()} onRetakePlacement={vi.fn()} syncStatus="unconfigured" onRestore={vi.fn()} />)
+    await userEvent.click(screen.getByLabelText(/daily reminder/i))
+    expect(useStore.getState().reminderEnabled).toBe(true)
+
+    // The platform picker hands the control a whole "HH:MM" at once rather
+    // than a keystroke per digit, so that is what this drives.
+    fireEvent.change(screen.getByLabelText(/reminder time/i), { target: { value: '07:30' } })
+    expect(useStore.getState().reminderTime).toBe('07:30')
+  })
+
+  it('keeps the last good time when the picker is cleared mid-edit', async () => {
+    render(<Settings onBack={vi.fn()} onRetakePlacement={vi.fn()} syncStatus="unconfigured" onRestore={vi.fn()} />)
+    fireEvent.change(screen.getByLabelText(/reminder time/i), { target: { value: '' } })
+    // An empty picker is her halfway through choosing, not a decision to
+    // silence the reminder.
+    expect(useStore.getState().reminderTime).toBe('19:00')
+  })
+
+  it('turns the reminder on even where Notification does not exist at all', async () => {
+    // jsdom has no Notification global — the same situation as iOS Safari
+    // before 16.4 and a good few in-app browsers. Layer 1 needs no
+    // permission, so the switch must still work and nothing may throw.
+    expect('Notification' in window).toBe(false)
+    render(<Settings onBack={vi.fn()} onRetakePlacement={vi.fn()} syncStatus="unconfigured" onRestore={vi.fn()} />)
+
+    await userEvent.click(screen.getByLabelText(/daily reminder/i))
+
+    expect(useStore.getState().reminderEnabled).toBe(true)
+    expect(screen.queryByText(/said no to notifications/i)).not.toBeInTheDocument()
+  })
+
+  it('asks for notification permission the first time she switches the reminder on', async () => {
+    const requestPermission = vi.fn().mockResolvedValue('granted')
+    vi.stubGlobal('Notification', { permission: 'default', requestPermission })
+    render(<Settings onBack={vi.fn()} onRetakePlacement={vi.fn()} syncStatus="unconfigured" onRestore={vi.fn()} />)
+
+    await userEvent.click(screen.getByLabelText(/daily reminder/i))
+
+    expect(requestPermission).toHaveBeenCalledTimes(1)
+    expect(useStore.getState().reminderEnabled).toBe(true)
+    expect(screen.queryByText(/said no to notifications/i)).not.toBeInTheDocument()
+  })
+
+  it('does not re-ask when permission was already granted', async () => {
+    const requestPermission = vi.fn().mockResolvedValue('granted')
+    vi.stubGlobal('Notification', { permission: 'granted', requestPermission })
+    render(<Settings onBack={vi.fn()} onRetakePlacement={vi.fn()} syncStatus="unconfigured" onRestore={vi.fn()} />)
+
+    await userEvent.click(screen.getByLabelText(/daily reminder/i))
+
+    expect(requestPermission).not.toHaveBeenCalled()
+    expect(useStore.getState().reminderEnabled).toBe(true)
+  })
+
+  it('explains a denial calmly, and keeps the in-app reminder on regardless', async () => {
+    vi.stubGlobal('Notification', {
+      permission: 'default',
+      requestPermission: vi.fn().mockResolvedValue('denied'),
+    })
+    render(<Settings onBack={vi.fn()} onRetakePlacement={vi.fn()} syncStatus="unconfigured" onRestore={vi.fn()} />)
+
+    await userEvent.click(screen.getByLabelText(/daily reminder/i))
+
+    expect(screen.getByText(/said no to notifications/i)).toBeInTheDocument()
+    expect(screen.getByText(/browser settings/i)).toBeInTheDocument()
+    // The promise the copy makes must be true: the preference is on.
+    expect(screen.getByText(/still shows up inside the app/i)).toBeInTheDocument()
+    expect(useStore.getState().reminderEnabled).toBe(true)
+  })
+
+  it('clears the denial note when she switches the reminder back off', async () => {
+    vi.stubGlobal('Notification', {
+      permission: 'default',
+      requestPermission: vi.fn().mockResolvedValue('denied'),
+    })
+    render(<Settings onBack={vi.fn()} onRetakePlacement={vi.fn()} syncStatus="unconfigured" onRestore={vi.fn()} />)
+
+    await userEvent.click(screen.getByLabelText(/daily reminder/i))
+    expect(screen.getByText(/said no to notifications/i)).toBeInTheDocument()
+
+    await userEvent.click(screen.getByLabelText(/daily reminder/i))
+    expect(useStore.getState().reminderEnabled).toBe(false)
+    expect(screen.queryByText(/said no to notifications/i)).not.toBeInTheDocument()
+  })
+
+  it('still turns the reminder on when requestPermission throws', async () => {
+    vi.stubGlobal('Notification', {
+      permission: 'default',
+      requestPermission: vi.fn().mockRejectedValue(new Error('nope')),
+    })
+    render(<Settings onBack={vi.fn()} onRetakePlacement={vi.fn()} syncStatus="unconfigured" onRestore={vi.fn()} />)
+
+    await userEvent.click(screen.getByLabelText(/daily reminder/i))
+
+    expect(useStore.getState().reminderEnabled).toBe(true)
   })
 
   it('commits an edited name on blur, ignoring an attempt to clear it', async () => {

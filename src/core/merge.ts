@@ -31,11 +31,21 @@ function dayRank(key: string | null): number {
   return y * 10_000 + m * 100 + d
 }
 
-/** Stable string key over the scalar fields `preferred` selects between. */
+/**
+ * Stable string key over the scalar fields `preferred` selects between.
+ *
+ * This list must stay in step with every `newer.*` read in `mergeSnapshots`
+ * below — that is the whole contract. A field the winner supplies but this
+ * key ignores makes the final tie-break partial: two snapshots differing only
+ * in that field would compare equal here, and `<=` would then hand back
+ * whichever one happened to be passed first, quietly reintroducing the
+ * order-dependence this function exists to remove.
+ */
 function scalarKey(s: AppState): string {
   return JSON.stringify([
     s.profileName, s.syncCode, s.dailyGoal, s.newPerSession,
-    s.accent, s.showPortuguese, s.autoPlayAudio, s.speechRate, s.lastStudyDay,
+    s.accent, s.showPortuguese, s.autoPlayAudio, s.speechRate,
+    s.reminderEnabled, s.reminderTime, s.lastStudyDay,
   ])
 }
 
@@ -55,7 +65,7 @@ function preferred(local: AppState, remote: AppState): AppState {
   // Final fallback: a stable comparison over exactly the fields this choice
   // drives, so a tie on every ranking signal above still resolves the same way
   // whichever snapshot was passed first. If these keys are equal too, the two
-  // snapshots agree on all eight fields and either answer is the same answer.
+  // snapshots agree on every scalar field and either answer is the same answer.
   return scalarKey(local) <= scalarKey(remote) ? local : remote
 }
 
@@ -89,6 +99,8 @@ export function mergeSnapshots(local: AppState, remote: AppState): AppState {
     showPortuguese: newer.showPortuguese,
     autoPlayAudio: newer.autoPlayAudio,
     speechRate: newer.speechRate,
+    reminderEnabled: newer.reminderEnabled,
+    reminderTime: newer.reminderTime,
     streak: Math.max(local.streak, remote.streak),
     lastStudyDay: newer.lastStudyDay,
     doneToday: dayOwner.doneToday,
