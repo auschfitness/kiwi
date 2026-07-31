@@ -129,6 +129,48 @@ describe('store', () => {
     expect(useStore.getState().unlocked).toBeNull()
   })
 
+  it('records speaking practice into the speaking skill and bumps updatedAt', () => {
+    const before = useStore.getState().updatedAt
+    useStore.getState().recordSpeakingPractice(true)
+    const s = useStore.getState()
+    expect(s.skills.speaking).toEqual({ correct: 1, total: 1 })
+    expect(s.updatedAt).toBeGreaterThanOrEqual(before)
+
+    useStore.getState().recordSpeakingPractice(false)
+    expect(useStore.getState().skills.speaking).toEqual({ correct: 1, total: 2 })
+  })
+
+  it('records listening practice into the listening skill and bumps updatedAt', () => {
+    const before = useStore.getState().updatedAt
+    useStore.getState().recordListeningPractice(true)
+    const s = useStore.getState()
+    expect(s.skills.listening).toEqual({ correct: 1, total: 1 })
+    expect(s.updatedAt).toBeGreaterThanOrEqual(before)
+  })
+
+  it('leaves every other skill untouched by a speaking/listening practice record', () => {
+    useStore.getState().recordSpeakingPractice(true)
+    useStore.getState().recordListeningPractice(true)
+    const s = useStore.getState()
+    expect(s.skills.vocab).toEqual({ correct: 0, total: 0 })
+    expect(s.skills.grammar).toEqual({ correct: 0, total: 0 })
+  })
+
+  it('never touches speaking/listening stats until a practice action is actually called — an unpractised skill stays unpractised', () => {
+    // This is the guarantee the Dashboard's "not practised yet" copy relies
+    // on (see src/core/stats.ts): recordSpeakingPractice/recordListeningPractice
+    // must never be invoked just to initialise a counter.
+    const fresh = useStore.getState()
+    expect(fresh.skills.speaking).toEqual({ correct: 0, total: 0 })
+    expect(fresh.skills.listening).toEqual({ correct: 0, total: 0 })
+
+    useStore.getState().recordSpeakingPractice(true)
+
+    // Listening stays at 0/0 (still reads "not practised yet") — only the
+    // skill actually practised moved.
+    expect(useStore.getState().skills.listening).toEqual({ correct: 0, total: 0 })
+  })
+
   it('bumps updatedAt on every mutation', () => {
     const before = useStore.getState().updatedAt
     useStore.getState().gradeItem('survival_0', 'recognize', 2, NOW + 5000)

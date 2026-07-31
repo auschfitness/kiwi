@@ -53,6 +53,18 @@ describe('Home', () => {
     expect(onNavigate).toHaveBeenCalledWith('dashboard')
   })
 
+  it('offers a single Practice button, and no direct Dialogues/Shadowing buttons', async () => {
+    // Both features moved behind the Practice hub (A1) — Home's row now has
+    // Progress, 8-week plan and Practice only, so it stays tidy as more
+    // practice features arrive.
+    const onNavigate = vi.fn()
+    render(<Home onNavigate={onNavigate} onStudy={vi.fn()} />)
+    expect(screen.queryByRole('button', { name: /^🗣️ dialogues$/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /^🐢 shadowing$/i })).not.toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: /practice/i }))
+    expect(onNavigate).toHaveBeenCalledWith('practice')
+  })
+
   it('never scores an unpractised skill at 0% on the strip', () => {
     render(<Home onNavigate={vi.fn()} onStudy={vi.fn()} />)
     // Scoped to the strip: the level rows elsewhere on Home legitimately show

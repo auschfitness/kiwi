@@ -147,13 +147,8 @@ export function Home({ onNavigate, onStudy }: HomeProps) {
           </Button>
         </div>
         <div className="flex-1">
-          <Button variant="ghost" size="md" onClick={() => onNavigate('dialogues')}>
-            🗣️ Dialogues
-          </Button>
-        </div>
-        <div className="flex-1">
-          <Button variant="ghost" size="md" onClick={() => onNavigate('shadowing')}>
-            🐢 Shadowing
+          <Button variant="ghost" size="md" onClick={() => onNavigate('practice')}>
+            🎧 Practice
           </Button>
         </div>
       </div>

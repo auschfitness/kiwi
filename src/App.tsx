@@ -3,13 +3,14 @@ import { setDefaultRate, warmUp } from './audio/speak'
 import { useStore } from './store/useStore'
 import { useSync } from './sync/useSync'
 import { LEVEL_NAMES } from './core/leveling'
-import { Button, Toast } from './components/ui'
+import { Button, ScreenHeader, Toast } from './components/ui'
 import { Name } from './screens/Name'
 import { Placement } from './screens/Placement'
 import { Home } from './screens/Home'
 import { Session } from './screens/Session'
 import { Dashboard } from './screens/Dashboard'
 import { ConjugationTable } from './screens/ConjugationTable'
+import { Practice } from './screens/Practice'
 import { Shadowing } from './screens/Shadowing'
 import { Plan } from './screens/Plan'
 import { Dialogues } from './screens/Dialogues'
@@ -17,7 +18,20 @@ import { Settings } from './screens/Settings'
 
 export type Screen =
   | 'home' | 'name' | 'placement' | 'session' | 'dashboard'
-  | 'plan' | 'dialogues' | 'shadowing' | 'settings' | 'done' | 'conjugation'
+  | 'plan' | 'practice' | 'dialogues' | 'shadowing' | 'roleplay' | 'drills'
+  | 'settings' | 'done' | 'conjugation'
+
+/** A Practice option that has not landed yet (A2 Drills, A3 Role-play) — an
+ * honest placeholder, not a dead button. Same convention the app used for
+ * every not-yet-built screen before Tasks 20-25 filled them in. */
+function ComingSoon({ title, onBack }: { title: string; onBack: () => void }) {
+  return (
+    <div>
+      <ScreenHeader title={title} onBack={onBack} />
+      <p className="px-1 text-sm text-muted">Coming soon 🥝</p>
+    </div>
+  )
+}
 
 function Done({ onBack }: { onBack: () => void }) {
   return (
@@ -33,9 +47,9 @@ export default function App() {
   const [screen, setScreen] = useState<Screen>('home')
   const [studyDeckId, setStudyDeckId] = useState<string | undefined>(undefined)
   // Set only when Shadowing was opened from one specific dialogue (via its
-  // "Shadow this" button). Any other way of reaching Shadowing — Home's
-  // Explore row included — clears it, so that entry point keeps its mixed
-  // practice set rather than accidentally reusing a stale scope.
+  // "Shadow this" button). Any other way of reaching Shadowing — Practice's
+  // hub included — clears it, so that entry point keeps its mixed practice
+  // set rather than accidentally reusing a stale scope.
   const [shadowDialogueId, setShadowDialogueId] = useState<string | undefined>(undefined)
 
   const profileName = useStore(s => s.profileName)
@@ -71,13 +85,22 @@ export default function App() {
     setScreen('home')
   }
 
+  // Dialogues, Role-play and Drills are all reached only through the
+  // Practice hub now (Home's row no longer links to them directly), so back
+  // from any of them returns to Practice, not Home. Shadowing is the one
+  // exception — see handleShadowingBack below.
+  function backToPractice() {
+    setScreen('practice')
+  }
+
   function handleStudy(deckId?: string) {
     setStudyDeckId(deckId)
     setScreen('session')
   }
 
-  // Home's nav row (Progress/Plan/Dialogues/Shadowing/Settings) is a plain
-  // "go to this screen" jump — it never carries a dialogue scope.
+  // Home's nav row (Progress/Plan/Practice/Settings) and Practice's own menu
+  // (Dialogues/Shadowing/Role-play/Drills) are both plain "go to this
+  // screen" jumps — neither ever carries a dialogue scope.
   function handleNavigate(next: Screen) {
     setShadowDialogueId(undefined)
     setScreen(next)
@@ -96,14 +119,15 @@ export default function App() {
     setScreen('home')
   }
 
-  // She got to Shadowing either from Home's Explore row (no dialogue scope —
+  // She got to Shadowing either from Practice's hub (no dialogue scope —
   // back should return there) or from one specific dialogue's "Shadow this"
-  // button (back should return to the dialogue list, not all the way home,
-  // since that's the resource she was just reading and may want more of).
+  // button (back should return to the dialogue list, not all the way to
+  // Practice, since that's the resource she was just reading and may want
+  // more of).
   function handleShadowingBack() {
     const backToDialogues = shadowDialogueId !== undefined
     setShadowDialogueId(undefined)
-    setScreen(backToDialogues ? 'dialogues' : 'home')
+    setScreen(backToDialogues ? 'dialogues' : 'practice')
   }
 
   function renderScreen() {
@@ -121,10 +145,16 @@ export default function App() {
         return <ConjugationTable onBack={goHome} />
       case 'plan':
         return <Plan onBack={goHome} />
+      case 'practice':
+        return <Practice onBack={goHome} onNavigate={handleNavigate} />
       case 'dialogues':
-        return <Dialogues onBack={goHome} onShadow={handleShadowFromDialogue} />
+        return <Dialogues onBack={backToPractice} onShadow={handleShadowFromDialogue} />
       case 'shadowing':
         return <Shadowing dialogueId={shadowDialogueId} onBack={handleShadowingBack} />
+      case 'roleplay':
+        return <ComingSoon title="Role-play" onBack={backToPractice} />
+      case 'drills':
+        return <ComingSoon title="Drills" onBack={backToPractice} />
       case 'settings':
         return (
           <Settings

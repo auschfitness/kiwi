@@ -126,11 +126,31 @@ describe('App', () => {
     expect(screen.getByTestId('study-now')).toBeInTheDocument()
   })
 
+  it('reaches Dialogues through the Practice hub, and back returns to Practice', async () => {
+    // Home no longer links to Dialogues directly (A1: both Dialogues and
+    // Shadowing moved behind a single Practice button) — this is now a
+    // two-hop trip: Home -> Practice -> Dialogues.
+    useStore.setState({ profileName: 'Ana', placed: true, cefrLevel: 1, unlockedLevel: 1 })
+    render(<App />)
+
+    await userEvent.click(screen.getByRole('button', { name: /practice/i }))
+    expect(screen.getByRole('heading', { name: 'Practice' })).toBeInTheDocument()
+
+    await userEvent.click(screen.getByTestId('practice-dialogues'))
+    expect(screen.getByRole('heading', { name: 'Dialogues' })).toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('button', { name: /go back/i }))
+
+    // Back from Dialogues must return to Practice, not all the way home.
+    expect(screen.getByRole('heading', { name: 'Practice' })).toBeInTheDocument()
+  })
+
   it('scopes Shadowing to one dialogue when reached via "Shadow this", and back returns to Dialogues', async () => {
     useStore.setState({ profileName: 'Ana', placed: true, cefrLevel: 1, unlockedLevel: 1 })
     render(<App />)
 
-    await userEvent.click(screen.getByRole('button', { name: /dialogues/i }))
+    await userEvent.click(screen.getByRole('button', { name: /practice/i }))
+    await userEvent.click(screen.getByTestId('practice-dialogues'))
     await userEvent.click(screen.getAllByTestId('dialogue-card')[0])
     await userEvent.click(screen.getByRole('button', { name: /shadow this/i }))
 
@@ -147,8 +167,39 @@ describe('App', () => {
     await userEvent.click(screen.getByRole('button', { name: /go back/i }))
 
     // Back from a dialogue-scoped Shadowing session must return to the
-    // dialogue list it came from, not all the way home.
+    // dialogue list it came from, not all the way to Practice.
     expect(screen.getByRole('heading', { name: 'Dialogues' })).toBeInTheDocument()
     expect(screen.getAllByTestId('dialogue-card').length).toBeGreaterThan(0)
+  })
+
+  it('reaches unscoped Shadowing through Practice, and back returns to Practice (not Home)', async () => {
+    useStore.setState({ profileName: 'Ana', placed: true, cefrLevel: 1, unlockedLevel: 1 })
+    render(<App />)
+
+    await userEvent.click(screen.getByRole('button', { name: /practice/i }))
+    await userEvent.click(screen.getByTestId('practice-shadowing'))
+    expect(screen.getByRole('heading', { name: 'Shadowing' })).toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('button', { name: /go back/i }))
+
+    expect(screen.getByRole('heading', { name: 'Practice' })).toBeInTheDocument()
+  })
+
+  it('shows honest "coming soon" placeholders for Role-play and Drills, each returning to Practice', async () => {
+    useStore.setState({ profileName: 'Ana', placed: true, cefrLevel: 1, unlockedLevel: 1 })
+    render(<App />)
+
+    await userEvent.click(screen.getByRole('button', { name: /practice/i }))
+    await userEvent.click(screen.getByTestId('practice-roleplay'))
+    expect(screen.getByRole('heading', { name: 'Role-play' })).toBeInTheDocument()
+    expect(screen.getByText(/coming soon/i)).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: /go back/i }))
+    expect(screen.getByRole('heading', { name: 'Practice' })).toBeInTheDocument()
+
+    await userEvent.click(screen.getByTestId('practice-drills'))
+    expect(screen.getByRole('heading', { name: 'Drills' })).toBeInTheDocument()
+    expect(screen.getByText(/coming soon/i)).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: /go back/i }))
+    expect(screen.getByRole('heading', { name: 'Practice' })).toBeInTheDocument()
   })
 })

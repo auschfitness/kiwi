@@ -24,6 +24,16 @@ interface Actions {
   finishPlacement: (startLevel: Level, seeded: Record<string, CardState>, now: number) => void
   /** `rating` is hers: 0 again, 1 hard, 2 good, 3 easy. Anything above 0 counts as correct. */
   gradeItem: (cardId: string, modality: Modality, rating: Rating, now: number) => void
+  /**
+   * Feed one speaking or listening rep from a Practice feature (Shadowing,
+   * Role-play, Drills, ...) into the same skill stats gradeItem writes to —
+   * so the Dashboard/Home meters pick it up with no other change. Call only
+   * for practice she actually did: an unpractised skill reads "not
+   * practised yet" rather than "0%" (see src/core/stats.ts), and calling
+   * this to merely initialise a counter would falsely convert that to 0%.
+   */
+  recordSpeakingPractice: (correct: boolean) => void
+  recordListeningPractice: (correct: boolean) => void
   clearUnlockToast: () => void
   setPref: <K extends keyof AppState>(key: K, value: AppState[K]) => void
   setSyncCode: (code: string | null) => void
@@ -83,6 +93,12 @@ export const useStore = create<Store>()(
           updatedAt: now,
         })
       },
+
+      recordSpeakingPractice: correct =>
+        set({ skills: recordSkill(get().skills, 'speaking', correct), updatedAt: Date.now() }),
+
+      recordListeningPractice: correct =>
+        set({ skills: recordSkill(get().skills, 'listening', correct), updatedAt: Date.now() }),
 
       clearUnlockToast: () => set({ unlocked: null }),
 
