@@ -12,6 +12,7 @@ import { Dashboard } from './screens/Dashboard'
 import { ConjugationTable } from './screens/ConjugationTable'
 import { Practice } from './screens/Practice'
 import { Shadowing } from './screens/Shadowing'
+import { Drills } from './screens/Drills'
 import { Plan } from './screens/Plan'
 import { Dialogues } from './screens/Dialogues'
 import { Settings } from './screens/Settings'
@@ -21,9 +22,9 @@ export type Screen =
   | 'plan' | 'practice' | 'dialogues' | 'shadowing' | 'roleplay' | 'drills'
   | 'settings' | 'done' | 'conjugation'
 
-/** A Practice option that has not landed yet (A2 Drills, A3 Role-play) — an
- * honest placeholder, not a dead button. Same convention the app used for
- * every not-yet-built screen before Tasks 20-25 filled them in. */
+/** A Practice option that has not landed yet (A3 Role-play) — an honest
+ * placeholder, not a dead button. Same convention the app used for every
+ * not-yet-built screen before Tasks 20-25 filled them in. */
 function ComingSoon({ title, onBack }: { title: string; onBack: () => void }) {
   return (
     <div>
@@ -154,7 +155,7 @@ export default function App() {
       case 'roleplay':
         return <ComingSoon title="Role-play" onBack={backToPractice} />
       case 'drills':
-        return <ComingSoon title="Drills" onBack={backToPractice} />
+        return <Drills onBack={backToPractice} />
       case 'settings':
         return (
           <Settings

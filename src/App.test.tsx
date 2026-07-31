@@ -185,7 +185,7 @@ describe('App', () => {
     expect(screen.getByRole('heading', { name: 'Practice' })).toBeInTheDocument()
   })
 
-  it('shows honest "coming soon" placeholders for Role-play and Drills, each returning to Practice', async () => {
+  it('shows an honest "coming soon" placeholder for Role-play, returning to Practice', async () => {
     useStore.setState({ profileName: 'Ana', placed: true, cefrLevel: 1, unlockedLevel: 1 })
     render(<App />)
 
@@ -195,10 +195,19 @@ describe('App', () => {
     expect(screen.getByText(/coming soon/i)).toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: /go back/i }))
     expect(screen.getByRole('heading', { name: 'Practice' })).toBeInTheDocument()
+  })
 
+  it('reaches Drills through Practice, and back returns to Practice', async () => {
+    useStore.setState({ profileName: 'Ana', placed: true, cefrLevel: 1, unlockedLevel: 1 })
+    render(<App />)
+
+    await userEvent.click(screen.getByRole('button', { name: /practice/i }))
     await userEvent.click(screen.getByTestId('practice-drills'))
     expect(screen.getByRole('heading', { name: 'Drills' })).toBeInTheDocument()
-    expect(screen.getByText(/coming soon/i)).toBeInTheDocument()
+    // jsdom has no speechSynthesis, so Drills takes its honest no-voice branch
+    // rather than offering listening exercises that would play silence.
+    expect(screen.getByText(/this browser can.t speak/i)).toBeInTheDocument()
+
     await userEvent.click(screen.getByRole('button', { name: /go back/i }))
     expect(screen.getByRole('heading', { name: 'Practice' })).toBeInTheDocument()
   })
