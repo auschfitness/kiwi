@@ -11,6 +11,7 @@ vi.mock('./audio/speak', () => ({
   cancelSpeech: vi.fn(),
   warmUp: vi.fn(),
   pickVoice: vi.fn(),
+  setDefaultRate: vi.fn(),
 }))
 
 beforeEach(() => {

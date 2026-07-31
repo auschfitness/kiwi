@@ -22,6 +22,12 @@ const ACCENTS: { value: Accent; label: string }[] = [
   { value: 'en-US', label: '🇺🇸 US' },
 ]
 
+const SPEECH_RATES: { value: number; label: string }[] = [
+  { value: 0.75, label: 'Slower' },
+  { value: 0.95, label: 'Normal' },
+  { value: 1.1, label: 'Faster' },
+]
+
 type LiveStatus = 'syncing' | 'synced' | 'offline' | 'error'
 
 const STATUS_LABEL: Record<LiveStatus, string> = {
@@ -135,6 +141,7 @@ export function Settings({ onBack, onRetakePlacement, syncStatus, onRestore }: S
   const dailyGoal = useStore(s => s.dailyGoal)
   const newPerSession = useStore(s => s.newPerSession)
   const accent = useStore(s => s.accent)
+  const speechRate = useStore(s => s.speechRate)
   const autoPlayAudio = useStore(s => s.autoPlayAudio)
   const showPortuguese = useStore(s => s.showPortuguese)
   const setPref = useStore(s => s.setPref)
@@ -281,6 +288,31 @@ export function Settings({ onBack, onRetakePlacement, syncStatus, onRestore }: S
               }`}
             >
               {a.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div
+        role="radiogroup"
+        aria-label="Speech speed"
+        className="flex flex-col gap-2 rounded-card border border-line bg-card p-4"
+      >
+        <p className="font-bold text-ink">Speech speed</p>
+        <p className="text-sm text-muted">How fast the app talks to you, everywhere.</p>
+        <div className="grid grid-cols-3 gap-2">
+          {SPEECH_RATES.map(r => (
+            <button
+              key={r.value}
+              type="button"
+              role="radio"
+              aria-checked={speechRate === r.value}
+              onClick={() => setPref('speechRate', r.value)}
+              className={`min-h-[44px] rounded-2xl border px-1 text-sm font-bold transition active:scale-[0.98] ${
+                speechRate === r.value ? 'border-brand bg-card2 text-brand' : 'border-line bg-card text-ink'
+              }`}
+            >
+              {r.label}
             </button>
           ))}
         </div>

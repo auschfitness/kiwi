@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { warmUp } from './audio/speak'
+import { setDefaultRate, warmUp } from './audio/speak'
 import { useStore } from './store/useStore'
 import { useSync } from './sync/useSync'
 import { LEVEL_NAMES } from './core/leveling'
@@ -43,6 +43,7 @@ export default function App() {
   const unlocked = useStore(s => s.unlocked)
   const clearUnlockToast = useStore(s => s.clearUnlockToast)
   const retakePlacement = useStore(s => s.retakePlacement)
+  const speechRate = useStore(s => s.speechRate)
 
   // Mounted once, for the whole session, regardless of which screen is
   // showing — this is what keeps progress pushed to the cloud in the
@@ -59,6 +60,12 @@ export default function App() {
     document.addEventListener('pointerdown', unlock)
     return () => document.removeEventListener('pointerdown', unlock)
   }, [])
+
+  // Keeps the audio layer's module-level default rate in sync with her
+  // preference — on mount and every time she changes it in Settings.
+  useEffect(() => {
+    setDefaultRate(speechRate)
+  }, [speechRate])
 
   function goHome() {
     setScreen('home')

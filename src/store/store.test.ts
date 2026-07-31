@@ -126,4 +126,28 @@ describe('store', () => {
     expect(useStore.getState().placed).toBe(false)
     expect(useStore.getState().cards.survival_0).toBeDefined()
   })
+
+  it('remembers her speech-rate preference', () => {
+    useStore.getState().setPref('speechRate', 0.75)
+    expect(useStore.getState().speechRate).toBe(0.75)
+  })
+
+  it('defaults speechRate to 0.95 — today\'s speed — for a fresh profile', () => {
+    expect(useStore.getState().speechRate).toBe(0.95)
+  })
+
+  // A profile saved before this feature shipped has no `speechRate` key at
+  // all. Zustand's default persist merge is `{ ...currentState, ...persisted
+  // }`, so a missing key in the persisted blob falls through to the fresh
+  // initial state's default (0.95) rather than becoming `undefined`.
+  it('loads an old persisted profile (saved before this feature existed) with the default rate, not undefined', async () => {
+    const fresh = createInitialState(NOW)
+    const { speechRate: _noRateInOldSave, ...oldProfileShape } = fresh
+    localStorage.setItem('english-nz', JSON.stringify({ state: oldProfileShape, version: 1 }))
+
+    await useStore.persist.rehydrate()
+
+    expect(useStore.getState().speechRate).toBe(0.95)
+    localStorage.removeItem('english-nz')
+  })
 })

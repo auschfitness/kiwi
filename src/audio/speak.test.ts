@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest'
-import { pickVoice } from './speak'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { pickVoice, speak, setDefaultRate } from './speak'
 
 function voice(lang: string, name = lang): SpeechSynthesisVoice {
   return { lang, name, default: false, localService: true, voiceURI: name } as SpeechSynthesisVoice
@@ -39,5 +39,68 @@ describe('pickVoice', () => {
   it('honours a non-default accent choice', () => {
     const voices = [voice('en-NZ'), voice('en-GB')]
     expect(pickVoice(voices, 'en-GB')?.lang).toBe('en-GB')
+  })
+})
+
+// jsdom has no speechSynthesis / SpeechSynthesisUtterance, so we stub the
+// minimum surface `speak()` touches and capture the utterance it builds.
+describe('speak rate', () => {
+  let utterances: { rate: number }[]
+
+  beforeEach(() => {
+    utterances = []
+    class FakeUtterance {
+      rate = 1
+      pitch = 1
+      lang = ''
+      voice: SpeechSynthesisVoice | null = null
+      constructor(_text: string) {}
+    }
+    vi.stubGlobal('SpeechSynthesisUtterance', FakeUtterance)
+    vi.stubGlobal('speechSynthesis', {
+      getVoices: () => [],
+      speak: (u: { rate: number }) => { utterances.push(u) },
+      cancel: vi.fn(),
+    })
+    // Reset the module-level default so earlier tests in this file can't leak into later ones.
+    setDefaultRate(0.95)
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it('uses the module default rate when no explicit rate is given', () => {
+    speak('hello', 'en-NZ')
+    expect(utterances[0].rate).toBe(0.95)
+  })
+
+  it('respects a rate set via setDefaultRate', () => {
+    setDefaultRate(0.75)
+    speak('hello', 'en-NZ')
+    expect(utterances[0].rate).toBe(0.75)
+  })
+
+  it('lets an explicit opts.rate override the default', () => {
+    setDefaultRate(0.75)
+    speak('hello', 'en-NZ', { rate: 1.1 })
+    expect(utterances[0].rate).toBe(1.1)
+  })
+
+  it('clamps a too-low default rate to 0.5', () => {
+    setDefaultRate(0.1)
+    speak('hello', 'en-NZ')
+    expect(utterances[0].rate).toBe(0.5)
+  })
+
+  it('clamps a too-high default rate to 1.2', () => {
+    setDefaultRate(5)
+    speak('hello', 'en-NZ')
+    expect(utterances[0].rate).toBe(1.2)
+  })
+
+  it('clamps an explicit opts.rate too, so a bad caller cannot break speech', () => {
+    speak('hello', 'en-NZ', { rate: 10 })
+    expect(utterances[0].rate).toBe(1.2)
   })
 })

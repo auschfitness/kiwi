@@ -19,6 +19,7 @@ export function createInitialState(now: number): AppState {
     accent: 'en-NZ',
     showPortuguese: true,
     autoPlayAudio: true,
+    speechRate: 0.95,
     streak: 0,
     lastStudyDay: null,
     doneToday: 0,

@@ -109,6 +109,20 @@ describe('Settings — additional behaviour (still unconfigured)', () => {
     expect(useStore.getState().accent).toBe('en-AU')
   })
 
+  it('speech-speed selector marks Normal as active by default and switches on click', async () => {
+    render(<Settings onBack={vi.fn()} onRetakePlacement={vi.fn()} syncStatus="unconfigured" onRestore={vi.fn()} />)
+    const normal = screen.getByRole('radio', { name: /normal/i })
+    expect(normal).toHaveAttribute('aria-checked', 'true')
+
+    const slower = screen.getByRole('radio', { name: /slower/i })
+    await userEvent.click(slower)
+    expect(useStore.getState().speechRate).toBe(0.75)
+
+    const faster = screen.getByRole('radio', { name: /faster/i })
+    await userEvent.click(faster)
+    expect(useStore.getState().speechRate).toBe(1.1)
+  })
+
   it('commits an edited name on blur, ignoring an attempt to clear it', async () => {
     render(<Settings onBack={vi.fn()} onRetakePlacement={vi.fn()} syncStatus="unconfigured" onRestore={vi.fn()} />)
     const input = screen.getByDisplayValue('Ana')

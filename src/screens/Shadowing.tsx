@@ -22,6 +22,7 @@ type Phase = 'idle' | 'listening' | 'result'
  */
 export function Shadowing({ dialogueId, onBack }: ShadowingProps) {
   const accent = useStore(s => s.accent)
+  const speechRate = useStore(s => s.speechRate)
 
   const lines = useMemo(() => {
     const all = shadowingLines()
@@ -92,7 +93,7 @@ export function Shadowing({ dialogueId, onBack }: ShadowingProps) {
           </button>
           <button
             type="button"
-            onClick={() => speak(line.en, accent, { rate: 0.7 })}
+            onClick={() => speak(line.en, accent, { rate: Math.max(0.5, speechRate * 0.75) })}
             aria-label="Play slowly"
             className="flex h-11 items-center justify-center gap-2 rounded-full border border-line bg-card2 px-4 text-sm font-bold text-ink transition active:scale-[0.98]"
           >

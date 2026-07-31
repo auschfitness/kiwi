@@ -10,6 +10,7 @@ type Result = 'pending' | 'right' | 'wrong'
 
 export function Dictate({ card, onAnswer }: ModalityProps) {
   const accent = useStore(s => s.accent)
+  const speechRate = useStore(s => s.speechRate)
   const [value, setValue] = useState('')
   const [result, setResult] = useState<Result>('pending')
   const [answered, setAnswered] = useState(false)
@@ -43,7 +44,7 @@ export function Dictate({ card, onAnswer }: ModalityProps) {
           <SpeakerButton text={plain} />
           <button
             type="button"
-            onClick={() => speak(plain, accent, { rate: 0.7 })}
+            onClick={() => speak(plain, accent, { rate: Math.max(0.5, speechRate * 0.75) })}
             aria-label="Play slowly"
             className="flex h-11 items-center justify-center gap-2 rounded-full border border-line bg-card2 px-4 text-sm font-bold text-ink transition active:scale-[0.98]"
           >

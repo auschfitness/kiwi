@@ -35,7 +35,7 @@ function dayRank(key: string | null): number {
 function scalarKey(s: AppState): string {
   return JSON.stringify([
     s.profileName, s.syncCode, s.dailyGoal, s.newPerSession,
-    s.accent, s.showPortuguese, s.autoPlayAudio, s.lastStudyDay,
+    s.accent, s.showPortuguese, s.autoPlayAudio, s.speechRate, s.lastStudyDay,
   ])
 }
 
@@ -88,6 +88,7 @@ export function mergeSnapshots(local: AppState, remote: AppState): AppState {
     accent: newer.accent,
     showPortuguese: newer.showPortuguese,
     autoPlayAudio: newer.autoPlayAudio,
+    speechRate: newer.speechRate,
     streak: Math.max(local.streak, remote.streak),
     lastStudyDay: newer.lastStudyDay,
     doneToday: dayOwner.doneToday,

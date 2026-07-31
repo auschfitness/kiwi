@@ -60,6 +60,8 @@ export interface AppState {
   accent: Accent
   showPortuguese: boolean
   autoPlayAudio: boolean
+  /** Passed straight to SpeechSynthesisUtterance.rate. 0.95 is today's speed. */
+  speechRate: number
   streak: number
   lastStudyDay: string | null
   doneToday: number

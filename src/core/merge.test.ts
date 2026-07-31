@@ -13,7 +13,7 @@ function snap(over: Partial<AppState> = {}): AppState {
       grammar: { correct: 0, total: 0 }, speaking: { correct: 0, total: 0 },
     },
     dailyGoal: 20, newPerSession: 8, accent: 'en-NZ',
-    showPortuguese: true, autoPlayAudio: true,
+    showPortuguese: true, autoPlayAudio: true, speechRate: 0.95,
     streak: 0, lastStudyDay: null, doneToday: 0, doneDate: null, bestDay: 0,
     startedAt: T, updatedAt: T, ...over,
   }
