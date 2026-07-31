@@ -62,9 +62,85 @@ export function isSentence(card: Card): boolean {
   return n >= 3 && n <= 9
 }
 
+/**
+ * Apostrophe used in contractions, as it actually appears in the corpus: the
+ * straight quote (U+0027) or the curly right single quote (U+2019). Built
+ * from codepoints, never pasted — see the note on PUNCTUATION above.
+ */
+const APOS = '[\'\u2019]'
+
+/**
+ * Contractions whose expansion the generic suffix rules below get wrong, so
+ * they must be substituted first. `can't` is genuinely two acceptable
+ * expansions ("cannot" and "can not"), so it branches instead of resolving.
+ */
+const IRREGULAR_CONTRACTIONS: ReadonlyArray<[RegExp, string]> = [
+  [new RegExp(`\\bwon${APOS}t\\b`, 'gi'), 'will not'],
+  [new RegExp(`\\bshan${APOS}t\\b`, 'gi'), 'shall not'],
+  [new RegExp(`\\blet${APOS}s\\b`, 'gi'), 'let us'],
+  [new RegExp(`\\by${APOS}all\\b`, 'gi'), 'you all'],
+]
+
+const CANT_RE = new RegExp(`\\bcan${APOS}t\\b`, 'gi')
+const CANT_TEST_RE = new RegExp(`\\bcan${APOS}t\\b`, 'i')
+
+/**
+ * Suffix rules applied to the word they attach to, once the irregulars above
+ * are out of the way. `'d` (would/had) and `'s` (is/has/possessive) are
+ * genuinely ambiguous — left unresolved on purpose, see normalizeVariants.
+ */
+const SUFFIX_CONTRACTIONS: ReadonlyArray<[RegExp, string]> = [
+  [new RegExp(`(\\w+)n${APOS}t\\b`, 'gi'), '$1 not'],
+  [new RegExp(`(\\w+)${APOS}re\\b`, 'gi'), '$1 are'],
+  [new RegExp(`(\\w+)${APOS}m\\b`, 'gi'), '$1 am'],
+  [new RegExp(`(\\w+)${APOS}ve\\b`, 'gi'), '$1 have'],
+  [new RegExp(`(\\w+)${APOS}ll\\b`, 'gi'), '$1 will'],
+  [new RegExp(`(\\w+)${APOS}d\\b`, 'gi'), '$1 would'],
+  [new RegExp(`(\\w+)${APOS}s\\b`, 'gi'), '$1 is'],
+]
+
+function applyAll(s: string, rules: ReadonlyArray<[RegExp, string]>): string {
+  return rules.reduce((acc, [re, replacement]) => acc.replace(re, replacement), s)
+}
+
+/**
+ * Every plausible full-word expansion of the contractions in `s`. Usually a
+ * single string; two when `can't` is present, since both "cannot" and
+ * "can not" are acceptable and the rule can't (sorry) pick one for her.
+ */
+function expandContractions(s: string): string[] {
+  const afterIrregulars = applyAll(s, IRREGULAR_CONTRACTIONS)
+  if (!CANT_TEST_RE.test(afterIrregulars)) {
+    return [applyAll(afterIrregulars, SUFFIX_CONTRACTIONS)]
+  }
+  const cannot = afterIrregulars.replace(CANT_RE, 'cannot')
+  const canNot = afterIrregulars.replace(CANT_RE, 'can not')
+  return [applyAll(cannot, SUFFIX_CONTRACTIONS), applyAll(canNot, SUFFIX_CONTRACTIONS)]
+}
+
+/**
+ * Every normalized form `s` should be accepted as. Always includes the plain
+ * `normalize(s)`, plus one form per plausible contraction expansion, expanded
+ * *before* normalize's punctuation strip runs so the apostrophe is gone by
+ * the time it would otherwise be silently dropped (turning "it's" into
+ * "its" instead of "it is").
+ *
+ * Deliberately does not resolve `'d`/`'s` ambiguity: both sides of a
+ * comparison generate variants, so e.g. "I'd like" vs "I would like" still
+ * matches on the shared "would" variant.
+ */
+export function normalizeVariants(s: string): string[] {
+  const variants = new Set<string>([normalize(s)])
+  for (const expanded of expandContractions(s)) {
+    variants.add(normalize(expanded))
+  }
+  return Array.from(variants)
+}
+
 export function looseMatch(answer: string, target: string): boolean {
-  const a = normalize(answer)
-  return a.length > 0 && a === normalize(target)
+  if (normalize(answer).length === 0) return false
+  const targetVariants = normalizeVariants(target)
+  return normalizeVariants(answer).some(v => targetVariants.includes(v))
 }
 
 /** The example sentence with the bolded target replaced by a blank. */

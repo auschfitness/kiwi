@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { normalize, stripTags, exampleWords, isTypable, isSentence, looseMatch, clozeExample } from './text'
+import { normalize, stripTags, exampleWords, isTypable, isSentence, looseMatch, normalizeVariants, clozeExample } from './text'
 import type { Card, PartOfSpeech } from '../types'
 
 function card(over: Partial<Card> = {}): Card {
@@ -175,6 +175,72 @@ describe('looseMatch', () => {
 
   it('still rejects the wrong words either side of a separator', () => {
     expect(looseMatch('he/it', 'He / She')).toBe(false)
+  })
+
+  // The bug report, verbatim: she typed one form and the target was the other,
+  // in both directions, for both contraction styles.
+  it('accepts either the contracted or the expanded form of "it is"/"it\'s"', () => {
+    expect(looseMatch('it is', "it's")).toBe(true)
+    expect(looseMatch('its', "it's")).toBe(true)
+    expect(looseMatch("it's", 'it is')).toBe(true)
+  })
+
+  it('accepts either the contracted or the expanded form of "do not"/"don\'t"', () => {
+    expect(looseMatch('do not', "don't")).toBe(true)
+    expect(looseMatch('dont', "don't")).toBe(true)
+  })
+
+  it('does not regress a possessive that happens to look like a contraction', () => {
+    expect(looseMatch('Johns book', "John's book")).toBe(true)
+    expect(looseMatch("John's book", "John's book")).toBe(true)
+  })
+
+  it('accepts the curly right single quote (U+2019) the same as a straight apostrophe', () => {
+    const RSQ = String.fromCodePoint(0x2019)
+    expect(looseMatch('it is', `it${RSQ}s`)).toBe(true)
+    expect(looseMatch(`it${RSQ}s`, 'it is')).toBe(true)
+  })
+
+  it('handles the irregular contractions', () => {
+    expect(looseMatch('will not', "won't")).toBe(true)
+    expect(looseMatch('cannot', "can't")).toBe(true)
+    expect(looseMatch('can not', "can't")).toBe(true)
+    expect(looseMatch('shall not', "shan't")).toBe(true)
+    expect(looseMatch('let us', "let's")).toBe(true)
+    expect(looseMatch('you all', "y'all")).toBe(true)
+  })
+
+  it('handles the full set of suffix contractions', () => {
+    expect(looseMatch('you are welcome', "you're welcome")).toBe(true)
+    expect(looseMatch('i am here', "I'm here")).toBe(true)
+    expect(looseMatch('i have finished', "I've finished")).toBe(true)
+    expect(looseMatch('i will go', "I'll go")).toBe(true)
+    expect(looseMatch('i would like tea', "I'd like tea")).toBe(true)
+    expect(looseMatch('he is late', "he's late")).toBe(true)
+  })
+
+  it("resolves the 'd/'s ambiguity via the shared variant either side generates", () => {
+    expect(looseMatch("I'd like tea", 'I would like tea')).toBe(true)
+  })
+})
+
+describe('normalizeVariants', () => {
+  it('always includes the plain normalize() form', () => {
+    expect(normalizeVariants("it's")).toContain('its')
+  })
+
+  it('adds the expanded form for a contraction', () => {
+    expect(normalizeVariants("it's")).toContain('it is')
+  })
+
+  it('returns both branches for can\'t', () => {
+    const variants = normalizeVariants("can't")
+    expect(variants).toContain('cannot')
+    expect(variants).toContain('can not')
+  })
+
+  it('leaves a string with no contraction as a single variant', () => {
+    expect(normalizeVariants('water')).toEqual(['water'])
   })
 })
 
