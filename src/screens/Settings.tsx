@@ -2,6 +2,8 @@ import { useState } from 'react'
 import type { Accent } from '../types'
 import { useStore } from '../store/useStore'
 import { isSyncConfigured, validateSyncCode, type SyncStatus } from '../sync/client'
+import { isPushConfigured } from '../sync/push'
+import { refreshReminderDelivery } from '../notify/delivery'
 import { Button, Card, Chip, ScreenHeader } from '../components/ui'
 
 export interface SettingsProps {
@@ -48,6 +50,29 @@ const IOS_NOTE =
  */
 const DENIED_NOTE =
   "Your browser said no to notifications. You can turn them back on in your browser settings whenever you like. Either way, the reminder still shows up inside the app — nothing is lost."
+
+/**
+ * The `VITE_VAPID_PUBLIC_KEY` (or the Supabase project) is missing, so nothing
+ * can push to her phone yet. Said plainly, with no jargon and no blame: this
+ * is a job on the owner's list, not a fault of hers or of her phone, and the
+ * daily reminder she just switched on genuinely does still work.
+ *
+ * Deliberately not hidden behind the toggle. It is the difference between
+ * "reminders" meaning a buzz on a locked phone and meaning a note when she
+ * next opens the app, and she should know which one she is getting *before*
+ * she relies on it.
+ */
+const PUSH_UNCONFIGURED_NOTE =
+  "Reminders on your phone — the kind that arrive while the app is closed — aren't set up yet. The reminder inside the app works today, every day, and nothing needs setting up for it."
+
+/**
+ * Push is fully wired. Hedged on purpose ("can"): whether a notification
+ * actually arrives still depends on her granting permission and, on iPhone, on
+ * the Home Screen install described above. Promising the buzz outright would
+ * be the one thing this screen must never do.
+ */
+const PUSH_CONFIGURED_NOTE =
+  'Your phone can buzz at this time too, even when the app is closed.'
 
 /**
  * `Notification` is missing in plenty of real contexts — iOS Safari before
@@ -180,6 +205,10 @@ export function Settings({ onBack, onRetakePlacement, syncStatus, onRestore }: S
   const resetProgress = useStore(s => s.resetProgress)
 
   const configured = isSyncConfigured()
+  // Both halves of the push setup present: a Supabase project *and* a VAPID
+  // public key. Either missing and the reminder card says so rather than
+  // implying a buzz that can never arrive.
+  const pushConfigured = isPushConfigured()
 
   const [name, setName] = useState(profileName)
   const [codeInput, setCodeInput] = useState(syncCode ?? '')
@@ -198,11 +227,11 @@ export function Settings({ onBack, onRetakePlacement, syncStatus, onRestore }: S
    */
   async function handleReminderToggle(next: boolean) {
     setPref('reminderEnabled', next)
-    if (!next) { setNotificationsDenied(false); return }
+    if (!next) { setNotificationsDenied(false); syncDelivery(); return }
 
     const api = notificationApi()
     if (!api) return
-    if (api.permission === 'granted') { setNotificationsDenied(false); return }
+    if (api.permission === 'granted') { setNotificationsDenied(false); syncDelivery(); return }
 
     try {
       // Safari once returned undefined here and took a callback instead —
@@ -215,6 +244,23 @@ export function Settings({ onBack, onRetakePlacement, syncStatus, onRestore }: S
       // not a reason to leave the reminder off.
       setNotificationsDenied(false)
     }
+    // Whatever the answer was, re-run the background layers now. App's
+    // useReminders() already fired when the preference changed a moment ago —
+    // but that was *before* the prompt came back, so at that point permission
+    // was still 'default' and both background layers correctly declined. This
+    // is the second look, once the answer is actually known.
+    syncDelivery()
+  }
+
+  /**
+   * Fire-and-forget: re-arm (or stand down) Layers 2 and 3 from whatever the
+   * store now says. `getState()` rather than the values rendered above,
+   * because `setPref` has just run and this needs the new value, not the one
+   * this render closed over. Never throws — see src/notify/delivery.ts.
+   */
+  function syncDelivery() {
+    const { reminderEnabled: enabled, reminderTime: time, syncCode: code } = useStore.getState()
+    void refreshReminderDelivery({ reminderEnabled: enabled, reminderTime: time, syncCode: code }, Date.now())
   }
 
   function commitName() {
@@ -352,6 +398,9 @@ export function Settings({ onBack, onRetakePlacement, syncStatus, onRestore }: S
             className="min-h-[44px] rounded-2xl border border-line bg-card2 px-4 text-ink"
           />
         </label>
+        <p className="text-xs text-muted">
+          {pushConfigured ? PUSH_CONFIGURED_NOTE : PUSH_UNCONFIGURED_NOTE}
+        </p>
         <p className="text-xs text-muted">{IOS_NOTE}</p>
         {notificationsDenied && (
           <p role="status" className="text-sm text-ink">

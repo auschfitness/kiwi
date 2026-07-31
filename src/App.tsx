@@ -4,6 +4,7 @@ import { useStore } from './store/useStore'
 import { useSync } from './sync/useSync'
 import { LEVEL_NAMES } from './core/leveling'
 import { shouldNudge } from './core/reminder'
+import { useReminders } from './notify/delivery'
 import { dayKey } from './core/time'
 import { Button, Toast } from './components/ui'
 import { Name } from './screens/Name'
@@ -75,6 +76,14 @@ export default function App() {
   // debounced push timers and visibility listeners per session, not one per
   // screen that happens to render Settings.
   const { status: syncStatus, restore: onRestore } = useSync()
+
+  // Layers 2 and 3 of the daily reminder: a Web Push subscription if the
+  // backend exists, otherwise a locally scheduled notification where the
+  // browser can do it, otherwise nothing at all and Layer 1 above carries the
+  // feature alone. Same deal as useSync: with an empty .env every path inside
+  // short-circuits before touching a client, a service worker or a permission
+  // — see src/notify/delivery.ts for the ordering rule.
+  useReminders()
 
   useEffect(() => {
     const unlock = () => { warmUp(); document.removeEventListener('pointerdown', unlock) }

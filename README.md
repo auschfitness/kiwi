@@ -102,8 +102,10 @@ cost anything at this scale. Here's exactly what to click.
 3. **Paste and run the schema.** Open the file `supabase/schema.sql` from
    this project in a text editor, copy everything in it, and paste it into
    the Supabase SQL editor. Click **Run** (or press Ctrl/Cmd+Enter). You
-   should see a "Success" message. This creates one table and two
-   functions — that's the entire cloud setup.
+   should see a "Success" message. That's the entire cloud setup. (The file
+   also creates a second table used by the optional phone reminders further
+   down — it sits idle until you set those up, and the file is safe to
+   re-run at any time.)
 
 4. **Copy your project's keys.** In the left sidebar, click **Project
    Settings** (the gear icon), then **API**. You'll see a **Project URL**
@@ -134,6 +136,96 @@ that require already knowing a specific sync code (the word-plus-numbers
 code described below). No sync code, no access. This is a standard,
 supported way to use Supabase from a public app — the key is meant to be
 public.
+
+## Phone reminders (optional, and not set up yet)
+
+The app has a daily reminder with three layers. Only the first one is
+switched on today, and **the app is complete without the other two** — this
+whole section is optional extra credit.
+
+| Layer | What it is | Needs |
+|---|---|---|
+| 1. In-app nudge | A friendly note when she opens the app at or after her chosen time. | Nothing. Works now, everywhere, offline. |
+| 2. Phone push | A real notification at her chosen time, even with the app closed. | The setup below. |
+| 3. Local backstop | The same notification, scheduled by her own phone the last time she opened the app. Chrome/Edge/Android only. | Nothing. Turns itself on automatically wherever the browser supports it, and stands down as soon as layer 2 works. |
+
+The app always uses the best layer available and only ever one of them, so
+she is never reminded twice for the same day. If you never do any of the
+below, layer 3 quietly covers Android and Chrome, and layer 1 covers
+everyone else — including every iPhone.
+
+### What layer 2 costs you
+
+About twenty minutes, once. It needs the cloud sync above already working,
+plus a Supabase Edge Function (free at this scale) and one pair of keys.
+
+**1. Make the keys.** In a terminal, anywhere:
+
+```
+npx web-push generate-vapid-keys
+```
+
+It prints a **Public Key** and a **Private Key**. Keep the window open.
+
+**2. Add the push tables.** Open your project's SQL editor again, paste in
+the whole of `supabase/schema.sql` and run it. The file is safe to re-run —
+it will not touch the progress already saved in it.
+
+**3. Give the function its secrets.** You need the Supabase CLI
+(`npm i -g supabase`, then `supabase login`, then `supabase link
+--project-ref <your-project-ref>`). Then:
+
+```
+supabase secrets set VAPID_PUBLIC_KEY=<the public key from step 1>
+supabase secrets set VAPID_PRIVATE_KEY=<the private key from step 1>
+supabase secrets set VAPID_SUBJECT=mailto:you@example.com
+```
+
+The **private key never leaves this step.** It does not go in `.env`, it
+does not go in git.
+
+**4. Deploy the sender.**
+
+```
+supabase functions deploy send-reminders
+```
+
+**5. Put it on a schedule.** In the Supabase dashboard, open **Edge
+Functions → send-reminders → Schedules**, and add one for `*/15 * * * *`
+(every fifteen minutes). The function works out, per device, whether it is
+that person's reminder time where they are, and sends at most one reminder
+per day.
+
+**6. Tell the app the public key.** Add it to your `.env`:
+
+```
+VITE_VAPID_PUBLIC_KEY=<the public key from step 1>
+```
+
+If the app is on Vercel or Netlify, add the same name and value in the
+host's **Environment Variables** screen too — a `.env` file on your laptop
+does not reach a deployed site.
+
+**7. Rebuild and re-upload** (`npm run build`, then deploy). Settings now
+says *"Your phone can buzz at this time too"* instead of *"aren't set up
+yet"*.
+
+### Checking it worked
+
+Open Settings, switch the daily reminder on, and allow notifications when
+the browser asks. Then, in the Supabase dashboard, look at the
+`push_subscriptions` table — there should be one row, with the reminder time
+and the phone's timezone in it. You can also run the function by hand from
+**Edge Functions → send-reminders → Invoke** and read the reply: it says how
+many it sent, skipped and pruned.
+
+### On iPhone
+
+Web push on iPhone only works if the app is installed to the Home Screen
+(Share → **Add to Home Screen**) and the phone is on iOS 16.4 or newer.
+Safari in an ordinary tab cannot do it at all, and layer 3 does not exist in
+Safari either. The app says this on the Settings screen rather than letting
+her wait for a buzz that cannot come.
 
 ## Using a sync code
 

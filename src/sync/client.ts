@@ -12,7 +12,13 @@ export function isSyncConfigured(): boolean {
 
 let client: SupabaseClient | null = null
 
-function getClient(): SupabaseClient | null {
+/**
+ * The one Supabase client in the app, or `null` when there is nothing to
+ * connect to. Exported so `push.ts` shares this instance instead of building
+ * a second one — and, more importantly, so the "with an empty .env we never
+ * construct a client at all" guarantee is enforced in exactly one place.
+ */
+export function getClient(): SupabaseClient | null {
   if (!isSyncConfigured()) return null
   if (!client) client = createClient(URL!, KEY!)
   return client

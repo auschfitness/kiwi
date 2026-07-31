@@ -25,6 +25,13 @@ export default defineConfig({
         ],
       },
       workbox: {
+        // The one hook `generateSW` gives us for our own service-worker code.
+        // Workbox emits `importScripts('push-sw.js')` at the top of the
+        // generated dist/sw.js and leaves everything else it generates —
+        // precache manifest, navigation fallback, the photos runtime cache —
+        // exactly as it was. See the long note at the top of
+        // public/push-sw.js for why this rather than `injectManifest`.
+        importScripts: ['push-sw.js'],
         // Note what is *not* here: webp. The 150 card photographs in
         // public/photos are deliberately left out of the precache.
         //
@@ -37,6 +44,12 @@ export default defineConfig({
         // on. Seen once, it works offline forever after; never seen, the card
         // just renders without it. The plane still works either way.
         globPatterns: ['**/*.{js,css,html,png,svg,woff2}'],
+        // push-sw.js is imported by the service worker itself, so precaching
+        // it would be circular: it is already fetched (and revalidated on
+        // every update check) as part of the worker, never through a fetch
+        // handler. Keeping the default node_modules ignore, which specifying
+        // this option would otherwise replace.
+        globIgnores: ['**/node_modules/**/*', 'push-sw.js'],
         navigateFallback: 'index.html',
         // navigateFallback would otherwise answer a missing photo with
         // index.html, which the browser then tries to decode as an image.

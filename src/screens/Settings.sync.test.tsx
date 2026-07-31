@@ -56,6 +56,14 @@ describe('Settings with Supabase configured', () => {
     expect(await screen.findByText(/letter/i)).toBeInTheDocument()
   })
 
+  it('still says phone reminders are unset — cloud sync alone is not push', () => {
+    // Both halves are needed (a Supabase project *and* a VAPID public key),
+    // and this is the exact half-configured state the owner passes through.
+    render(<Settings onBack={vi.fn()} onRetakePlacement={vi.fn()} syncStatus="idle" onRestore={vi.fn()} />)
+    expect(screen.getByText(/aren't set up yet/i)).toBeInTheDocument()
+    expect(screen.queryByText(/your phone can buzz/i)).not.toBeInTheDocument()
+  })
+
   it('still exposes every local setting alongside the sync card', () => {
     render(<Settings onBack={vi.fn()} onRetakePlacement={vi.fn()} syncStatus="idle" onRestore={vi.fn()} />)
     expect(screen.getByLabelText(/daily goal/i)).toBeInTheDocument()

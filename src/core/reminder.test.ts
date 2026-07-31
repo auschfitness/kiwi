@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { shouldNudge, type NudgeState } from './reminder'
+import { nextReminderAt, shouldNudge, type NudgeState } from './reminder'
 import { dayKey } from './time'
 
 /**
@@ -79,5 +79,33 @@ describe('shouldNudge', () => {
     // left over from yesterday must not silence today's nudge.
     const now = at(19, 30, 30)
     expect(shouldNudge(state({ doneToday: 40, doneDate: '2026-7-29' }), now)).toBe(true)
+  })
+})
+
+describe('nextReminderAt', () => {
+  it('gives today when her time is still ahead', () => {
+    expect(nextReminderAt('19:00', at(9, 0))).toBe(at(19, 0))
+  })
+
+  it('gives tomorrow when her time has already gone by', () => {
+    expect(nextReminderAt('19:00', at(21, 30))).toBe(at(19, 0, 31))
+  })
+
+  it('gives tomorrow on the exact minute, never a trigger that fires instantly', () => {
+    // "Strictly after": scheduling a notification for right now means the app
+    // buzzing the second she opens it, for no reason she can see.
+    expect(nextReminderAt('19:00', at(19, 0))).toBe(at(19, 0, 31))
+  })
+
+  it('crosses the month boundary correctly', () => {
+    // 31 July -> 1 August. Date's setDate does the carry; we never do it.
+    const lateOnTheLastOfJuly = new Date(2026, 6, 31, 23, 0).getTime()
+    expect(nextReminderAt('07:30', lateOnTheLastOfJuly)).toBe(new Date(2026, 7, 1, 7, 30).getTime())
+  })
+
+  it('returns null for a time it cannot read, the same as shouldNudge', () => {
+    for (const bad of ['', 'nineteen', '7pm', '19', '25:00', '19:60', '9:5']) {
+      expect(nextReminderAt(bad, at(9, 0))).toBeNull()
+    }
   })
 })

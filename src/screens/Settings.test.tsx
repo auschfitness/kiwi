@@ -138,6 +138,16 @@ describe('Settings — additional behaviour (still unconfigured)', () => {
     expect(screen.getByText(/ios 16\.4 or newer/i)).toBeInTheDocument()
   })
 
+  it('says plainly that phone reminders are not set up, and that the in-app one still works', async () => {
+    // Today's shipping reality: no VITE_VAPID_PUBLIC_KEY, no sender deployed.
+    // She must not be left expecting a buzz on a locked phone that cannot
+    // come — and must be told the reminder she *does* have is unaffected.
+    render(<Settings onBack={vi.fn()} onRetakePlacement={vi.fn()} syncStatus="unconfigured" onRestore={vi.fn()} />)
+    expect(screen.getByText(/aren't set up yet/i)).toBeInTheDocument()
+    expect(screen.getByText(/the reminder inside the app works today/i)).toBeInTheDocument()
+    expect(screen.queryByText(/your phone can buzz/i)).not.toBeInTheDocument()
+  })
+
   it('turns the reminder on and saves a new time', async () => {
     render(<Settings onBack={vi.fn()} onRetakePlacement={vi.fn()} syncStatus="unconfigured" onRestore={vi.fn()} />)
     await userEvent.click(screen.getByLabelText(/daily reminder/i))

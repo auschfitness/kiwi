@@ -58,3 +58,31 @@ export function shouldNudge(state: NudgeState, now: number): boolean {
 
   return minutesOfDay(now) >= target
 }
+
+/**
+ * The next moment `reminderTime` comes round, strictly after `now`.
+ *
+ * `null` for a time we cannot parse — same rule as `shouldNudge`: a time we
+ * do not understand buys silence, never a guess.
+ *
+ * Used by Layer 3 (the locally scheduled notification), which needs an actual
+ * timestamp rather than a yes/no. "Strictly after" matters there: scheduling
+ * a trigger for a moment that has already passed fires it instantly, which
+ * from her side is the app buzzing for no reason the second she opens it. If
+ * today's time has gone, the answer is tomorrow's.
+ *
+ * Pure: `now` is a parameter, and the arithmetic is calendar arithmetic on
+ * that instant — DST-safe, because `Date`'s day/hour setters do the shifting.
+ */
+export function nextReminderAt(reminderTime: string, now: number): number | null {
+  const target = parseHhMm(reminderTime)
+  if (target === null) return null
+
+  const d = new Date(now)
+  const at = new Date(
+    d.getFullYear(), d.getMonth(), d.getDate(),
+    Math.floor(target / 60), target % 60, 0, 0,
+  )
+  if (at.getTime() <= now) at.setDate(at.getDate() + 1)
+  return at.getTime()
+}
