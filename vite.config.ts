@@ -25,8 +25,38 @@ export default defineConfig({
         ],
       },
       workbox: {
+        // Note what is *not* here: webp. The 150 card photographs in
+        // public/photos are deliberately left out of the precache.
+        //
+        // The promise of this app is that she can study on a plane. Precaching
+        // the photos would take the install from ~626 kB to well over 2 MB and
+        // make the first load a download she has to wait through — the exact
+        // thing offline-first is supposed to spare her. She is essentially
+        // always connected, so the photo fetches from the network the first
+        // time a card comes up, and the runtime rule below keeps it from then
+        // on. Seen once, it works offline forever after; never seen, the card
+        // just renders without it. The plane still works either way.
         globPatterns: ['**/*.{js,css,html,png,svg,woff2}'],
         navigateFallback: 'index.html',
+        // navigateFallback would otherwise answer a missing photo with
+        // index.html, which the browser then tries to decode as an image.
+        // Both patterns match anywhere in the path, not just at the root, so
+        // they keep working if the app is ever moved into a subfolder.
+        navigateFallbackDenylist: [/\/photos\//],
+        runtimeCaching: [
+          {
+            urlPattern: ({ url }) => url.pathname.includes('/photos/'),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'card-photos',
+              // A photo never changes under its card id — a re-fetch would
+              // change the id too — so CacheFirst is safe, and the cap stops
+              // the cache growing without bound if the corpus ever does.
+              expiration: { maxEntries: 300, maxAgeSeconds: 60 * 60 * 24 * 60 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+        ],
       },
     }),
   ],

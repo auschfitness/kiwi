@@ -13,6 +13,15 @@ export interface Card {
   examplePt: string
   pos: PartOfSpeech
   phonetic?: string
+  /** Public path of the card's photograph, e.g. `/photos/food_0.webp`.
+   * Only concrete cards have one — see scripts/fetch-photos.mjs. */
+  photo?: string
+}
+
+/** Who took a card's photograph, and where it lives on Pexels. */
+export interface PhotoCredit {
+  photographer: string
+  url: string
 }
 
 export interface Deck {

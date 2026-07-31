@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest'
-import { DECKS, ALL_CARDS, CARD_INDEX, DIALOGUES, PLAN, decksForLevel, levelOfCard } from './index'
+import { readdirSync } from 'node:fs'
+import { join } from 'node:path'
+import {
+  DECKS, ALL_CARDS, CARD_INDEX, DIALOGUES, PLAN, PHOTOS, PHOTO_CREDITS,
+  decksForLevel, levelOfCard,
+} from './index'
 
 describe('generated content', () => {
   it('has the full v1 corpus', () => {
@@ -52,6 +57,46 @@ describe('generated content', () => {
         expect(l.en).toBeTruthy()
         expect(l.pt).toBeTruthy()
       }
+    }
+  })
+})
+
+describe('card photographs', () => {
+  it('merges the photo onto the card, like the phonetic', () => {
+    // food_0 is "Water" — as concrete as the corpus gets.
+    expect(CARD_INDEX.food_0?.photo).toBe('/photos/food_0.webp')
+  })
+
+  it('leaves the abstract cards alone', () => {
+    // A photograph of "however" would be a lie, so there is none, and the
+    // card has to keep working without one.
+    expect(CARD_INDEX.connectors_0?.photo).toBeUndefined()
+    expect(CARD_INDEX.grammar_0?.photo).toBeUndefined()
+  })
+
+  it('only points at cards that exist', () => {
+    // A typo'd id in PHOTOS fails silently in the app — the photo simply
+    // never appears — so it has to fail here instead.
+    for (const id of Object.keys(PHOTOS)) expect(CARD_INDEX[id], id).toBeDefined()
+  })
+
+  it('ships the file behind every photo path', () => {
+    // An entry with no file on disk is a broken image on her screen; a file
+    // with no entry is dead weight in the deploy. Both are caught here.
+    const onDisk = new Set(readdirSync(join(process.cwd(), 'public', 'photos')))
+    for (const [id, src] of Object.entries(PHOTOS)) {
+      expect(src, id).toBe(`/photos/${id}.webp`)
+      expect(onDisk.has(`${id}.webp`), id).toBe(true)
+    }
+    expect(onDisk.size).toBe(Object.keys(PHOTOS).length)
+  })
+
+  it('credits the photographer of every photo', () => {
+    // Pexels does not require attribution but asks for it.
+    expect(Object.keys(PHOTO_CREDITS).sort()).toEqual(Object.keys(PHOTOS).sort())
+    for (const [id, c] of Object.entries(PHOTO_CREDITS)) {
+      expect(c.photographer, id).toBeTruthy()
+      expect(c.url, id).toMatch(/^https:\/\/www\.pexels\.com\//)
     }
   })
 })

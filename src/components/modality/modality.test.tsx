@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, within } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Learn } from './Learn'
 import { Recognize } from './Recognize'
@@ -113,6 +113,53 @@ describe('Recognize', () => {
     for (const name of [/^Again/, /^Hard/, /^Good/, /^Easy/]) {
       expect(rating(name)).toBeDisabled()
     }
+  })
+})
+
+describe('the photograph on a card', () => {
+  const withPhoto: Card = { ...card, photo: '/photos/x_0.webp' }
+
+  it('teaches with the picture on Learn', () => {
+    render(<Learn card={withPhoto} onAnswer={vi.fn()} />)
+    const img = screen.getByRole('img', { name: 'água' })
+    expect(img).toHaveAttribute('src', '/photos/x_0.webp')
+    // The alt is the Portuguese meaning, so a screen reader gets the teaching
+    // and not "photo of water".
+    expect(img).toHaveAttribute('loading', 'lazy')
+  })
+
+  it('keeps the picture behind the reveal on Recognize', async () => {
+    render(<Recognize card={withPhoto} onAnswer={vi.fn()} />)
+    // The whole point of Recognize is that she has to retrieve the meaning.
+    // A photo of the thing sitting above the hidden word hands it to her.
+    expect(screen.queryByRole('img')).not.toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: /show meaning/i }))
+    expect(screen.getByRole('img', { name: 'água' })).toBeInTheDocument()
+  })
+
+  it('never shows the picture on Type, revealed or not', async () => {
+    render(<Type card={withPhoto} onAnswer={vi.fn()} />)
+    expect(screen.queryByRole('img')).not.toBeInTheDocument()
+    await userEvent.type(screen.getByRole('textbox'), 'water')
+    await userEvent.click(screen.getByRole('button', { name: /check/i }))
+    expect(screen.queryByRole('img')).not.toBeInTheDocument()
+  })
+
+  it('gets out of the way when the photo will not load', () => {
+    // Photos are not precached, so meeting a card for the first time with no
+    // signal is a real state. A broken-image icon mid-lesson is worse than
+    // no picture.
+    render(<Learn card={withPhoto} onAnswer={vi.fn()} />)
+    fireEvent.error(screen.getByRole('img', { name: 'água' }))
+    expect(screen.queryByRole('img')).not.toBeInTheDocument()
+    expect(screen.getByText('water')).toBeInTheDocument()
+  })
+
+  it('renders the card exactly as before when there is no photo', async () => {
+    // Four hundred cards are abstract and will never have one.
+    render(<Learn card={card} onAnswer={vi.fn()} />)
+    expect(screen.queryByRole('img')).not.toBeInTheDocument()
+    expect(screen.getByText('water')).toBeInTheDocument()
   })
 })
 

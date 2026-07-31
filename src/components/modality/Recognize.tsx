@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Card, SpeakerButton, Button } from '../ui'
+import { Card, CardPhoto, SpeakerButton, Button } from '../ui'
 import { useStore } from '../../store/useStore'
 import { stripTags } from '../../core/text'
 import { RatingButtons } from './RatingButtons'
@@ -26,8 +26,13 @@ export function Recognize({ card, onAnswer }: ModalityProps) {
         </div>
       </Card>
 
+      {/* The photo lives inside the reveal, never above it. A picture of a
+       * cat next to a hidden word is the answer — showing it early would turn
+       * the test into a lookup. Same reason it is absent from Listen and
+       * Type entirely. */}
       {revealed && (
-        <Card className="flex flex-col gap-1">
+        <Card className="flex flex-col gap-2">
+          <CardPhoto card={card} />
           {showPortuguese && <p className="text-lg text-ink">{card.pt}</p>}
           <p className="text-ink">{stripTags(card.exampleHtml)}</p>
           {showPortuguese && <p className="text-sm text-muted">{card.examplePt}</p>}

@@ -159,6 +159,8 @@ Run these from a terminal, inside this project's folder.
 | `npm test` | Runs the automated test suite (fast, no browser). |
 | `npm run test:e2e` | Runs the end-to-end tests in a real (headless) browser — see below. |
 | `npm run extract` | Regenerates the word/phrase content from `english-nz.html` (see next section). |
+| `npm run photos` | Re-downloads the card photographs from Pexels. Needs an API key — see below. |
+| `npm run photos:verify` | Checks every file in `public/photos/` is a real WebP at 480px wide. No key needed. |
 
 `npm run test:e2e` needs a browser downloaded once, the first time:
 `npx playwright install chromium`.
@@ -180,6 +182,57 @@ change, change it in `english-nz.html` and run `extract` again.
 To add genuinely new decks (not just edit existing words), write them by
 hand in `src/content/authored/` instead — that folder is never touched by
 `extract` and is safe to edit directly.
+
+## The card photographs
+
+150 of the 581 cards carry a photograph — the concrete ones, where a picture
+shows the thing: food, the body, clothes, the house, around town, transport,
+the colours. A word learned next to a picture sticks better than a word
+learned next to a translation alone. Abstract cards (`however`, `notice
+period`, the grammar and the phrases) deliberately have none: a vague picture
+teaches a wrong association, which is worse than no picture.
+
+The photo appears on **Learn**, where the word is being taught, and on
+**Recognize** *after* she taps "Show meaning". It never appears before the
+answer on Recognize, Listen or Type — a photo of a cat beside a hidden word
+would give the answer away.
+
+The files live in `public/photos/<cardId>.webp` (150 files, about 2.1 MB, ~14 kB
+each) and are **committed to the repo**, so nothing below is needed to run,
+build or deploy the app. They are served as ordinary static files and are
+**not** in the offline precache: precaching them would take the install from
+~650 kB to several megabytes and break the "study on a plane" promise. Instead
+each photo is fetched from the network the first time its card comes up and
+then kept by a runtime cache (`card-photos`, 300 entries / 60 days), so once
+she has seen a card it works offline too. A card whose photo hasn't downloaded
+just renders without it.
+
+### Re-downloading them
+
+```bash
+npm run photos          # fetch anything missing
+npm run photos:verify   # check what is on disk, no key needed
+```
+
+`npm run photos` needs a free [Pexels](https://www.pexels.com/api/) API key in
+the environment variable `PEXELS_API_KEY`. Put it in `.env.local` (which is
+gitignored) — **never in a file that gets committed**:
+
+```
+PEXELS_API_KEY=your-key-here
+```
+
+The script is safe to re-run: it skips any card that already has a valid file,
+so a run interrupted halfway just resumes. Which cards get a photo, and the
+hand-written search query for each one, are both in
+`scripts/fetch-photos.mjs` — that file is the whole decision, with the
+reasoning for the awkward ones written next to them (`flat` must not return a
+flat lay, `bond` must not return James Bond, `jandals` has to be searched as
+`flip flops`). It writes `src/content/authored/photos.ts` and
+`src/content/authored/photoCredits.ts`; neither should be hand-edited.
+
+Pexels does not require attribution but asks for it, so every photographer and
+photo URL is recorded in `src/content/authored/photoCredits.ts`.
 
 ## Known limits
 

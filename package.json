@@ -13,7 +13,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "extract": "node scripts/extract-content.mjs"
+    "extract": "node scripts/extract-content.mjs",
+    "photos": "node scripts/fetch-photos.mjs",
+    "photos:verify": "node scripts/fetch-photos.mjs --verify"
   },
   "keywords": [],
   "author": "",

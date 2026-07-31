@@ -1,5 +1,6 @@
 export { Button } from './Button'
 export { Card } from './Card'
+export { CardPhoto } from './CardPhoto'
 export { Meter } from './Meter'
 export { Ring } from './Ring'
 export { Chip } from './Chip'
