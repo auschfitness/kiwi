@@ -3,7 +3,7 @@ import { setDefaultRate, warmUp } from './audio/speak'
 import { useStore } from './store/useStore'
 import { useSync } from './sync/useSync'
 import { LEVEL_NAMES } from './core/leveling'
-import { Button, ScreenHeader, Toast } from './components/ui'
+import { Button, Toast } from './components/ui'
 import { Name } from './screens/Name'
 import { Placement } from './screens/Placement'
 import { Home } from './screens/Home'
@@ -12,6 +12,7 @@ import { Dashboard } from './screens/Dashboard'
 import { ConjugationTable } from './screens/ConjugationTable'
 import { Practice } from './screens/Practice'
 import { Shadowing } from './screens/Shadowing'
+import { Roleplay } from './screens/Roleplay'
 import { Drills } from './screens/Drills'
 import { EarTraining } from './screens/EarTraining'
 import { Plan } from './screens/Plan'
@@ -22,18 +23,6 @@ export type Screen =
   | 'home' | 'name' | 'placement' | 'session' | 'dashboard'
   | 'plan' | 'practice' | 'dialogues' | 'shadowing' | 'roleplay' | 'drills' | 'earTraining'
   | 'settings' | 'done' | 'conjugation'
-
-/** A Practice option that has not landed yet (A3 Role-play) — an honest
- * placeholder, not a dead button. Same convention the app used for every
- * not-yet-built screen before Tasks 20-25 filled them in. */
-function ComingSoon({ title, onBack }: { title: string; onBack: () => void }) {
-  return (
-    <div>
-      <ScreenHeader title={title} onBack={onBack} />
-      <p className="px-1 text-sm text-muted">Coming soon 🥝</p>
-    </div>
-  )
-}
 
 function Done({ onBack }: { onBack: () => void }) {
   return (
@@ -154,7 +143,7 @@ export default function App() {
       case 'shadowing':
         return <Shadowing dialogueId={shadowDialogueId} onBack={handleShadowingBack} />
       case 'roleplay':
-        return <ComingSoon title="Role-play" onBack={backToPractice} />
+        return <Roleplay onBack={backToPractice} />
       case 'drills':
         return <Drills onBack={backToPractice} />
       case 'earTraining':

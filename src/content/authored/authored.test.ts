@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { IRREGULAR_DECK, IRREGULAR_TABLE } from './irregular'
 import { isSentence, isTypable, exampleWords } from '../../core/text'
 import { B2_DECKS } from './b2'
-import { DECKS, ALL_CARDS } from '../index'
+import { DECKS, ALL_CARDS, ROLEPLAYS } from '../index'
 
 describe('irregular verbs deck', () => {
   it('has fourteen cards at level 2', () => {
@@ -85,5 +85,51 @@ describe('B2 content', () => {
   it('gives level 4 real substance', () => {
     const level4 = DECKS.filter(d => d.level === 4).flatMap(d => d.cards)
     expect(level4.length).toBeGreaterThanOrEqual(130)
+  })
+})
+
+describe('role-play scenarios', () => {
+  it('has the six scenes, each a conversation of six to ten turns', () => {
+    expect(ROLEPLAYS).toHaveLength(6)
+    expect(new Set(ROLEPLAYS.map(r => r.id)).size).toBe(6)
+    for (const rp of ROLEPLAYS) {
+      expect(rp.turns.length, rp.id).toBeGreaterThanOrEqual(6)
+      expect(rp.turns.length, rp.id).toBeLessThanOrEqual(10)
+      expect(rp.context, rp.id).toBeTruthy()
+      expect(rp.emoji, rp.id).toBeTruthy()
+    }
+  })
+
+  it('alternates speakers, opening with them and ending with her', () => {
+    for (const rp of ROLEPLAYS) {
+      expect(rp.turns[0].speaker, rp.id).toBe('them')
+      expect(rp.turns.at(-1)!.speaker, rp.id).toBe('you')
+      rp.turns.forEach((t, i) => {
+        expect(t.speaker, `${rp.id}[${i}]`).toBe(i % 2 === 0 ? 'them' : 'you')
+      })
+    }
+  })
+
+  it('gives every line Portuguese, and every line of hers two to four accept variants', () => {
+    for (const rp of ROLEPLAYS) {
+      for (const t of rp.turns) {
+        expect(t.en, rp.id).toBeTruthy()
+        expect(t.pt, rp.id).toBeTruthy()
+        if (t.speaker !== 'you') continue
+        const accept = t.accept ?? []
+        expect(accept.length, `${rp.id}: ${t.en}`).toBeGreaterThanOrEqual(2)
+        expect(accept.length, `${rp.id}: ${t.en}`).toBeLessThanOrEqual(4)
+      }
+    }
+  })
+
+  it('keeps her lines short enough to say in one breath', () => {
+    for (const rp of ROLEPLAYS) {
+      for (const t of rp.turns) {
+        if (t.speaker !== 'you') continue
+        const words = t.en.trim().split(/\s+/).length
+        expect(words, `${rp.id}: ${t.en}`).toBeLessThanOrEqual(8)
+      }
+    }
   })
 })

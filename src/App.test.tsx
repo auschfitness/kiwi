@@ -185,14 +185,17 @@ describe('App', () => {
     expect(screen.getByRole('heading', { name: 'Practice' })).toBeInTheDocument()
   })
 
-  it('shows an honest "coming soon" placeholder for Role-play, returning to Practice', async () => {
+  it('reaches Role-play through Practice, and back returns to Practice', async () => {
     useStore.setState({ profileName: 'Ana', placed: true, cefrLevel: 1, unlockedLevel: 1 })
     render(<App />)
 
     await userEvent.click(screen.getByRole('button', { name: /practice/i }))
     await userEvent.click(screen.getByTestId('practice-roleplay'))
     expect(screen.getByRole('heading', { name: 'Role-play' })).toBeInTheDocument()
-    expect(screen.getByText(/coming soon/i)).toBeInTheDocument()
+    // Role-play locks nothing: an A1 profile still sees the B1 scenes.
+    expect(screen.getByTestId('roleplay-cafe')).toBeEnabled()
+    expect(screen.getByTestId('roleplay-phone')).toBeEnabled()
+
     await userEvent.click(screen.getByRole('button', { name: /go back/i }))
     expect(screen.getByRole('heading', { name: 'Practice' })).toBeInTheDocument()
   })

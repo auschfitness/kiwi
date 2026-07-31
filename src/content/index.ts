@@ -13,6 +13,8 @@ export { PHOTOS } from './authored/photos'
 export { PHOTO_CREDITS } from './authored/photoCredits'
 export { MINIMAL_PAIRS, PAIR_GROUPS } from './authored/minimalPairs'
 export type { MinimalPair, PairGroup, PairGroupInfo } from './authored/minimalPairs'
+export { ROLEPLAYS } from './authored/roleplays'
+export type { Roleplay, RoleplayTurn } from './authored/roleplays'
 
 const RAW_DECKS: Deck[] = [...GENERATED_DECKS, IRREGULAR_DECK, ...B2_DECKS]
 
