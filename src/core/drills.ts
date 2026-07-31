@@ -3,7 +3,7 @@ import { normalize } from './text'
 /**
  * The things that actually trip a newcomer at a counter: a price said fast, a
  * time said on the phone, a date, a street name spelled out. Everything here
- * is pure — randomness is injected the same way `placement.ts` does it, so a
+ * is pure — randomness is injected rather than reached for, so a
  * test can pin a seed and get the same drill every time.
  */
 
@@ -381,7 +381,7 @@ export function spellOut(word: string): string {
 
 /**
  * `words` comes from the caller (the screen passes card `en` values) so this
- * module never imports content — same arrangement as `placement.ts`.
+ * module never imports content — the same arrangement every core/ module keeps.
  */
 export function generateSpellingItem(words: string[], rand: () => number): DrillItem {
   const seen = new Set<string>()

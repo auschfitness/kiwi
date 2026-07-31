@@ -8,7 +8,6 @@ import { useReminders } from './notify/delivery'
 import { dayKey } from './core/time'
 import { Button, Toast } from './components/ui'
 import { Name } from './screens/Name'
-import { Placement } from './screens/Placement'
 import { Home } from './screens/Home'
 import { Session } from './screens/Session'
 import { Dashboard } from './screens/Dashboard'
@@ -26,7 +25,7 @@ import { Settings } from './screens/Settings'
 const NUDGE_MESSAGE = 'Time for a little English 🥝 — keep your 🔥 streak alive'
 
 export type Screen =
-  | 'home' | 'name' | 'placement' | 'session' | 'dashboard'
+  | 'home' | 'name' | 'session' | 'dashboard'
   | 'plan' | 'practice' | 'dialogues' | 'shadowing' | 'roleplay' | 'drills' | 'earTraining'
   | 'settings' | 'done' | 'conjugation'
 
@@ -50,10 +49,8 @@ export default function App() {
   const [shadowDialogueId, setShadowDialogueId] = useState<string | undefined>(undefined)
 
   const profileName = useStore(s => s.profileName)
-  const placed = useStore(s => s.placed)
   const unlocked = useStore(s => s.unlocked)
   const clearUnlockToast = useStore(s => s.clearUnlockToast)
-  const retakePlacement = useStore(s => s.retakePlacement)
   const speechRate = useStore(s => s.speechRate)
   const doneToday = useStore(s => s.doneToday)
   const doneDate = useStore(s => s.doneDate)
@@ -127,14 +124,6 @@ export default function App() {
     setScreen('shadowing')
   }
 
-  // placed=false makes renderScreen() show Placement regardless of `screen`
-  // (see below) — resetting to 'home' just keeps state tidy for when she
-  // finishes it and lands back on Home rather than on Settings.
-  function handleRetakePlacement() {
-    retakePlacement()
-    setScreen('home')
-  }
-
   // She got to Shadowing either from Practice's hub (no dialogue scope —
   // back should return there) or from one specific dialogue's "Shadow this"
   // button (back should return to the dialogue list, not all the way to
@@ -146,9 +135,11 @@ export default function App() {
     setScreen(backToDialogues ? 'dialogues' : 'practice')
   }
 
+  // First run is one question long: her name, then Home. There is no test to
+  // sit and nothing to skip — everyone starts at A1 and unlocks A2 by actually
+  // working through A1 (see src/core/leveling.ts).
   function renderScreen() {
     if (!profileName) return <Name onNext={goHome} />
-    if (!placed) return <Placement onDone={goHome} />
 
     switch (screen) {
       case 'session':
@@ -156,7 +147,7 @@ export default function App() {
       case 'done':
         return <Done onBack={goHome} />
       case 'dashboard':
-        return <Dashboard onBack={goHome} onRetakePlacement={handleRetakePlacement} />
+        return <Dashboard onBack={goHome} />
       case 'conjugation':
         return <ConjugationTable onBack={goHome} />
       case 'plan':
@@ -177,7 +168,6 @@ export default function App() {
         return (
           <Settings
             onBack={goHome}
-            onRetakePlacement={handleRetakePlacement}
             syncStatus={syncStatus}
             onRestore={onRestore}
           />

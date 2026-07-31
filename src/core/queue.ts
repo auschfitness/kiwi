@@ -17,7 +17,7 @@ export interface QueueOptions {
   newPerSession: number
   cap: number
   canSpeak: boolean
-  cefrLevel: number
+  /** A card's CEFR band, 1..4. Used to introduce new cards easiest-first. */
   levelOf: (cardId: string) => number
   bias?: Skill
 }
@@ -83,16 +83,20 @@ function recognitionPass(queue: QueueItem[], cap: number): QueueItem[] {
 }
 
 export function buildQueue(opts: QueueOptions): QueueItem[] {
-  const { cards, states, now, newPerSession, cap, canSpeak, cefrLevel, levelOf, bias } = opts
+  const { cards, states, now, newPerSession, cap, canSpeak, levelOf, bias } = opts
 
   const due: QueueItem[] = cards
     .filter(c => isDue(states[c.id], now))
     .sort((a, b) => (states[a.id]!.due - states[b.id]!.due))
     .map(c => ({ cardId: c.id, modality: pickModality(c, states[c.id], canSpeak) }))
 
+  // Easiest first. This used to order by distance from a placement-measured
+  // `cefrLevel`; with the placement test gone everyone climbs from A1, so the
+  // deck's own level ascending *is* the right order — and within a level the
+  // sort is stable, so authored deck order survives.
   const fresh: QueueItem[] = cards
     .filter(c => isNew(states[c.id]) && !isDue(states[c.id], now))
-    .sort((a, b) => Math.abs(levelOf(a.id) - cefrLevel) - Math.abs(levelOf(b.id) - cefrLevel))
+    .sort((a, b) => levelOf(a.id) - levelOf(b.id))
     .map(c => ({ cardId: c.id, modality: 'learn' as const }))
 
   const newCount = Math.min(newPerSession, fresh.length)

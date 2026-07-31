@@ -10,35 +10,14 @@ async function stubSpeech(page: Page) {
   })
 }
 
-test('first run: name, placement, home, a session, and progress that survives reload', async ({ page }) => {
+test('first run: name, home, a session, and progress that survives reload', async ({ page }) => {
   await stubSpeech(page)
   await page.goto('/')
 
-  // Name
+  // Name — and that is the whole of onboarding now. There is no test to sit
+  // between here and Home, and no way to start above A1.
   await page.getByRole('textbox').fill('Ana')
   await page.getByRole('button', { name: /continue/i }).click()
-
-  // Placement — answer everything with the first option / a wrong word.
-  // The question count is whatever buildPlacementTest produces (today 17,
-  // now that level-4 content exists) — this loop never hardcodes it, it
-  // just keeps answering until neither an option nor a text input remains.
-  for (let i = 0; i < 20; i++) {
-    const option = page.getByTestId('placement-option').first()
-    if (await option.count()) { await option.click(); continue }
-    const input = page.getByRole('textbox')
-    if (await input.count()) {
-      await input.fill('zzz')
-      await page.getByRole('button', { name: /next|finish/i }).click()
-      continue
-    }
-    break
-  }
-  // Placement result screen — Placement now computes the result locally and
-  // only writes to the store (which App.tsx routes on) when Continue is
-  // tapped, so this screen actually gets to render before Home does.
-  await expect(page.getByText(/you're at a1/i)).toBeVisible()
-  await expect(page.getByTestId('study-now')).toHaveCount(0)
-  await page.getByRole('button', { name: /continue|start/i }).click()
 
   // Home
   await expect(page.getByText(/kia ora, ana/i)).toBeVisible()
@@ -90,7 +69,7 @@ test('dashboard reflects what she practised', async ({ page }) => {
   await page.evaluate(() => {
     localStorage.setItem('english-nz', JSON.stringify({
       state: {
-        profileName: 'Ana', syncCode: null, cefrLevel: 1, unlockedLevel: 1, placed: true,
+        profileName: 'Ana', syncCode: null, unlockedLevel: 1,
         cards: {}, skills: {
           vocab: { correct: 8, total: 10 }, listening: { correct: 3, total: 10 },
           grammar: { correct: 0, total: 0 }, speaking: { correct: 0, total: 0 },

@@ -29,7 +29,7 @@ beforeEach(() => {
   vi.clearAllMocks()
   canListen.mockReturnValue(true)
   listen.mockResolvedValue('')
-  useStore.setState({ ...createInitialState(Date.now()), unlocked: null, placed: true })
+  useStore.setState({ ...createInitialState(Date.now()), unlocked: null })
 })
 
 afterEach(() => {

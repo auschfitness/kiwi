@@ -26,7 +26,7 @@ vi.mock('../notify/delivery', () => ({ refreshReminderDelivery }))
 const VAPID = 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U'
 
 beforeEach(() => {
-  useStore.setState({ ...createInitialState(Date.now()), unlocked: null, placed: true, profileName: 'Ana' })
+  useStore.setState({ ...createInitialState(Date.now()), unlocked: null, profileName: 'Ana' })
   refreshReminderDelivery.mockReset().mockResolvedValue('push')
   vi.stubEnv('VITE_VAPID_PUBLIC_KEY', VAPID)
 })
@@ -38,13 +38,13 @@ afterEach(() => {
 
 describe('Settings with background push configured', () => {
   it('says her phone can buzz, and drops the "not set up yet" line', () => {
-    render(<Settings onBack={vi.fn()} onRetakePlacement={vi.fn()} syncStatus="idle" onRestore={vi.fn()} />)
+    render(<Settings onBack={vi.fn()} syncStatus="idle" onRestore={vi.fn()} />)
     expect(screen.getByText(/your phone can buzz at this time/i)).toBeInTheDocument()
     expect(screen.queryByText(/aren't set up yet/i)).not.toBeInTheDocument()
   })
 
   it('still states the iPhone caveat — a VAPID key does not make iOS behave', () => {
-    render(<Settings onBack={vi.fn()} onRetakePlacement={vi.fn()} syncStatus="idle" onRestore={vi.fn()} />)
+    render(<Settings onBack={vi.fn()} syncStatus="idle" onRestore={vi.fn()} />)
     expect(screen.getByText(/add this app to your home screen/i)).toBeInTheDocument()
   })
 
@@ -54,7 +54,7 @@ describe('Settings with background push configured', () => {
     // comes back.
     const requestPermission = vi.fn().mockResolvedValue('granted')
     vi.stubGlobal('Notification', { permission: 'default', requestPermission })
-    render(<Settings onBack={vi.fn()} onRetakePlacement={vi.fn()} syncStatus="idle" onRestore={vi.fn()} />)
+    render(<Settings onBack={vi.fn()} syncStatus="idle" onRestore={vi.fn()} />)
 
     await userEvent.click(screen.getByLabelText(/daily reminder/i))
 
@@ -67,7 +67,7 @@ describe('Settings with background push configured', () => {
 
   it('re-arms delivery without a prompt when permission was already granted', async () => {
     vi.stubGlobal('Notification', { permission: 'granted', requestPermission: vi.fn() })
-    render(<Settings onBack={vi.fn()} onRetakePlacement={vi.fn()} syncStatus="idle" onRestore={vi.fn()} />)
+    render(<Settings onBack={vi.fn()} syncStatus="idle" onRestore={vi.fn()} />)
 
     await userEvent.click(screen.getByLabelText(/daily reminder/i))
 
@@ -77,7 +77,7 @@ describe('Settings with background push configured', () => {
   it('stands delivery down when she switches the reminder off', async () => {
     useStore.setState({ reminderEnabled: true })
     vi.stubGlobal('Notification', { permission: 'granted', requestPermission: vi.fn() })
-    render(<Settings onBack={vi.fn()} onRetakePlacement={vi.fn()} syncStatus="idle" onRestore={vi.fn()} />)
+    render(<Settings onBack={vi.fn()} syncStatus="idle" onRestore={vi.fn()} />)
 
     await userEvent.click(screen.getByLabelText(/daily reminder/i))
 
@@ -87,7 +87,7 @@ describe('Settings with background push configured', () => {
   it('does not throw where Notification does not exist, even with push configured', async () => {
     // A configured backend cannot conjure an API the browser lacks.
     expect('Notification' in window).toBe(false)
-    render(<Settings onBack={vi.fn()} onRetakePlacement={vi.fn()} syncStatus="idle" onRestore={vi.fn()} />)
+    render(<Settings onBack={vi.fn()} syncStatus="idle" onRestore={vi.fn()} />)
 
     await userEvent.click(screen.getByLabelText(/daily reminder/i))
 

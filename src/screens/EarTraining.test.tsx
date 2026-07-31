@@ -30,7 +30,7 @@ beforeEach(() => {
   canSpeak.mockReturnValue(true)
   vi.mocked(pickVoice).mockReturnValue(null)
   vi.spyOn(Math, 'random').mockReturnValue(0)
-  useStore.setState({ ...createInitialState(Date.now()), unlocked: null, placed: true })
+  useStore.setState({ ...createInitialState(Date.now()), unlocked: null })
 })
 
 afterEach(() => {

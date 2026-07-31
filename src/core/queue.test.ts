@@ -26,7 +26,7 @@ describe('buildQueue', () => {
     const q = buildQueue({
       cards, states: { a: studied(NOW - 1), b: studied(NOW - 1) },
       now: NOW, newPerSession: 0, cap: 20, canSpeak: false,
-      cefrLevel: 1, levelOf: levelOf(cards),
+      levelOf: levelOf(cards),
     })
     expect(q.map(i => i.cardId).sort()).toEqual(['a', 'b'])
   })
@@ -36,7 +36,7 @@ describe('buildQueue', () => {
     const q = buildQueue({
       cards, states: { a: studied(NOW - 1), b: studied(NOW + DAY) },
       now: NOW, newPerSession: 0, cap: 1, canSpeak: false,
-      cefrLevel: 1, levelOf: levelOf(cards),
+      levelOf: levelOf(cards),
     })
     expect(q.map(i => i.cardId)).toEqual(['a'])
   })
@@ -45,7 +45,7 @@ describe('buildQueue', () => {
     const cards = [card('a'), card('b'), card('c'), card('d')]
     const q = buildQueue({
       cards, states: {}, now: NOW, newPerSession: 2, cap: 20,
-      canSpeak: false, cefrLevel: 1, levelOf: levelOf(cards),
+      canSpeak: false, levelOf: levelOf(cards),
     })
     // Only two cards are *introduced*. The queue is longer than two items
     // because the recognition pass below adds a recall check for each of them
@@ -54,13 +54,26 @@ describe('buildQueue', () => {
     expect(new Set(q.map(i => i.cardId))).toEqual(new Set(['a', 'b']))
   })
 
-  it('prefers new cards at the learner current level', () => {
-    const cards = [card('far', 4), card('near', 2), card('mid', 3)]
+  // This used to read "prefers new cards at the learner current level", and
+  // sorted by distance from a separately measured starting band. That band no
+  // longer exists — everyone climbs from A1 — so the only sensible order for
+  // new material is easiest first.
+  it('introduces new cards easiest first, by deck level ascending', () => {
+    const cards = [card('far', 4), card('mid', 3), card('near', 2), card('first', 1)]
     const q = buildQueue({
-      cards, states: {}, now: NOW, newPerSession: 1, cap: 20,
-      canSpeak: false, cefrLevel: 2, levelOf: levelOf(cards),
+      cards, states: {}, now: NOW, newPerSession: 2, cap: 20,
+      canSpeak: false, levelOf: levelOf(cards),
     })
-    expect(q[0].cardId).toBe('near')
+    expect(q.filter(i => i.modality === 'learn').map(i => i.cardId)).toEqual(['first', 'near'])
+  })
+
+  it('keeps authored order within a level — the sort is stable', () => {
+    const cards = [card('b', 1), card('a', 1), card('c', 1)]
+    const q = buildQueue({
+      cards, states: {}, now: NOW, newPerSession: 3, cap: 20,
+      canSpeak: false, levelOf: levelOf(cards),
+    })
+    expect(q.filter(i => i.modality === 'learn').map(i => i.cardId)).toEqual(['b', 'a', 'c'])
   })
 
   it('interleaves new cards instead of stacking them at the front', () => {
@@ -69,7 +82,7 @@ describe('buildQueue', () => {
       cards,
       states: { r1: studied(NOW - 1), r2: studied(NOW - 1), r3: studied(NOW - 1), r4: studied(NOW - 1) },
       now: NOW, newPerSession: 2, cap: 20, canSpeak: false,
-      cefrLevel: 1, levelOf: levelOf(cards),
+      levelOf: levelOf(cards),
     })
     const newPositions = q.map((i, idx) => (i.modality === 'learn' ? idx : -1)).filter(i => i >= 0)
     expect(newPositions).toHaveLength(2)
@@ -82,7 +95,7 @@ describe('buildQueue', () => {
     const states = Object.fromEntries(cards.map(c => [c.id, studied(NOW - 1)]))
     const q = buildQueue({
       cards, states, now: NOW, newPerSession: 0, cap: 22,
-      canSpeak: false, cefrLevel: 1, levelOf: levelOf(cards),
+      canSpeak: false, levelOf: levelOf(cards),
     })
     expect(q).toHaveLength(22)
   })
@@ -93,7 +106,7 @@ describe('buildQueue', () => {
       cards,
       states: { s1: studied(NOW + DAY), s2: studied(NOW + 2 * DAY), s3: studied(NOW + 3 * DAY) },
       now: NOW, newPerSession: 1, cap: 3, canSpeak: false,
-      cefrLevel: 1, levelOf: levelOf(cards),
+      levelOf: levelOf(cards),
     })
     expect(q).toHaveLength(3)
     expect(q.map(i => i.cardId)).toContain('n1')
@@ -106,7 +119,7 @@ describe('buildQueue', () => {
       cards,
       states: { s1: studied(NOW + 5 * DAY), s2: studied(NOW + DAY) },
       now: NOW, newPerSession: 0, cap: 1, canSpeak: false,
-      cefrLevel: 1, levelOf: levelOf(cards),
+      levelOf: levelOf(cards),
     })
     expect(q.map(i => i.cardId)).toEqual(['s2'])
   })
@@ -114,7 +127,7 @@ describe('buildQueue', () => {
   it('returns an empty queue when there is genuinely nothing', () => {
     expect(buildQueue({
       cards: [], states: {}, now: NOW, newPerSession: 8, cap: 20,
-      canSpeak: false, cefrLevel: 1, levelOf: () => 1,
+      canSpeak: false, levelOf: () => 1,
     })).toEqual([])
   })
 
@@ -122,7 +135,7 @@ describe('buildQueue', () => {
     const cards = [card('a')]
     const q = buildQueue({
       cards, states: { a: studied(NOW - 1, 1) }, now: NOW, newPerSession: 0,
-      cap: 20, canSpeak: false, cefrLevel: 1, levelOf: levelOf(cards),
+      cap: 20, canSpeak: false, levelOf: levelOf(cards),
     })
     expect(q[0].modality).not.toBe('learn')
   })
@@ -134,7 +147,7 @@ describe('buildQueue', () => {
     const states = Object.fromEntries(dueCards.map(c => [c.id, studied(NOW - 1)]))
     const q = buildQueue({
       cards, states, now: NOW, newPerSession: 3, cap: 20,
-      canSpeak: false, cefrLevel: 1, levelOf: levelOf(cards),
+      canSpeak: false, levelOf: levelOf(cards),
     })
     expect(q).toHaveLength(20)
     expect(q.filter(i => i.modality === 'learn')).toHaveLength(3)
@@ -145,7 +158,7 @@ describe('buildQueue', () => {
     const q = buildQueue({
       cards, states: { r1: studied(NOW - 1), r2: studied(NOW - 1) },
       now: NOW, newPerSession: 8, cap: 20, canSpeak: false,
-      cefrLevel: 1, levelOf: levelOf(cards),
+      levelOf: levelOf(cards),
     })
     expect(q[0].modality).not.toBe('learn')
     // r1/r2 are studied with reps=3; supportedModalities for these cards is
@@ -156,14 +169,13 @@ describe('buildQueue', () => {
 })
 
 describe('buildQueue — day one', () => {
-  // Nothing is seeded at A1 (Placement seeds only decks *below* startLevel, and
-  // nothing is below level 1), so there is no due pool and no backfill pool.
-  // Before the recognition pass this produced 8 items, all 'learn': eight taps
-  // of "Got it" and not one question.
+  // Every profile now begins exactly here: A1, no card states at all, so no
+  // due pool and no backfill pool. Before the recognition pass this produced 8
+  // items, all 'learn': eight taps of "Got it" and not one question.
   const cards = Array.from({ length: 30 }, (_, i) => card('n' + i))
   const dayOne = () => buildQueue({
     cards, states: {}, now: NOW, newPerSession: 8, cap: 22,
-    canSpeak: false, cefrLevel: 1, levelOf: levelOf(cards),
+    canSpeak: false, levelOf: levelOf(cards),
   })
 
   it('is no longer a queue of nothing but learn items', () => {
@@ -193,7 +205,7 @@ describe('buildQueue — day one', () => {
     const many = Array.from({ length: 40 }, (_, i) => card('m' + i))
     const q = buildQueue({
       cards: many, states: {}, now: NOW, newPerSession: 20, cap: 22,
-      canSpeak: false, cefrLevel: 1, levelOf: levelOf(many),
+      canSpeak: false, levelOf: levelOf(many),
     })
     expect(q.length).toBeLessThanOrEqual(22)
     expect(q).toHaveLength(22)
@@ -204,7 +216,7 @@ describe('buildQueue — day one', () => {
     const cs = [card('n1'), card('r1')]
     const q = buildQueue({
       cards: cs, states: { r1: studied(NOW - 1, 5) }, now: NOW, newPerSession: 1,
-      cap: 20, canSpeak: false, cefrLevel: 1, levelOf: levelOf(cs),
+      cap: 20, canSpeak: false, levelOf: levelOf(cs),
     })
     expect(q.filter(i => i.cardId === 'r1')).toHaveLength(1)
     expect(q.filter(i => i.cardId === 'n1').map(i => i.modality)).toEqual(['learn', 'recognize'])
@@ -215,7 +227,7 @@ describe('buildQueue — day one', () => {
     const states = Object.fromEntries(cs.map(c => [c.id, studied(NOW - 1)]))
     const q = buildQueue({
       cards: cs, states, now: NOW, newPerSession: 0, cap: 22,
-      canSpeak: false, cefrLevel: 1, levelOf: levelOf(cs),
+      canSpeak: false, levelOf: levelOf(cs),
     })
     expect(q).toHaveLength(22)
     expect(q.some(i => i.modality === 'learn')).toBe(false)
@@ -232,7 +244,7 @@ describe('buildQueue — weak-skill bias', () => {
   ]))
   const build = (bias?: 'speaking' | 'listening' | 'vocab' | 'grammar') => buildQueue({
     cards, states, now: NOW, newPerSession: 0, cap: 22,
-    canSpeak: true, cefrLevel: 1, levelOf: levelOf(cards), bias,
+    canSpeak: true, levelOf: levelOf(cards), bias,
   })
 
   it('is a nudge, not a takeover', () => {
@@ -270,7 +282,7 @@ describe('buildQueue — weak-skill bias', () => {
     const mixed = [...cards.slice(0, 4), card('fresh')]
     const q = buildQueue({
       cards: mixed, states, now: NOW, newPerSession: 1, cap: 22,
-      canSpeak: true, cefrLevel: 1, levelOf: levelOf(mixed), bias: 'speaking',
+      canSpeak: true, levelOf: levelOf(mixed), bias: 'speaking',
     })
     expect(q.find(i => i.cardId === 'fresh')?.modality).toBe('learn')
   })

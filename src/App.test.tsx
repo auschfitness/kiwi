@@ -31,17 +31,8 @@ describe('App', () => {
     expect(screen.getByText(/what should i call you\?/i)).toBeInTheDocument()
   })
 
-  it('sends a named but unplaced profile to the Placement screen', () => {
-    useStore.setState({ profileName: 'Ana', placed: false })
-    render(<App />)
-    // buildPlacementTest's question count depends on how much content exists
-    // per band (see Placement.test.tsx) — assert the counter shows up at all,
-    // not a hardcoded question count.
-    expect(screen.getByText(/question 1 of \d+/i)).toBeInTheDocument()
-  })
-
-  it('sends a named and placed profile to Home', () => {
-    useStore.setState({ profileName: 'Ana', placed: true, cefrLevel: 1, unlockedLevel: 1 })
+  it('sends a named profile straight to Home', () => {
+    useStore.setState({ profileName: 'Ana', unlockedLevel: 1 })
     render(<App />)
     expect(screen.getByText(/kia ora, ana/i)).toBeInTheDocument()
     expect(screen.getByTestId('study-now')).toBeInTheDocument()
@@ -54,7 +45,7 @@ describe('App', () => {
     // App's unlocked !== null gate and its wiring to clearUnlockToast.
     vi.useFakeTimers()
     useStore.setState({
-      profileName: 'Ana', placed: true, cefrLevel: 1, unlockedLevel: 2, unlocked: 2,
+      profileName: 'Ana', unlockedLevel: 2, unlocked: 2,
     })
     render(<App />)
     expect(screen.getByText(/new level unlocked: a2/i)).toBeInTheDocument()
@@ -66,7 +57,7 @@ describe('App', () => {
 
   it('nudges her on open when the reminder is due and she has not studied today', () => {
     useStore.setState({
-      profileName: 'Ana', placed: true, cefrLevel: 1, unlockedLevel: 1,
+      profileName: 'Ana', unlockedLevel: 1,
       reminderEnabled: true, reminderTime: '00:00', doneToday: 0, doneDate: null,
     })
     render(<App />)
@@ -78,7 +69,7 @@ describe('App', () => {
 
   it('stays quiet on open when the reminder is switched off', () => {
     useStore.setState({
-      profileName: 'Ana', placed: true, cefrLevel: 1, unlockedLevel: 1,
+      profileName: 'Ana', unlockedLevel: 1,
       reminderEnabled: false, reminderTime: '00:00',
     })
     render(<App />)
@@ -87,7 +78,7 @@ describe('App', () => {
 
   it('stays quiet on open when the reminder time has not arrived yet', () => {
     useStore.setState({
-      profileName: 'Ana', placed: true, cefrLevel: 1, unlockedLevel: 1,
+      profileName: 'Ana', unlockedLevel: 1,
       reminderEnabled: true, reminderTime: '23:59', doneToday: 0, doneDate: null,
     })
     render(<App />)
@@ -100,7 +91,7 @@ describe('App', () => {
 
   it('drops the nudge the moment she starts studying, and does not raise it again', async () => {
     useStore.setState({
-      profileName: 'Ana', placed: true, cefrLevel: 1, unlockedLevel: 1,
+      profileName: 'Ana', unlockedLevel: 1,
       reminderEnabled: true, reminderTime: '00:00', doneToday: 0, doneDate: null,
     })
     render(<App />)
@@ -120,7 +111,7 @@ describe('App', () => {
 
   it('gives the toast slot to an earned unlock rather than stacking a nudge on top of it', () => {
     useStore.setState({
-      profileName: 'Ana', placed: true, cefrLevel: 1, unlockedLevel: 2, unlocked: 2,
+      profileName: 'Ana', unlockedLevel: 2, unlocked: 2,
       reminderEnabled: true, reminderTime: '00:00', doneToday: 0, doneDate: null,
     })
     render(<App />)
@@ -129,7 +120,7 @@ describe('App', () => {
   })
 
   it('walks from Home through a session to Done and back to Home', async () => {
-    useStore.setState({ profileName: 'Ana', placed: true, cefrLevel: 1, unlockedLevel: 1 })
+    useStore.setState({ profileName: 'Ana', unlockedLevel: 1 })
     render(<App />)
 
     await userEvent.click(screen.getByTestId('study-now'))
@@ -145,56 +136,44 @@ describe('App', () => {
     expect(screen.getByTestId('study-now')).toBeInTheDocument()
   })
 
-  it('shows the placement result screen — with the real router above it — before Home appears, then Continue reaches Home', async () => {
-    // Regression test for the bug where App.tsx (which routes on the store's
-    // `placed` flag) rendered Home the instant the last placement answer
-    // flipped `placed`, before Placement's own result screen ever committed.
-    // Placement.test.tsx renders <Placement /> standalone, with no router
-    // above it to steal the screen — it could never have caught this. This
-    // test renders the real <App />, so it would have failed against the old
-    // "finishPlacement then show result" ordering.
-    //
-    // Same deterministic-shuffle trick as Placement.test.tsx: buildPlacementTest
-    // shuffles with Fisher-Yates (j = floor(rand() * (i + 1))); rand() just
-    // under 1 makes j === i every time, so the correct answer always lands at
-    // options[0] and clicking the last option is always a distractor.
-    vi.spyOn(Math, 'random').mockReturnValue(0.999999)
-    useStore.setState({ profileName: 'Ana', placed: false })
+  /**
+   * First run is now two screens long: her name, then Home. There used to be
+   * a fifteen-question placement test in between, and a whole class of bugs
+   * about which screen won the moment it finished. Nothing to sit, nothing to
+   * skip: she starts at A1 like everyone else.
+   */
+  it('takes a brand-new profile from the name question straight to Home, at A1 with nothing known', async () => {
+    useStore.setState({ profileName: '' })
     render(<App />)
 
-    for (let i = 0; i < 20; i++) {
-      const options = screen.queryAllByTestId('placement-option')
-      if (options.length > 0) {
-        await userEvent.click(options[options.length - 1])
-        continue
-      }
-      const input = screen.queryByRole('textbox')
-      if (input) {
-        await userEvent.type(input, 'zzzz')
-        await userEvent.click(screen.getByRole('button', { name: /next|finish/i }))
-        continue
-      }
-      break
-    }
+    await userEvent.type(screen.getByRole('textbox'), 'Ana')
+    await userEvent.click(screen.getByRole('button', { name: /continue/i }))
 
-    // The result screen must be visible now — and Home must NOT be — before
-    // she has tapped anything past the last question.
-    expect(screen.getByText(/you're at a1/i)).toBeInTheDocument()
-    expect(screen.queryByTestId('study-now')).not.toBeInTheDocument()
-    expect(useStore.getState().placed).toBe(false)
-
-    await userEvent.click(screen.getByRole('button', { name: /continue|start/i }))
-
-    expect(useStore.getState().placed).toBe(true)
     expect(screen.getByText(/kia ora, ana/i)).toBeInTheDocument()
     expect(screen.getByTestId('study-now')).toBeInTheDocument()
+
+    const s = useStore.getState()
+    expect(s.unlockedLevel).toBe(1)
+    expect(s.cards).toEqual({})
+  })
+
+  it('offers no route past the levels — nothing on Settings or Progress can skip content', async () => {
+    useStore.setState({ profileName: 'Ana', unlockedLevel: 1 })
+    render(<App />)
+
+    await userEvent.click(screen.getByRole('button', { name: /settings/i }))
+    expect(screen.queryByRole('button', { name: /placement|retake/i })).not.toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('button', { name: /go back/i }))
+    await userEvent.click(screen.getByRole('button', { name: /progress/i }))
+    expect(screen.queryByRole('button', { name: /placement|retake/i })).not.toBeInTheDocument()
   })
 
   it('reaches Dialogues through the Practice hub, and back returns to Practice', async () => {
     // Home no longer links to Dialogues directly (A1: both Dialogues and
     // Shadowing moved behind a single Practice button) — this is now a
     // two-hop trip: Home -> Practice -> Dialogues.
-    useStore.setState({ profileName: 'Ana', placed: true, cefrLevel: 1, unlockedLevel: 1 })
+    useStore.setState({ profileName: 'Ana', unlockedLevel: 1 })
     render(<App />)
 
     await userEvent.click(screen.getByRole('button', { name: /practice/i }))
@@ -210,7 +189,7 @@ describe('App', () => {
   })
 
   it('scopes Shadowing to one dialogue when reached via "Shadow this", and back returns to Dialogues', async () => {
-    useStore.setState({ profileName: 'Ana', placed: true, cefrLevel: 1, unlockedLevel: 1 })
+    useStore.setState({ profileName: 'Ana', unlockedLevel: 1 })
     render(<App />)
 
     await userEvent.click(screen.getByRole('button', { name: /practice/i }))
@@ -237,7 +216,7 @@ describe('App', () => {
   })
 
   it('reaches unscoped Shadowing through Practice, and back returns to Practice (not Home)', async () => {
-    useStore.setState({ profileName: 'Ana', placed: true, cefrLevel: 1, unlockedLevel: 1 })
+    useStore.setState({ profileName: 'Ana', unlockedLevel: 1 })
     render(<App />)
 
     await userEvent.click(screen.getByRole('button', { name: /practice/i }))
@@ -250,7 +229,7 @@ describe('App', () => {
   })
 
   it('reaches Role-play through Practice, and back returns to Practice', async () => {
-    useStore.setState({ profileName: 'Ana', placed: true, cefrLevel: 1, unlockedLevel: 1 })
+    useStore.setState({ profileName: 'Ana', unlockedLevel: 1 })
     render(<App />)
 
     await userEvent.click(screen.getByRole('button', { name: /practice/i }))
@@ -265,7 +244,7 @@ describe('App', () => {
   })
 
   it('reaches Drills through Practice, and back returns to Practice', async () => {
-    useStore.setState({ profileName: 'Ana', placed: true, cefrLevel: 1, unlockedLevel: 1 })
+    useStore.setState({ profileName: 'Ana', unlockedLevel: 1 })
     render(<App />)
 
     await userEvent.click(screen.getByRole('button', { name: /practice/i }))

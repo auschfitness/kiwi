@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { AppState, CardState, Level, Modality, Rating } from '../types'
+import type { AppState, Level, Modality, Rating } from '../types'
 import { DECKS } from '../content'
 import { schedule } from '../core/srs'
 import { skillForModality } from '../core/modality'
@@ -21,7 +21,6 @@ interface Actions {
   /** Transient: set when a level unlocks, cleared once the toast is dismissed. */
   unlocked: Level | null
   setName: (name: string) => void
-  finishPlacement: (startLevel: Level, seeded: Record<string, CardState>, now: number) => void
   /** `rating` is hers: 0 again, 1 hard, 2 good, 3 easy. Anything above 0 counts as correct. */
   gradeItem: (cardId: string, modality: Modality, rating: Rating, now: number) => void
   /**
@@ -39,29 +38,40 @@ interface Actions {
   setSyncCode: (code: string | null) => void
   replaceState: (next: AppState) => void
   resetProgress: (now: number) => void
-  retakePlacement: () => void
 }
 
 export type Store = AppState & Actions
 
 /**
- * Bumped to 2 when the daily reminder shipped (`reminderEnabled`,
- * `reminderTime`). Bump this every time `AppState` gains or changes a field
- * and teach `migrate` below how to fill it — do not lean on zustand's shallow
- * merge to paper over the gap, the way `speechRate` once did. She has real
- * progress in localStorage; a migration that drops a key looks to her like
- * the app forgot her streak.
+ * 2 when the daily reminder shipped (`reminderEnabled`, `reminderTime`);
+ * 3 when the placement test was removed (`placed`, `cefrLevel`). Bump this
+ * every time `AppState` gains, loses or changes a field and teach `migrate`
+ * below how to handle it — do not lean on zustand's shallow merge to paper
+ * over the gap, the way `speechRate` once did. She has real progress in
+ * localStorage; a migration that drops a key looks to her like the app forgot
+ * her streak.
  */
-export const PERSIST_VERSION = 2
+export const PERSIST_VERSION = 3
+
+/** Fields that used to live in `AppState` and no longer do. */
+type RetiredFields = { placed?: boolean; cefrLevel?: number }
 
 /**
  * Upgrade a profile saved under an older `version` to today's shape.
  *
- * The rule is additive and never destructive: everything she had is copied
- * through untouched, and only genuinely absent fields are filled from
- * `createInitialState`. `??` (not `||`) does the filling, so a legitimately
- * falsy saved value — `reminderEnabled: false`, a `0` counter — survives
- * instead of being "helpfully" reset.
+ * Preserving, never corrective. Everything she earned — every card, her
+ * `unlockedLevel`, her streak, her counters — is copied through untouched.
+ * Only two kinds of change happen here: a genuinely absent field is filled
+ * from `createInitialState`, and a field the app no longer has is dropped.
+ * `??` (not `||`) does the filling, so a legitimately falsy saved value —
+ * `reminderEnabled: false`, a `0` counter — survives instead of being
+ * "helpfully" reset.
+ *
+ * Note what this deliberately does *not* do: removing the placement test does
+ * not re-run anyone. A profile that was placed at B1 keeps its `unlockedLevel`
+ * and every seeded card exactly as they are — that is work she already did,
+ * and Settings' "Reset progress" is the button for the other case. Only new
+ * profiles start at A1 with nothing known.
  *
  * zustand then shallow-merges the result over the live initial state, so the
  * actions and any field this function forgot still resolve; the point of
@@ -69,16 +79,20 @@ export const PERSIST_VERSION = 2
  * implied.
  */
 export function migrate(persisted: unknown, version: number): Store {
-  const saved = (persisted ?? {}) as Partial<AppState>
+  const saved = (persisted ?? {}) as Partial<AppState> & RetiredFields
   if (version >= PERSIST_VERSION) return saved as Store
 
   const defaults = createInitialState(Date.now())
+  // v2 -> v3: the placement test is gone, and with it the two fields that
+  // existed only to serve it. Dropped rather than carried, so a stale `placed`
+  // can never route anywhere and a stale `cefrLevel` can never order a queue.
+  const { placed: _placed, cefrLevel: _cefrLevel, ...kept } = saved
   return {
-    ...saved,
+    ...kept,
     // v1 -> v2: the daily reminder. Off, at 19:00, for everyone who was
     // already here — she opts in from Settings, she is not opted in for her.
-    reminderEnabled: saved.reminderEnabled ?? defaults.reminderEnabled,
-    reminderTime: saved.reminderTime ?? defaults.reminderTime,
+    reminderEnabled: kept.reminderEnabled ?? defaults.reminderEnabled,
+    reminderTime: kept.reminderTime ?? defaults.reminderTime,
   } as Store
 }
 
@@ -89,30 +103,6 @@ export const useStore = create<Store>()(
       unlocked: null,
 
       setName: name => set({ profileName: name.trim(), updatedAt: Date.now() }),
-
-      /**
-       * A retake may promote her, never demote her. `cefrLevel` follows the
-       * latest test (it is what the test measured today), but `unlockedLevel`
-       * only ever climbs, and a card she has actually studied keeps its real
-       * scheduling — seeding only fills in cards she has no history for.
-       * Without both guards, one bad-day retake re-locks earned content and
-       * crushes e.g. reps 9 / interval 40 back to a fresh seed.
-       */
-      finishPlacement: (startLevel, seeded, now) =>
-        set(s => {
-          const cards = { ...s.cards }
-          for (const [id, state] of Object.entries(seeded)) {
-            if (!cards[id]) cards[id] = state
-          }
-          return {
-            placed: true,
-            cefrLevel: startLevel,
-            unlockedLevel: Math.max(s.unlockedLevel, startLevel) as Level,
-            cards,
-            startedAt: s.startedAt || now,
-            updatedAt: now,
-          }
-        }),
 
       gradeItem: (cardId, modality, rating, now) => {
         const s = get()
@@ -147,8 +137,6 @@ export const useStore = create<Store>()(
       replaceState: next => set({ ...next }),
 
       resetProgress: now => set({ ...createInitialState(now), unlocked: null }),
-
-      retakePlacement: () => set({ placed: false, updatedAt: Date.now() }),
     }),
     {
       name: 'english-nz',

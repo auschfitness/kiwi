@@ -4,9 +4,8 @@ export function createInitialState(now: number): AppState {
   return {
     profileName: '',
     syncCode: null,
-    cefrLevel: 0,
+    // Everyone starts at A1 with nothing pre-known and works up from there.
     unlockedLevel: 1,
-    placed: false,
     cards: {},
     skills: {
       vocab: { correct: 0, total: 0 },

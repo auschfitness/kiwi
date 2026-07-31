@@ -7,7 +7,7 @@ const T = 1_700_000_000_000
 
 function snap(over: Partial<AppState> = {}): AppState {
   return {
-    profileName: 'Ana', syncCode: null, cefrLevel: 1, unlockedLevel: 1, placed: true,
+    profileName: 'Ana', syncCode: null, unlockedLevel: 1,
     cards: {}, skills: {
       vocab: { correct: 0, total: 0 }, listening: { correct: 0, total: 0 },
       grammar: { correct: 0, total: 0 }, speaking: { correct: 0, total: 0 },
@@ -48,17 +48,28 @@ describe('mergeSnapshots', () => {
   })
 
   it('takes the higher streak, best day and unlocked level', () => {
-    const local = snap({ streak: 3, bestDay: 40, unlockedLevel: 2, cefrLevel: 1 })
-    const remote = snap({ streak: 7, bestDay: 12, unlockedLevel: 1, cefrLevel: 3 })
+    const local = snap({ streak: 3, bestDay: 40, unlockedLevel: 2 })
+    const remote = snap({ streak: 7, bestDay: 12, unlockedLevel: 1 })
     const m = mergeSnapshots(local, remote)
     expect(m.streak).toBe(7)
     expect(m.bestDay).toBe(40)
     expect(m.unlockedLevel).toBe(2)
-    expect(m.cefrLevel).toBe(3)
   })
 
-  it('keeps placement once either side has been placed', () => {
-    expect(mergeSnapshots(snap({ placed: false }), snap({ placed: true })).placed).toBe(true)
+  it('never lowers an unlocked level, whichever side is newer', () => {
+    // A level is earned by working through the one below it, so a merge must
+    // never take it away — not even from the more recently updated device.
+    const earned = snap({ updatedAt: T, unlockedLevel: 3 })
+    const behind = snap({ updatedAt: T + DAY, unlockedLevel: 1 })
+    expect(mergeSnapshots(earned, behind).unlockedLevel).toBe(3)
+    expect(mergeSnapshots(behind, earned).unlockedLevel).toBe(3)
+  })
+
+  it('returns exactly the fields AppState declares — no more, no fewer', () => {
+    // The invariant merge.ts's own docstring makes. It has survived three
+    // field additions; this is the removal that must not break it.
+    const reference = snap()
+    expect(Object.keys(mergeSnapshots(snap(), snap())).sort()).toEqual(Object.keys(reference).sort())
   })
 
   it('takes preferences from the more recently updated snapshot', () => {

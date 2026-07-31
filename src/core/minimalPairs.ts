@@ -9,7 +9,7 @@
  * Pure like the rest of `core/`: the pair table lives in
  * `src/content/authored/minimalPairs.ts` and the screen hands it in, so this
  * module never imports content, and randomness always arrives as a parameter
- * (the `placement.ts` rule) so a seeded test gets the same round every time.
+ * (the rule every core/ module keeps) so a seeded test gets the same round every time.
  */
 
 /**

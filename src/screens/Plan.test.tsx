@@ -5,7 +5,7 @@ import { DAY } from '../core/time'
 describe('currentPlanWeek', () => {
   const startedAt = 1_700_000_000_000
 
-  it('is week 1 the moment she finishes placement', () => {
+  it('is week 1 the moment she starts', () => {
     expect(currentPlanWeek(startedAt, startedAt)).toBe(1)
   })
 

@@ -10,57 +10,21 @@ describe('store', () => {
     useStore.setState({ ...createInitialState(NOW), unlocked: null })
   })
 
-  it('starts unplaced with no cards', () => {
+  /**
+   * The whole point of removing the placement test: there is no starting
+   * level to be assigned and nothing arrives pre-known. Everyone begins at A1
+   * with an empty deck of card states and works up.
+   */
+  it('starts a brand-new profile at A1 with nothing pre-known', () => {
     const s = useStore.getState()
-    expect(s.placed).toBe(false)
-    expect(s.cefrLevel).toBe(0)
+    expect(s.unlockedLevel).toBe(1)
+    expect(s.cards).toEqual({})
     expect(Object.keys(s.cards)).toHaveLength(0)
   })
 
   it('records a name', () => {
     useStore.getState().setName('  Ana  ')
     expect(useStore.getState().profileName).toBe('Ana')
-  })
-
-  it('applies a placement result and seeds known cards', () => {
-    useStore.getState().finishPlacement(2, { survival_0: { due: NOW, interval: 2, ease: 2.5, reps: 2, lapses: 0 } }, NOW)
-    const s = useStore.getState()
-    expect(s.placed).toBe(true)
-    expect(s.cefrLevel).toBe(2)
-    expect(s.unlockedLevel).toBe(2)
-    expect(s.cards.survival_0.reps).toBe(2)
-  })
-
-  it('promotes on a retake that places higher', () => {
-    useStore.setState({ unlockedLevel: 1, cefrLevel: 1, placed: true })
-    useStore.getState().finishPlacement(3, {}, NOW)
-    expect(useStore.getState().unlockedLevel).toBe(3)
-    expect(useStore.getState().cefrLevel).toBe(3)
-  })
-
-  it('never re-locks content on a retake that places lower', () => {
-    // She reached B1, retakes on a bad day and scores A2. cefrLevel follows the
-    // new measurement, but content she earned stays unlocked.
-    useStore.setState({ unlockedLevel: 3, cefrLevel: 3, placed: true })
-    useStore.getState().finishPlacement(2, {}, NOW)
-    expect(useStore.getState().unlockedLevel).toBe(3)
-    expect(useStore.getState().cefrLevel).toBe(2)
-  })
-
-  it('does not crush real scheduling when a retake reseeds', () => {
-    const earned = { due: NOW + 40 * 86_400_000, interval: 40, ease: 2.7, reps: 9, lapses: 3 }
-    useStore.setState({ cards: { survival_0: { ...earned } }, unlockedLevel: 3, placed: true })
-
-    useStore.getState().finishPlacement(2, {
-      survival_0: { due: NOW, interval: 2, ease: 2.5, reps: 2, lapses: 0 },
-      survival_1: { due: NOW, interval: 2, ease: 2.5, reps: 2, lapses: 0 },
-    }, NOW)
-
-    const s = useStore.getState()
-    // Untouched: her 9 reps, 40-day interval and lapse history all survive.
-    expect(s.cards.survival_0).toEqual(earned)
-    // A card she has no history for is still seeded.
-    expect(s.cards.survival_1.reps).toBe(2)
   })
 
   it('grades a correct item into the card, the skill and the day counter', () => {
@@ -178,18 +142,13 @@ describe('store', () => {
     expect(useStore.getState().updatedAt).toBeGreaterThan(before)
   })
 
-  it('resets progress but keeps the app usable', () => {
+  it('resets progress back to a brand-new A1 profile', () => {
+    useStore.setState({ unlockedLevel: 3 })
     useStore.getState().gradeItem('survival_0', 'recognize', 2, NOW)
     useStore.getState().resetProgress(NOW)
     expect(useStore.getState().cards).toEqual({})
-    expect(useStore.getState().placed).toBe(false)
-  })
-
-  it('sends her back to placement without wiping her cards', () => {
-    useStore.getState().gradeItem('survival_0', 'recognize', 2, NOW)
-    useStore.getState().retakePlacement()
-    expect(useStore.getState().placed).toBe(false)
-    expect(useStore.getState().cards.survival_0).toBeDefined()
+    expect(useStore.getState().unlockedLevel).toBe(1)
+    expect(useStore.getState().profileName).toBe('')
   })
 
   it('remembers her speech-rate preference', () => {
@@ -217,7 +176,10 @@ describe('store', () => {
   })
 })
 
-describe('persisted-state migration (v1 -> v2, the daily reminder)', () => {
+/** The two fields `AppState` used to carry for the placement test's sake. */
+type Retired = { placed: boolean; cefrLevel: number }
+
+describe('persisted-state migration (v1/v2 -> v3, the placement test removed)', () => {
   beforeEach(() => {
     useStore.setState({ ...createInitialState(NOW), unlocked: null })
     localStorage.removeItem('english-nz')
@@ -229,10 +191,14 @@ describe('persisted-state migration (v1 -> v2, the daily reminder)', () => {
 
   /**
    * A profile exactly as it was written to localStorage before the reminder
-   * existed: today's shape minus the two new keys, carrying real progress —
-   * a streak, a best day, graded cards, an unlocked level.
+   * existed: today's shape, minus the two reminder keys, plus the two
+   * placement keys that shape still had — carrying real progress: a streak, a
+   * best day, a graded card with 9 reps and a 40-day interval, and B1
+   * unlocked.
+   *
+   * This is her, near enough. Every assertion below is about it surviving.
    */
-  function v1Profile(): Omit<AppState, 'reminderEnabled' | 'reminderTime'> {
+  function v1Profile(): Omit<AppState, 'reminderEnabled' | 'reminderTime'> & Retired {
     const {
       reminderEnabled: _off, reminderTime: _at, ...oldShape
     } = createInitialState(NOW)
@@ -254,9 +220,14 @@ describe('persisted-state migration (v1 -> v2, the daily reminder)', () => {
     }
   }
 
-  it('is on version 2 — the reminder fields shipped with a real bump, not a shallow-merge accident', () => {
-    expect(PERSIST_VERSION).toBe(2)
-    expect(useStore.persist.getOptions().version).toBe(2)
+  /** The same profile as it stood at v2: the reminder fields had arrived. */
+  function v2Profile(): AppState & Retired {
+    return { ...v1Profile(), reminderEnabled: true, reminderTime: '07:30' }
+  }
+
+  it('is on version 3 — removing a field is a real bump too, not a shallow-merge accident', () => {
+    expect(PERSIST_VERSION).toBe(3)
+    expect(useStore.persist.getOptions().version).toBe(3)
   })
 
   it('rehydrates a v1 profile with the reminder defaults and every scrap of progress intact', async () => {
@@ -274,8 +245,6 @@ describe('persisted-state migration (v1 -> v2, the daily reminder)', () => {
     // ...and nothing she had is disturbed. This is the whole point of the
     // migration: it must not look like the app forgot her.
     expect(s.profileName).toBe('Ana')
-    expect(s.placed).toBe(true)
-    expect(s.cefrLevel).toBe(2)
     expect(s.unlockedLevel).toBe(3)
     expect(s.cards.survival_0).toEqual(old.cards.survival_0)
     expect(s.skills.vocab).toEqual({ correct: 210, total: 260 })
@@ -289,7 +258,47 @@ describe('persisted-state migration (v1 -> v2, the daily reminder)', () => {
     expect(s.startedAt).toBe(old.startedAt)
   })
 
-  it('leaves a v2 profile exactly as saved, reminder settings included', async () => {
+  /**
+   * The one thing this change must not do. Removing the placement test does
+   * not un-place anyone: an existing profile keeps the level it reached and
+   * every card state behind it, untouched. Only new profiles start at A1.
+   */
+  it('leaves an existing v2 profile\'s earned progress completely untouched', async () => {
+    const old = v2Profile()
+    localStorage.setItem('english-nz', JSON.stringify({ state: old, version: 2 }))
+
+    await useStore.persist.rehydrate()
+    const s = useStore.getState()
+
+    expect(s.unlockedLevel).toBe(3)
+    expect(s.cards).toEqual(old.cards)
+    expect(s.cards.survival_0).toEqual({
+      due: NOW + 40 * 86_400_000, interval: 40, ease: 2.7, reps: 9, lapses: 3,
+    })
+    expect(s.skills).toEqual(old.skills)
+    expect(s.streak).toBe(12)
+    expect(s.bestDay).toBe(44)
+    expect(s.doneToday).toBe(18)
+    expect(s.doneDate).toBe('2026-7-29')
+    expect(s.lastStudyDay).toBe('2026-7-29')
+    expect(s.profileName).toBe('Ana')
+    expect(s.dailyGoal).toBe(30)
+    expect(s.speechRate).toBe(0.75)
+    expect(s.startedAt).toBe(old.startedAt)
+    // Her own reminder choice survives the bump too — it is not re-defaulted.
+    expect(s.reminderEnabled).toBe(true)
+    expect(s.reminderTime).toBe('07:30')
+  })
+
+  it('drops the two retired placement fields rather than carrying them forward', () => {
+    const out = migrate(v2Profile(), 2) as unknown as Record<string, unknown>
+    expect('placed' in out).toBe(false)
+    expect('cefrLevel' in out).toBe(false)
+    // Dropping them changes nothing else.
+    expect(out.unlockedLevel).toBe(3)
+  })
+
+  it('leaves a v3 profile exactly as saved, reminder settings included', async () => {
     const current = { ...createInitialState(NOW), profileName: 'Ana', reminderEnabled: true, reminderTime: '07:30', streak: 4 }
     localStorage.setItem('english-nz', JSON.stringify({ state: current, version: PERSIST_VERSION }))
 

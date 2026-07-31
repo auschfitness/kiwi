@@ -138,9 +138,9 @@ export function mergeSnapshots(local: AppState, remote: AppState): AppState {
   return {
     profileName: newer.profileName,
     syncCode: newer.syncCode,
-    cefrLevel: Math.max(local.cefrLevel, remote.cefrLevel) as AppState['cefrLevel'],
+    // Never lowered by a merge: a level earned on one device stays earned
+    // everywhere. It is the only progression signal left.
     unlockedLevel: Math.max(local.unlockedLevel, remote.unlockedLevel) as AppState['unlockedLevel'],
-    placed: local.placed || remote.placed,
     cards,
     skills: mergeSkills(local.skills, remote.skills),
     dailyGoal: newer.dailyGoal,

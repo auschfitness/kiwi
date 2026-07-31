@@ -8,7 +8,6 @@ import { Button, Card, Chip, ScreenHeader } from '../components/ui'
 
 export interface SettingsProps {
   onBack: () => void
-  onRetakePlacement: () => void
   // Sync status + restore action live in App's single instance of the sync
   // hook — Settings is a presentational consumer of them, not a second
   // mount of that hook (which would double the debounced push timers, the
@@ -186,11 +185,15 @@ function Toggle({
 
 /**
  * Settings — one screen for everything she can tweak: her name, cloud sync,
- * study preferences, and the two escape hatches (retake placement, wipe
- * progress). With no Supabase env vars, the sync section degrades to a
- * plain explanatory card instead of a field that can never work.
+ * study preferences, and the one escape hatch (wipe progress). With no
+ * Supabase env vars, the sync section degrades to a plain explanatory card
+ * instead of a field that can never work.
+ *
+ * There is deliberately no way to skip ahead from here. "Reset progress" is
+ * the only level-changing control, and it starts her over at A1 rather than
+ * dropping her somewhere she has not earned.
  */
-export function Settings({ onBack, onRetakePlacement, syncStatus, onRestore }: SettingsProps) {
+export function Settings({ onBack, syncStatus, onRestore }: SettingsProps) {
   const profileName = useStore(s => s.profileName)
   const syncCode = useStore(s => s.syncCode)
   const dailyGoal = useStore(s => s.dailyGoal)
@@ -462,10 +465,6 @@ export function Settings({ onBack, onRetakePlacement, syncStatus, onRestore }: S
         <Toggle label="Auto-play audio" checked={autoPlayAudio} onChange={v => setPref('autoPlayAudio', v)} />
         <Toggle label="Show Portuguese" checked={showPortuguese} onChange={v => setPref('showPortuguese', v)} />
       </Card>
-
-      <Button variant="ghost" onClick={onRetakePlacement}>
-        Retake placement test
-      </Button>
 
       {!confirmingReset && (
         <Button variant="again" onClick={handleResetClick}>

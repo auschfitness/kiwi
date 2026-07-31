@@ -8,7 +8,7 @@ import { createInitialState } from '../store/defaults'
 beforeEach(() => {
   useStore.setState({
     ...createInitialState(Date.now()),
-    unlocked: null, placed: true, profileName: 'Ana', cefrLevel: 1, unlockedLevel: 1,
+    unlocked: null, profileName: 'Ana', unlockedLevel: 1,
   })
 })
 
@@ -91,7 +91,7 @@ describe('Home', () => {
     const seen = Object.fromEntries(
       a1.map(id => [id, { due: Date.now() + 86_400_000, interval: 5, ease: 2.5, reps: 3, lapses: 0 }]),
     )
-    useStore.setState({ cards: seen, unlockedLevel: 1, cefrLevel: 1 })
+    useStore.setState({ cards: seen, unlockedLevel: 1 })
     render(<Home onNavigate={vi.fn()} onStudy={vi.fn()} />)
     const study = screen.getByTestId('study-now')
     expect(study).toHaveTextContent(/all done for now/i)

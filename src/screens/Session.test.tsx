@@ -35,7 +35,7 @@ async function advance(): Promise<boolean> {
 beforeEach(() => {
   useStore.setState({
     ...createInitialState(Date.now()),
-    unlocked: null, placed: true, cefrLevel: 1, unlockedLevel: 1,
+    unlocked: null, unlockedLevel: 1,
     newPerSession: 3, autoPlayAudio: false,
   })
 })
@@ -115,7 +115,7 @@ describe('Session', () => {
     //   (5 % 5 === 0).
     useStore.setState({
       ...createInitialState(Date.now()),
-      unlocked: null, placed: true, cefrLevel: 1, unlockedLevel: 1,
+      unlocked: null, unlockedLevel: 1,
       newPerSession: 0, autoPlayAudio: false,
       cards: { survival_0: { due: Date.now() - 1000, interval: 1, ease: 2.5, reps: 5, lapses: 0 } },
     })
@@ -146,7 +146,7 @@ describe('Session', () => {
   function oneDueRecognizeCard() {
     useStore.setState({
       ...createInitialState(Date.now()),
-      unlocked: null, placed: true, cefrLevel: 1, unlockedLevel: 1,
+      unlocked: null, unlockedLevel: 1,
       newPerSession: 0, autoPlayAudio: false,
       cards: { survival_0: { due: Date.now() - 1000, interval: 1, ease: 2.5, reps: 5, lapses: 0 } },
     })
@@ -201,7 +201,7 @@ describe('Session', () => {
     const state = { due: Date.now() - 1000, interval: 1, ease: 2.5, reps: 5, lapses: 0 }
     useStore.setState({
       ...createInitialState(Date.now()),
-      unlocked: null, placed: true, cefrLevel: 1, unlockedLevel: 1,
+      unlocked: null, unlockedLevel: 1,
       newPerSession: 0, autoPlayAudio: false,
       cards: { survival_0: { ...state } },
     })

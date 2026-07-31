@@ -8,7 +8,7 @@ export interface PlanProps {
 }
 
 /** Which of the eight weeks she's in "now", based on how long ago she
- * finished placement. Clamped to 1..8 so a fresh profile never reads
+ * started. Clamped to 1..8 so a fresh profile never reads
  * "Week 0" and a learner who has kept going past week 8 stays on the last
  * card rather than pointing at a week that doesn't exist. */
 export function currentPlanWeek(now: number, startedAt: number): number {

@@ -13,7 +13,7 @@ import {
 } from './drills'
 import type { DrillItem, DrillMode, GeneratedKind } from './drills'
 
-/** Deterministic pseudo-random in [0,1) — same shape placement.test.ts uses. */
+/** Deterministic pseudo-random in [0,1) — a seeded test gets the same round every time. */
 function seeded(seed = 1) {
   let s = seed
   return () => { s = (s * 1103515245 + 12345) % 2147483648; return s / 2147483648 }

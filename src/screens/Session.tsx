@@ -25,7 +25,6 @@ export function Session({ deckId, onDone }: SessionProps) {
   const cards = useStore(s => s.cards)
   const skills = useStore(s => s.skills)
   const unlockedLevel = useStore(s => s.unlockedLevel)
-  const cefrLevel = useStore(s => s.cefrLevel)
   const newPerSession = useStore(s => s.newPerSession)
   const gradeItem = useStore(s => s.gradeItem)
 
@@ -44,7 +43,7 @@ export function Session({ deckId, onDone }: SessionProps) {
       // Safari). jsdom has none either, so this stays false in tests and the
       // queue composition they assert on is unchanged.
       canSpeak: speechRecognitionAvailable(),
-      cefrLevel,
+      // New cards are introduced easiest-first, by their deck's own level.
       levelOf: id => levelOfCard(id) ?? 1,
       bias: weakestSkill(skills) ?? undefined,
     })

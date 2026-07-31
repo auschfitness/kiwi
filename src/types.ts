@@ -59,9 +59,13 @@ export type Accent = 'en-NZ' | 'en-AU' | 'en-GB' | 'en-US'
 export interface AppState {
   profileName: string
   syncCode: string | null
-  cefrLevel: 0 | Level
+  /**
+   * The highest level she has earned. Everyone starts at 1 and climbs: the
+   * only way this moves is the 80%-of-the-current-level rule in
+   * `src/core/leveling.ts`. There is no test that can skip her ahead, and no
+   * separate "measured" level — this single field is the whole progression.
+   */
   unlockedLevel: Level
-  placed: boolean
   cards: Record<string, CardState>
   skills: Skills
   dailyGoal: number
