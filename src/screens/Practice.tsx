@@ -20,6 +20,7 @@ const OPTIONS: PracticeOption[] = [
   { screen: 'shadowing', emoji: '🐢', title: 'Shadowing', desc: 'Repeat after a speaker and check how you sound.' },
   { screen: 'roleplay', emoji: '🎭', title: 'Role-play', desc: 'Act out everyday scenes, like ordering coffee.' },
   { screen: 'drills', emoji: '🔢', title: 'Drills', desc: 'Quick reps for numbers, prices, times and dates.' },
+  { screen: 'earTraining', emoji: '👂', title: 'Ear training', desc: 'Kiwi vowels: is that pen or pin, bad or bed?' },
 ]
 
 /** One hub for every speaking and listening exercise, so Home stays tidy —

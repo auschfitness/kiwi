@@ -10,12 +10,20 @@ vi.mock('../audio/speak', () => ({ speak: vi.fn(), cancelSpeech: vi.fn(), warmUp
 vi.mock('../audio/listen', () => ({ recognizeOnce: vi.fn(async () => '') }))
 
 describe('Practice', () => {
-  it('offers all four practice options', () => {
+  it('offers all five practice options', () => {
     render(<Practice onBack={vi.fn()} onNavigate={vi.fn()} />)
     expect(screen.getByText('Dialogues')).toBeInTheDocument()
     expect(screen.getByText('Shadowing')).toBeInTheDocument()
     expect(screen.getByText('Role-play')).toBeInTheDocument()
     expect(screen.getByText('Drills')).toBeInTheDocument()
+    expect(screen.getByText('Ear training')).toBeInTheDocument()
+  })
+
+  it('navigates to Ear training', async () => {
+    const onNavigate = vi.fn()
+    render(<Practice onBack={vi.fn()} onNavigate={onNavigate} />)
+    await userEvent.click(screen.getByTestId('practice-earTraining'))
+    expect(onNavigate).toHaveBeenCalledWith('earTraining')
   })
 
   it('navigates to Dialogues', async () => {

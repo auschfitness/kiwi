@@ -13,13 +13,14 @@ import { ConjugationTable } from './screens/ConjugationTable'
 import { Practice } from './screens/Practice'
 import { Shadowing } from './screens/Shadowing'
 import { Drills } from './screens/Drills'
+import { EarTraining } from './screens/EarTraining'
 import { Plan } from './screens/Plan'
 import { Dialogues } from './screens/Dialogues'
 import { Settings } from './screens/Settings'
 
 export type Screen =
   | 'home' | 'name' | 'placement' | 'session' | 'dashboard'
-  | 'plan' | 'practice' | 'dialogues' | 'shadowing' | 'roleplay' | 'drills'
+  | 'plan' | 'practice' | 'dialogues' | 'shadowing' | 'roleplay' | 'drills' | 'earTraining'
   | 'settings' | 'done' | 'conjugation'
 
 /** A Practice option that has not landed yet (A3 Role-play) — an honest
@@ -156,6 +157,8 @@ export default function App() {
         return <ComingSoon title="Role-play" onBack={backToPractice} />
       case 'drills':
         return <Drills onBack={backToPractice} />
+      case 'earTraining':
+        return <EarTraining onBack={backToPractice} />
       case 'settings':
         return (
           <Settings

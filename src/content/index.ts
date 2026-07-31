@@ -11,6 +11,8 @@ export { IRREGULAR_TABLE } from './authored/irregular'
 export { PHONETICS } from './authored/phonetics'
 export { PHOTOS } from './authored/photos'
 export { PHOTO_CREDITS } from './authored/photoCredits'
+export { MINIMAL_PAIRS, PAIR_GROUPS } from './authored/minimalPairs'
+export type { MinimalPair, PairGroup, PairGroupInfo } from './authored/minimalPairs'
 
 const RAW_DECKS: Deck[] = [...GENERATED_DECKS, IRREGULAR_DECK, ...B2_DECKS]
 
