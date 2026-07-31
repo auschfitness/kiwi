@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Learn } from './Learn'
 import { Recognize } from './Recognize'
@@ -14,18 +14,34 @@ const card: Card = {
   pos: 'noun', phonetic: 'ˈwɔːtə',
 }
 
+/**
+ * The four ratings live in their own labelled group, so a rating button can
+ * never be confused with a multiple-choice option that happens to read "Good".
+ */
+function rating(name: RegExp) {
+  const group = screen.getByRole('group', { name: /how well did you know it/i })
+  return within(group).getByRole('button', { name })
+}
+
 beforeEach(() => {
   useStore.setState({ ...createInitialState(0), unlocked: null, autoPlayAudio: false })
 })
 
 describe('Learn', () => {
-  it('teaches the word and reports a correct exposure', async () => {
+  it('teaches the word and reports a plain "good" exposure', async () => {
     const onAnswer = vi.fn()
     render(<Learn card={card} onAnswer={onAnswer} />)
     expect(screen.getByText('water')).toBeInTheDocument()
     expect(screen.getByText('água')).toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: /got it/i }))
-    expect(onAnswer).toHaveBeenCalledWith(true)
+    // Was `true`; Learn now speaks the same Rating language as everything else.
+    expect(onAnswer).toHaveBeenCalledWith(2)
+  })
+
+  it('keeps its single button — teaching is not a test', () => {
+    render(<Learn card={card} onAnswer={vi.fn()} />)
+    expect(screen.getByRole('button', { name: /got it/i })).toBeInTheDocument()
+    expect(screen.queryByRole('group', { name: /how well did you know it/i })).not.toBeInTheDocument()
   })
 
   it('hides Portuguese when the setting is off', () => {
@@ -45,53 +61,92 @@ describe('Learn', () => {
 })
 
 describe('Recognize', () => {
-  it('hides the meaning until asked, then self-marks', async () => {
-    const onAnswer = vi.fn()
-    render(<Recognize card={card} onAnswer={onAnswer} />)
+  it('hides the meaning until asked, then offers all four ratings', async () => {
+    render(<Recognize card={card} onAnswer={vi.fn()} />)
     expect(screen.queryByText('água')).not.toBeInTheDocument()
+    expect(screen.queryByRole('group', { name: /how well did you know it/i })).not.toBeInTheDocument()
+
     await userEvent.click(screen.getByRole('button', { name: /show meaning/i }))
+
     expect(screen.getByText('água')).toBeInTheDocument()
-    await userEvent.click(screen.getByRole('button', { name: /knew it/i }))
-    expect(onAnswer).toHaveBeenCalledWith(true)
+    // Replaces the old "Knew it" / "Didn't" pair: on this screen the four
+    // ratings *are* her self-assessment.
+    for (const name of [/^Again/, /^Hard/, /^Good/, /^Easy/]) {
+      expect(rating(name)).toBeInTheDocument()
+    }
   })
 
-  it('reports a miss', async () => {
-    const onAnswer = vi.fn()
-    render(<Recognize card={card} onAnswer={onAnswer} />)
+  it('reports whichever rating she picks', async () => {
+    for (const [name, expected] of [[/^Again/, 0], [/^Hard/, 1], [/^Good/, 2], [/^Easy/, 3]] as const) {
+      const onAnswer = vi.fn()
+      const { unmount } = render(<Recognize card={card} onAnswer={onAnswer} />)
+      await userEvent.click(screen.getByRole('button', { name: /show meaning/i }))
+      await userEvent.click(rating(name))
+      expect(onAnswer).toHaveBeenCalledWith(expected)
+      unmount()
+    }
+  })
+
+  it('suggests nothing — nothing was checked, so the app has no opinion', async () => {
+    render(<Recognize card={card} onAnswer={vi.fn()} />)
     await userEvent.click(screen.getByRole('button', { name: /show meaning/i }))
-    await userEvent.click(screen.getByRole('button', { name: /didn't/i }))
-    expect(onAnswer).toHaveBeenCalledWith(false)
+    for (const name of [/^Again/, /^Hard/, /^Good/, /^Easy/]) {
+      expect(rating(name)).not.toHaveAttribute('data-suggested')
+    }
   })
 
   it('does not record a second, contradictory grade', async () => {
     const onAnswer = vi.fn()
     render(<Recognize card={card} onAnswer={onAnswer} />)
     await userEvent.click(screen.getByRole('button', { name: /show meaning/i }))
-    await userEvent.click(screen.getByRole('button', { name: /knew it/i }))
-    await userEvent.click(screen.getByRole('button', { name: /didn't/i }))
+    // Tapping Again and then Easy must leave only the first one standing.
+    await userEvent.click(rating(/^Again/))
+    await userEvent.click(rating(/^Easy/))
     expect(onAnswer).toHaveBeenCalledTimes(1)
-    expect(onAnswer).toHaveBeenCalledWith(true)
+    expect(onAnswer).toHaveBeenCalledWith(0)
+  })
+
+  it('disables all four the moment one of them fires', async () => {
+    render(<Recognize card={card} onAnswer={vi.fn()} />)
+    await userEvent.click(screen.getByRole('button', { name: /show meaning/i }))
+    await userEvent.click(rating(/^Good/))
+    for (const name of [/^Again/, /^Hard/, /^Good/, /^Easy/]) {
+      expect(rating(name)).toBeDisabled()
+    }
   })
 })
 
 describe('Type', () => {
-  it('accepts a leniently matching answer', async () => {
+  it('suggests Good after a leniently matching answer, and reports what she taps', async () => {
     const onAnswer = vi.fn()
     render(<Type card={card} onAnswer={onAnswer} />)
     await userEvent.type(screen.getByRole('textbox'), 'Water!')
     await userEvent.click(screen.getByRole('button', { name: /check/i }))
-    await userEvent.click(screen.getByRole('button', { name: /continue/i }))
-    expect(onAnswer).toHaveBeenCalledWith(true)
+    expect(rating(/^Good/)).toHaveAttribute('data-suggested', 'true')
+    await userEvent.click(rating(/^Good/))
+    // Was `true`; the single Continue button is now the four ratings.
+    expect(onAnswer).toHaveBeenCalledWith(2)
   })
 
-  it('shows the answer after a miss and reports it', async () => {
+  it('shows the answer after a miss and suggests Again', async () => {
     const onAnswer = vi.fn()
     render(<Type card={card} onAnswer={onAnswer} />)
     await userEvent.type(screen.getByRole('textbox'), 'fire')
     await userEvent.click(screen.getByRole('button', { name: /check/i }))
     expect(screen.getByText(/water/)).toBeInTheDocument()
-    await userEvent.click(screen.getByRole('button', { name: /continue/i }))
-    expect(onAnswer).toHaveBeenCalledWith(false)
+    expect(rating(/^Again/)).toHaveAttribute('data-suggested', 'true')
+    await userEvent.click(rating(/^Again/))
+    expect(onAnswer).toHaveBeenCalledWith(0)
+  })
+
+  it('lets her overrule the suggestion', async () => {
+    const onAnswer = vi.fn()
+    render(<Type card={card} onAnswer={onAnswer} />)
+    await userEvent.type(screen.getByRole('textbox'), 'water')
+    await userEvent.click(screen.getByRole('button', { name: /check/i }))
+    // The app suggested Good; she says it was hard work.
+    await userEvent.click(rating(/^Hard/))
+    expect(onAnswer).toHaveBeenCalledWith(1)
   })
 
   it('blanks the target in the example sentence', () => {
@@ -100,21 +155,19 @@ describe('Type', () => {
   })
 
   it('does not accept an empty answer as correct', async () => {
-    const onAnswer = vi.fn()
-    render(<Type card={card} onAnswer={onAnswer} />)
+    render(<Type card={card} onAnswer={vi.fn()} />)
     await userEvent.click(screen.getByRole('button', { name: /check/i }))
-    await userEvent.click(screen.getByRole('button', { name: /continue/i }))
-    expect(onAnswer).toHaveBeenCalledWith(false)
+    expect(rating(/^Again/)).toHaveAttribute('data-suggested', 'true')
   })
 
-  it('grades only once when Continue is double-tapped', async () => {
+  it('grades only once when two different ratings are tapped', async () => {
     const onAnswer = vi.fn()
     render(<Type card={card} onAnswer={onAnswer} />)
     await userEvent.type(screen.getByRole('textbox'), 'water')
     await userEvent.click(screen.getByRole('button', { name: /check/i }))
-    const cont = screen.getByRole('button', { name: /continue/i })
-    await userEvent.click(cont)
-    await userEvent.click(cont)
+    await userEvent.click(rating(/^Easy/))
+    await userEvent.click(rating(/^Again/))
     expect(onAnswer).toHaveBeenCalledTimes(1)
+    expect(onAnswer).toHaveBeenCalledWith(3)
   })
 })

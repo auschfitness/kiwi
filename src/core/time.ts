@@ -1,4 +1,5 @@
 export const MIN = 60_000
+export const HOUR = 3_600_000
 export const DAY = 86_400_000
 
 /** Local calendar day key, e.g. "2026-7-30". Used for streaks and daily counters. */

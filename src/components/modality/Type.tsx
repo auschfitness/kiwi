@@ -2,6 +2,8 @@ import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Card, Button } from '../ui'
 import { clozeExample, looseMatch } from '../../core/text'
+import { RatingButtons } from './RatingButtons'
+import type { Rating } from '../../types'
 import type { ModalityProps } from './types'
 
 type Result = 'pending' | 'right' | 'wrong'
@@ -15,10 +17,10 @@ export function Type({ card, onAnswer }: ModalityProps) {
     setResult(looseMatch(value, card.en) ? 'right' : 'wrong')
   }
 
-  function finish(correct: boolean) {
+  function finish(rating: Rating) {
     if (answered) return
     setAnswered(true)
-    onAnswer(correct)
+    onAnswer(rating)
   }
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
@@ -60,9 +62,12 @@ export function Type({ card, onAnswer }: ModalityProps) {
               </p>
             )}
           </Card>
-          <Button variant="primary" onClick={() => finish(result === 'right')} disabled={answered}>
-            Continue
-          </Button>
+          <RatingButtons
+            cardId={card.id}
+            onRate={finish}
+            disabled={answered}
+            suggested={result === 'right' ? 2 : 0}
+          />
         </>
       )}
     </div>

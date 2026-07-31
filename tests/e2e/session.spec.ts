@@ -48,13 +48,34 @@ test('first run: name, placement, home, a session, and progress that survives re
   // Locked level
   await expect(page.getByTestId('deck-money')).toBeDisabled()
 
-  // Session
+  // Session. The teaching items keep their single "Got it"; every graded item
+  // ends in the four ratings, so the loop taps whichever control is on screen.
   await page.getByTestId('study-now').click()
-  for (let i = 0; i < 8; i++) {
+  let sawRatings = false
+  for (let i = 0; i < 40; i++) {
     const gotIt = page.getByRole('button', { name: /got it/i })
-    if (!(await gotIt.count())) break
-    await gotIt.click()
+    if (await gotIt.count()) { await gotIt.click(); continue }
+
+    const reveal = page.getByRole('button', { name: /show meaning/i })
+    if (await reveal.count()) { await reveal.click(); continue }
+
+    const ratings = page.getByRole('group', { name: /how well did you know it/i })
+    if (await ratings.count()) {
+      if (!sawRatings) {
+        sawRatings = true
+        // All four are really there on a phone-sized screen, and each one
+        // carries the interval it would produce.
+        await expect(ratings.getByRole('button', { name: /^Again/ })).toBeVisible()
+        await expect(ratings.getByRole('button', { name: /^Hard/ })).toBeVisible()
+        await expect(ratings.getByRole('button', { name: /^Good \d/ })).toBeVisible()
+        await expect(ratings.getByRole('button', { name: /^Easy \d/ })).toBeVisible()
+      }
+      await ratings.getByRole('button', { name: /^Good/ }).click()
+      continue
+    }
+    break
   }
+  expect(sawRatings).toBe(true)
 
   // Progress persists
   await page.reload()

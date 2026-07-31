@@ -16,10 +16,12 @@ export function Learn({ card, onAnswer }: ModalityProps) {
     speak(card.en, accent)
   }, [card.en, accent, autoPlayAudio])
 
-  function finish(correct: boolean) {
+  // Teaching, not testing: there is nothing to rate yet, so the single button
+  // reports a plain "good" and the four ratings stay off this screen.
+  function finish() {
     if (answered) return
     setAnswered(true)
-    onAnswer(correct)
+    onAnswer(2)
   }
 
   return (
@@ -38,7 +40,7 @@ export function Learn({ card, onAnswer }: ModalityProps) {
         {showPortuguese && <p className="text-sm text-muted">{card.examplePt}</p>}
       </Card>
 
-      <Button variant="primary" onClick={() => finish(true)} disabled={answered}>
+      <Button variant="primary" onClick={finish} disabled={answered}>
         Got it 👍
       </Button>
     </div>

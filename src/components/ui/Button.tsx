@@ -1,13 +1,14 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
 
-type Variant = 'primary' | 'ghost' | 'good' | 'again'
+type Variant = 'primary' | 'ghost' | 'good' | 'hard' | 'again'
 type Size = 'lg' | 'md'
 
 const VARIANTS: Record<Variant, string> = {
-  primary: 'bg-brand text-[#04263a] font-extrabold',
+  primary: 'bg-brand text-onBrand font-extrabold',
   ghost: 'bg-card2 text-ink border border-line',
-  good: 'bg-good text-[#04291d] font-bold',
-  again: 'bg-again text-[#3b0713] font-bold',
+  good: 'bg-good text-onGood font-bold',
+  hard: 'bg-hard text-onHard font-bold',
+  again: 'bg-again text-onAgain font-bold',
 }
 
 const SIZES: Record<Size, string> = {

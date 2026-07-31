@@ -1,5 +1,7 @@
 import type { CardState, Deck, Rating } from '../types'
-import { DAY, MIN } from './time'
+import { DAY, HOUR, MIN } from './time'
+
+export const RATINGS: readonly Rating[] = [0, 1, 2, 3]
 
 export function newCardState(now: number): CardState {
   return { due: now, interval: 0, ease: 2.5, reps: 0, lapses: 0 }
@@ -33,6 +35,38 @@ export function schedule(state: CardState | undefined, rating: Rating, now: numb
 
   c.due = now + Math.round(c.interval * DAY)
   return c
+}
+
+/**
+ * Short human label for a gap in time: under an hour "Nm", under a day "Nh",
+ * otherwise "Nd". Never rounds down to a bare "0".
+ *
+ * Exported so the format rule can be tested on its own. No rating the current
+ * engine produces lands in the hours band, but the band has to exist: the
+ * moment someone adds a "1h" step, the buttons should say so without anyone
+ * remembering to come back here.
+ */
+export function formatDelta(ms: number): string {
+  const gap = Math.max(0, ms)
+  if (gap < HOUR) return `${Math.max(1, Math.round(gap / MIN))}m`
+  if (gap < DAY) return `${Math.max(1, Math.round(gap / HOUR))}h`
+  return `${Math.max(1, Math.round(gap / DAY))}d`
+}
+
+/**
+ * What each of the four buttons would actually do to this card, as a label she
+ * can read before she taps: { 0: '10m', 1: '10m', 2: '1d', 3: '4d' }.
+ *
+ * Derived by running the real scheduler once per rating rather than restating
+ * its arithmetic, so the numbers on the buttons can never drift away from the
+ * numbers the engine goes on to use.
+ */
+export function previewIntervals(state: CardState | undefined, now: number): Record<Rating, string> {
+  const out = {} as Record<Rating, string>
+  for (const rating of RATINGS) {
+    out[rating] = formatDelta(schedule(state, rating, now).due - now)
+  }
+  return out
 }
 
 export function isNew(state: CardState | undefined): boolean {

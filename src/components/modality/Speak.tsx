@@ -3,6 +3,8 @@ import { Card, SpeakerButton, Button } from '../ui'
 import { useStore } from '../../store/useStore'
 import { recognizeOnce } from '../../audio/listen'
 import { judgePronunciation } from '../../core/pronunciation'
+import { RatingButtons } from './RatingButtons'
+import type { Rating } from '../../types'
 import type { ModalityProps } from './types'
 
 type Phase = 'ready' | 'listening' | 'result'
@@ -32,10 +34,10 @@ export function Speak({ card, onAnswer, onSkip }: ModalityProps) {
     setPhase('result')
   }
 
-  function finish(correct: boolean) {
+  function finish(rating: Rating) {
     if (answered) return
     setAnswered(true)
-    onAnswer(correct)
+    onAnswer(rating)
   }
 
   // Same one-shot guard as finish(), so a double-tap can't advance two items.
@@ -79,9 +81,15 @@ export function Speak({ card, onAnswer, onSkip }: ModalityProps) {
               </Button>
             )
           ) : (
-            <Button variant="primary" onClick={() => finish(judgement.ok)} disabled={answered}>
-              Continue
-            </Button>
+            // Only reachable when the mic actually heard something: the
+            // micFailed branch above never renders a rating at all, so a dead
+            // microphone still cannot reach the store.
+            <RatingButtons
+              cardId={card.id}
+              onRate={finish}
+              disabled={answered}
+              suggested={judgement.ok ? 2 : 0}
+            />
           )}
         </>
       )}

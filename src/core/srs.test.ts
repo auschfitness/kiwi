@@ -1,6 +1,9 @@
 import { describe, it, expect } from 'vitest'
-import { DAY, MIN } from './time'
-import { newCardState, schedule, isDue, isNew, deckProgress, totalKnown, totalDue } from './srs'
+import { DAY, HOUR, MIN } from './time'
+import {
+  newCardState, schedule, isDue, isNew, deckProgress, totalKnown, totalDue,
+  previewIntervals, formatDelta,
+} from './srs'
 import type { CardState, Deck } from '../types'
 
 const NOW = 1_700_000_000_000
@@ -70,6 +73,56 @@ describe('schedule', () => {
     const snapshot = { ...before }
     schedule(before, 2, NOW)
     expect(before).toEqual(snapshot)
+  })
+})
+
+describe('previewIntervals', () => {
+  it('labels all four buttons for a card she has never seen', () => {
+    expect(previewIntervals(undefined, NOW)).toEqual({ 0: '10m', 1: '10m', 2: '1d', 3: '4d' })
+  })
+
+  it('grows the labels as the card matures', () => {
+    const once = schedule(undefined, 2, NOW)
+    expect(previewIntervals(once, NOW)).toEqual({ 0: '10m', 1: '1d', 2: '3d', 3: '6d' })
+
+    const twice = schedule(once, 2, NOW)
+    const mature = previewIntervals(twice, NOW)
+    // Third rep multiplies by ease (2.5) rather than using the fixed steps, so
+    // the labels have to have moved on from the 1d / 3d / 6d row above.
+    expect(mature[2]).toBe('8d')
+    expect(mature[3]).toBe('10d')
+    expect(mature[1]).toBe('4d')
+    // Again always drops her back to the same ten-minute step, however mature.
+    expect(mature[0]).toBe('10m')
+  })
+
+  it('reads its numbers off schedule() rather than restating the arithmetic', () => {
+    const state = { due: NOW, interval: 40, ease: 2.7, reps: 9, lapses: 1 }
+    const labels = previewIntervals(state, NOW)
+    for (const rating of [0, 1, 2, 3] as const) {
+      const days = (schedule(state, rating, NOW).due - NOW) / DAY
+      const expected = days < 1 / 24
+        ? `${Math.round(days * 24 * 60)}m`
+        : days < 1 ? `${Math.round(days * 24)}h` : `${Math.round(days)}d`
+      expect(labels[rating]).toBe(expected)
+    }
+  })
+
+})
+
+describe('formatDelta', () => {
+  it('says minutes under an hour, hours under a day, days above that', () => {
+    expect(formatDelta(10 * MIN)).toBe('10m')
+    expect(formatDelta(59 * MIN)).toBe('59m')
+    expect(formatDelta(HOUR)).toBe('1h')
+    expect(formatDelta(8 * HOUR)).toBe('8h')
+    expect(formatDelta(DAY)).toBe('1d')
+    expect(formatDelta(3 * DAY)).toBe('3d')
+  })
+
+  it('never shows a bare zero for a gap that is real but tiny', () => {
+    expect(formatDelta(1)).toBe('1m')
+    expect(formatDelta(0)).toBe('1m')
   })
 })
 

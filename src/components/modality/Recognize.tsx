@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { Card, SpeakerButton, Button } from '../ui'
 import { useStore } from '../../store/useStore'
 import { stripTags } from '../../core/text'
+import { RatingButtons } from './RatingButtons'
+import type { Rating } from '../../types'
 import type { ModalityProps } from './types'
 
 export function Recognize({ card, onAnswer }: ModalityProps) {
@@ -9,10 +11,10 @@ export function Recognize({ card, onAnswer }: ModalityProps) {
   const [revealed, setRevealed] = useState(false)
   const [answered, setAnswered] = useState(false)
 
-  function finish(correct: boolean) {
+  function finish(rating: Rating) {
     if (answered) return
     setAnswered(true)
-    onAnswer(correct)
+    onAnswer(rating)
   }
 
   return (
@@ -37,14 +39,9 @@ export function Recognize({ card, onAnswer }: ModalityProps) {
           Show meaning
         </Button>
       ) : (
-        <div className="flex gap-3">
-          <Button variant="again" onClick={() => finish(false)} disabled={answered}>
-            ❌ Didn't
-          </Button>
-          <Button variant="good" onClick={() => finish(true)} disabled={answered}>
-            ✅ Knew it
-          </Button>
-        </div>
+        // Nothing was checked here, so nothing is suggested: on this screen the
+        // four ratings *are* the answer.
+        <RatingButtons cardId={card.id} onRate={finish} disabled={answered} />
       )}
     </div>
   )

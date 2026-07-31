@@ -4,6 +4,8 @@ import { Card, Button, SpeakerButton } from '../ui'
 import { useStore } from '../../store/useStore'
 import { stripTags, looseMatch } from '../../core/text'
 import { speak } from '../../audio/speak'
+import { RatingButtons } from './RatingButtons'
+import type { Rating } from '../../types'
 import type { ModalityProps } from './types'
 
 type Result = 'pending' | 'right' | 'wrong'
@@ -26,10 +28,10 @@ export function Dictate({ card, onAnswer }: ModalityProps) {
     setResult(looseMatch(value, plain) ? 'right' : 'wrong')
   }
 
-  function finish(correct: boolean) {
+  function finish(rating: Rating) {
     if (answered) return
     setAnswered(true)
-    onAnswer(correct)
+    onAnswer(rating)
   }
 
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
@@ -76,9 +78,12 @@ export function Dictate({ card, onAnswer }: ModalityProps) {
             <p>{result === 'right' ? '✅ Correct!' : 'Not quite.'}</p>
             <p className="mt-1 font-normal text-ink">{plain}</p>
           </Card>
-          <Button variant="primary" onClick={() => finish(result === 'right')} disabled={answered}>
-            Continue
-          </Button>
+          <RatingButtons
+            cardId={card.id}
+            onRate={finish}
+            disabled={answered}
+            suggested={result === 'right' ? 2 : 0}
+          />
         </>
       )}
     </div>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import type { QueueItem } from '../types'
+import type { QueueItem, Rating } from '../types'
 import { buildQueue, requeueWrong } from '../core/queue'
 import { cardById, decksForLevel, deckById, levelOfCard } from '../content'
 import { weakestSkill } from '../core/stats'
@@ -50,21 +50,23 @@ export function Session({ deckId, onDone }: SessionProps) {
     })
   })
   const [index, setIndex] = useState(0)
-  const [shownAt, setShownAt] = useState(() => Date.now())
 
   useEffect(() => {
     if (queue.length > 0 && index >= queue.length) onDone()
   }, [index, queue.length, onDone])
 
-  function handleAnswer(correct: boolean, easyHint?: boolean) {
+  /**
+   * The rating is hers and is passed through untouched. There used to be a
+   * speed heuristic here that promoted any sub-3-second correct answer to
+   * "easy"; it is gone, because she now says so herself and a second opinion
+   * from a stopwatch could only overrule her.
+   */
+  function handleAnswer(rating: Rating) {
     const item = queue[index]
     if (!item) return
-    const fast = Date.now() - shownAt < 3000
-    const easy = Boolean(easyHint) || (correct && fast && item.modality !== 'learn')
-    gradeItem(item.cardId, item.modality, correct, easy, Date.now())
-    if (!correct) setQueue(q => requeueWrong(q, index))
+    gradeItem(item.cardId, item.modality, rating, Date.now())
+    if (rating === 0) setQueue(q => requeueWrong(q, index))
     setIndex(i => i + 1)
-    setShownAt(Date.now())
   }
 
   /**
@@ -77,7 +79,6 @@ export function Session({ deckId, onDone }: SessionProps) {
   function handleSkip() {
     if (!queue[index]) return
     setIndex(i => i + 1)
-    setShownAt(Date.now())
   }
 
   if (queue.length === 0) {
@@ -118,7 +119,7 @@ export function Session({ deckId, onDone }: SessionProps) {
 function renderModality(
   item: QueueItem,
   card: NonNullable<ReturnType<typeof cardById>>,
-  onAnswer: (correct: boolean, easy?: boolean) => void,
+  onAnswer: (rating: Rating) => void,
   onSkip: () => void,
   index: number,
 ) {

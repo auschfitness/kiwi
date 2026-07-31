@@ -2,6 +2,8 @@ import { useMemo, useState } from 'react'
 import { Card, Button } from '../ui'
 import { exampleWords, normalize } from '../../core/text'
 import { shuffleWords } from '../../core/options'
+import { RatingButtons } from './RatingButtons'
+import type { Rating } from '../../types'
 import type { ModalityProps } from './types'
 
 type Result = 'pending' | 'right' | 'wrong'
@@ -41,10 +43,10 @@ export function Build({ card, onAnswer }: ModalityProps) {
     setResult(normalize(answerText) === normalize(target) ? 'right' : 'wrong')
   }
 
-  function finish(correct: boolean) {
+  function finish(rating: Rating) {
     if (answered) return
     setAnswered(true)
-    onAnswer(correct)
+    onAnswer(rating)
   }
 
   return (
@@ -97,9 +99,12 @@ export function Build({ card, onAnswer }: ModalityProps) {
             <p>{result === 'right' ? '✅ Correct!' : 'Not quite. The right order:'}</p>
             <p className="mt-1 font-normal text-ink">{target}</p>
           </Card>
-          <Button variant="primary" onClick={() => finish(result === 'right')} disabled={answered}>
-            Continue
-          </Button>
+          <RatingButtons
+            cardId={card.id}
+            onRate={finish}
+            disabled={answered}
+            suggested={result === 'right' ? 2 : 0}
+          />
         </>
       )}
     </div>

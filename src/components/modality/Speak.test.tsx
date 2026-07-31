@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Speak } from './Speak'
 import { useStore } from '../../store/useStore'
@@ -16,6 +16,11 @@ const card: Card = {
   pos: 'noun',
 }
 
+function rating(name: RegExp) {
+  const group = screen.getByRole('group', { name: /how well did you know it/i })
+  return within(group).getByRole('button', { name })
+}
+
 beforeEach(() => {
   vi.clearAllMocks()
   useStore.setState({ ...createInitialState(0), unlocked: null })
@@ -28,14 +33,25 @@ describe('Speak', () => {
     expect(screen.getByRole('button', { name: /record your voice/i })).toBeInTheDocument()
   })
 
-  it('praises a correct attempt and grades it correct', async () => {
+  it('praises a correct attempt and suggests Good', async () => {
     vi.mocked(recognizeOnce).mockResolvedValueOnce('water')
     const onAnswer = vi.fn()
     render(<Speak card={card} onAnswer={onAnswer} />)
     await userEvent.click(screen.getByRole('button', { name: /record your voice/i }))
     expect(await screen.findByText(/ka pai/i)).toBeInTheDocument()
-    await userEvent.click(screen.getByRole('button', { name: /continue/i }))
-    expect(onAnswer).toHaveBeenCalledWith(true)
+    expect(rating(/^Good/)).toHaveAttribute('data-suggested', 'true')
+    await userEvent.click(rating(/^Good/))
+    // Was `true`; Continue is now the four ratings.
+    expect(onAnswer).toHaveBeenCalledWith(2)
+  })
+
+  it('lets her overrule the mic and call a scraped-through attempt hard', async () => {
+    vi.mocked(recognizeOnce).mockResolvedValueOnce('water')
+    const onAnswer = vi.fn()
+    render(<Speak card={card} onAnswer={onAnswer} />)
+    await userEvent.click(screen.getByRole('button', { name: /record your voice/i }))
+    await userEvent.click(await screen.findByRole('button', { name: /^Hard/ }))
+    expect(onAnswer).toHaveBeenCalledWith(1)
   })
 
   it('grades nothing at all when the microphone catches nothing — it skips instead', async () => {
@@ -45,7 +61,9 @@ describe('Speak', () => {
     render(<Speak card={card} onAnswer={onAnswer} onSkip={onSkip} />)
     await userEvent.click(screen.getByRole('button', { name: /record your voice/i }))
     expect(await screen.findByText(/didn't catch that/i)).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /^continue$/i })).not.toBeInTheDocument()
+    // Was a check for the absence of "Continue"; the ratings replaced it, so
+    // the assertion is now that the whole rating group never renders here.
+    expect(screen.queryByRole('group', { name: /how well did you know it/i })).not.toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: /skip this one/i }))
     expect(onSkip).toHaveBeenCalledTimes(1)
     // The whole point: a denied or silent mic must not grade her down *or* up.
@@ -71,17 +89,20 @@ describe('Speak', () => {
     expect(await screen.findByText(/didn't catch that/i)).toBeInTheDocument()
     // Never fall back to grading: no button beats a button that lies.
     expect(screen.queryByRole('button', { name: /skip this one/i })).not.toBeInTheDocument()
+    // And no rating either — a dead mic must not be able to reach the store
+    // through any of the four new buttons.
+    expect(screen.queryByRole('group', { name: /how well did you know it/i })).not.toBeInTheDocument()
     expect(onAnswer).not.toHaveBeenCalled()
   })
 
-  it('grades only once when Continue is double-tapped', async () => {
+  it('grades only once when two ratings are tapped', async () => {
     vi.mocked(recognizeOnce).mockResolvedValueOnce('water')
     const onAnswer = vi.fn()
     render(<Speak card={card} onAnswer={onAnswer} />)
     await userEvent.click(screen.getByRole('button', { name: /record your voice/i }))
-    const cont = await screen.findByRole('button', { name: /continue/i })
-    await userEvent.click(cont)
-    await userEvent.click(cont)
+    await userEvent.click(await screen.findByRole('button', { name: /^Easy/ }))
+    await userEvent.click(rating(/^Again/))
     expect(onAnswer).toHaveBeenCalledTimes(1)
+    expect(onAnswer).toHaveBeenCalledWith(3)
   })
 })

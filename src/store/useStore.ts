@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { AppState, CardState, Level, Modality } from '../types'
+import type { AppState, CardState, Level, Modality, Rating } from '../types'
 import { DECKS } from '../content'
 import { schedule } from '../core/srs'
 import { skillForModality } from '../core/modality'
@@ -22,7 +22,8 @@ interface Actions {
   unlocked: Level | null
   setName: (name: string) => void
   finishPlacement: (startLevel: Level, seeded: Record<string, CardState>, now: number) => void
-  gradeItem: (cardId: string, modality: Modality, correct: boolean, easy: boolean, now: number) => void
+  /** `rating` is hers: 0 again, 1 hard, 2 good, 3 easy. Anything above 0 counts as correct. */
+  gradeItem: (cardId: string, modality: Modality, rating: Rating, now: number) => void
   clearUnlockToast: () => void
   setPref: <K extends keyof AppState>(key: K, value: AppState[K]) => void
   setSyncCode: (code: string | null) => void
@@ -65,9 +66,11 @@ export const useStore = create<Store>()(
           }
         }),
 
-      gradeItem: (cardId, modality, correct, easy, now) => {
+      gradeItem: (cardId, modality, rating, now) => {
         const s = get()
-        const rating = correct ? (easy ? 3 : 2) : 0
+        // The scheduler gets her rating untouched; the skill stats only care
+        // whether she got there at all, so "hard" still counts as a hit.
+        const correct = rating > 0
         const cards = { ...s.cards, [cardId]: schedule(s.cards[cardId], rating, now) }
         const skills = recordSkill(s.skills, skillForModality(modality), correct)
         const tick = applyStudyTick(s, now)

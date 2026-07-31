@@ -7,6 +7,8 @@
   --ink:#f1f5f9; --muted:#94a3b8; --line:#334155;
   --brand:#38bdf8; --brand2:#0ea5e9;
   --good:#34d399; --hard:#fbbf24; --again:#fb7185; --gold:#fcd34d;
+  /* Dark inks that sit on top of the bright fills above. */
+  --on-brand:#04263a; --on-good:#04291d; --on-hard:#3d2600; --on-again:#3b0713;
 }
 
 html, body, #root { height: 100%; }

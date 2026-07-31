@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Listen } from './Listen'
 import { Dictate } from './Dictate'
@@ -23,6 +23,16 @@ const card: Card = {
   pos: 'noun',
 }
 
+/**
+ * Scoped to the rating group on purpose: Listen's multiple-choice options are
+ * drawn from real content, so a distractor could easily read "Good morning"
+ * and collide with a bare /good/ query.
+ */
+function rating(name: RegExp) {
+  const group = screen.getByRole('group', { name: /how well did you know it/i })
+  return within(group).getByRole('button', { name })
+}
+
 beforeEach(() => {
   vi.clearAllMocks()
   useStore.setState({ ...createInitialState(0), unlocked: null })
@@ -34,22 +44,32 @@ describe('Listen', () => {
     expect(screen.getAllByRole('button', { name: /^(?!Play|Replay).+/ }).length).toBeGreaterThanOrEqual(4)
   })
 
-  it('reports a correct pick', async () => {
+  it('suggests Good after a correct pick and reports the rating she taps', async () => {
     const onAnswer = vi.fn()
     render(<Listen card={card} onAnswer={onAnswer} />)
     await userEvent.click(screen.getByRole('button', { name: 'water' }))
-    await userEvent.click(screen.getByRole('button', { name: /continue/i }))
-    expect(onAnswer).toHaveBeenCalledWith(true)
+    expect(rating(/^Good/)).toHaveAttribute('data-suggested', 'true')
+    await userEvent.click(rating(/^Good/))
+    // Was `true`; Continue is now the four ratings.
+    expect(onAnswer).toHaveBeenCalledWith(2)
   })
 
-  it('grades only once when Continue is double-tapped', async () => {
+  it('lets her say it was easy even though the app only knows it was right', async () => {
     const onAnswer = vi.fn()
     render(<Listen card={card} onAnswer={onAnswer} />)
     await userEvent.click(screen.getByRole('button', { name: 'water' }))
-    const cont = screen.getByRole('button', { name: /continue/i })
-    await userEvent.click(cont)
-    await userEvent.click(cont)
+    await userEvent.click(rating(/^Easy/))
+    expect(onAnswer).toHaveBeenCalledWith(3)
+  })
+
+  it('grades only once when two ratings are tapped', async () => {
+    const onAnswer = vi.fn()
+    render(<Listen card={card} onAnswer={onAnswer} />)
+    await userEvent.click(screen.getByRole('button', { name: 'water' }))
+    await userEvent.click(rating(/^Again/))
+    await userEvent.click(rating(/^Easy/))
     expect(onAnswer).toHaveBeenCalledTimes(1)
+    expect(onAnswer).toHaveBeenCalledWith(0)
   })
 })
 
@@ -59,26 +79,28 @@ describe('Dictate', () => {
     render(<Dictate card={card} onAnswer={onAnswer} />)
     await userEvent.type(screen.getByRole('textbox'), 'i want water please')
     await userEvent.click(screen.getByRole('button', { name: /check/i }))
-    await userEvent.click(screen.getByRole('button', { name: /continue/i }))
-    expect(onAnswer).toHaveBeenCalledWith(true)
+    expect(rating(/^Good/)).toHaveAttribute('data-suggested', 'true')
+    await userEvent.click(rating(/^Good/))
+    expect(onAnswer).toHaveBeenCalledWith(2)
   })
 
-  it('reveals the sentence after a miss', async () => {
+  it('reveals the sentence after a miss and suggests Again', async () => {
     render(<Dictate card={card} onAnswer={vi.fn()} />)
     await userEvent.type(screen.getByRole('textbox'), 'nope')
     await userEvent.click(screen.getByRole('button', { name: /check/i }))
     expect(screen.getByText(/I want water, please\./)).toBeInTheDocument()
+    expect(rating(/^Again/)).toHaveAttribute('data-suggested', 'true')
   })
 
-  it('grades only once when Continue is double-tapped', async () => {
+  it('grades only once when two ratings are tapped', async () => {
     const onAnswer = vi.fn()
     render(<Dictate card={card} onAnswer={onAnswer} />)
     await userEvent.type(screen.getByRole('textbox'), 'i want water please')
     await userEvent.click(screen.getByRole('button', { name: /check/i }))
-    const cont = screen.getByRole('button', { name: /continue/i })
-    await userEvent.click(cont)
-    await userEvent.click(cont)
+    await userEvent.click(rating(/^Hard/))
+    await userEvent.click(rating(/^Easy/))
     expect(onAnswer).toHaveBeenCalledTimes(1)
+    expect(onAnswer).toHaveBeenCalledWith(1)
   })
 
   it('plays the sentence even when auto-play audio is off', () => {
@@ -96,8 +118,9 @@ describe('Build', () => {
       await userEvent.click(screen.getByRole('button', { name: word }))
     }
     await userEvent.click(screen.getByRole('button', { name: /check/i }))
-    await userEvent.click(screen.getByRole('button', { name: /continue/i }))
-    expect(onAnswer).toHaveBeenCalledWith(true)
+    expect(rating(/^Good/)).toHaveAttribute('data-suggested', 'true')
+    await userEvent.click(rating(/^Good/))
+    expect(onAnswer).toHaveBeenCalledWith(2)
   })
 
   it('returns a placed token to the pool when tapped again', async () => {
@@ -113,16 +136,16 @@ describe('Build', () => {
     expect(screen.getByText('Eu quero água, por favor.')).toBeInTheDocument()
   })
 
-  it('grades only once when Continue is double-tapped', async () => {
+  it('grades only once when two ratings are tapped', async () => {
     const onAnswer = vi.fn()
     render(<Build card={card} onAnswer={onAnswer} />)
     for (const word of ['I', 'want', 'water,', 'please.']) {
       await userEvent.click(screen.getByRole('button', { name: word }))
     }
     await userEvent.click(screen.getByRole('button', { name: /check/i }))
-    const cont = screen.getByRole('button', { name: /continue/i })
-    await userEvent.click(cont)
-    await userEvent.click(cont)
+    await userEvent.click(rating(/^Again/))
+    await userEvent.click(rating(/^Good/))
     expect(onAnswer).toHaveBeenCalledTimes(1)
+    expect(onAnswer).toHaveBeenCalledWith(0)
   })
 })

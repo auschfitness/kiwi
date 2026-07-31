@@ -4,6 +4,8 @@ import { useStore } from '../../store/useStore'
 import { buildChoices } from '../../core/options'
 import { ALL_CARDS } from '../../content'
 import { speak } from '../../audio/speak'
+import { RatingButtons } from './RatingButtons'
+import type { Rating } from '../../types'
 import type { ModalityProps } from './types'
 
 export function Listen({ card, onAnswer }: ModalityProps) {
@@ -30,10 +32,10 @@ export function Listen({ card, onAnswer }: ModalityProps) {
     setPicked(option)
   }
 
-  function finish(correct: boolean) {
+  function finish(rating: Rating) {
     if (answered) return
     setAnswered(true)
-    onAnswer(correct)
+    onAnswer(rating)
   }
 
   return (
@@ -79,9 +81,12 @@ export function Listen({ card, onAnswer }: ModalityProps) {
             <p className="text-xl font-extrabold text-ink">{card.en}</p>
             {showPortuguese && <p className="text-muted">{card.pt}</p>}
           </Card>
-          <Button variant="primary" onClick={() => finish(picked === card.en)} disabled={answered}>
-            Continue
-          </Button>
+          <RatingButtons
+            cardId={card.id}
+            onRate={finish}
+            disabled={answered}
+            suggested={picked === card.en ? 2 : 0}
+          />
         </>
       )}
     </div>

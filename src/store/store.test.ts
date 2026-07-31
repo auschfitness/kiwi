@@ -63,7 +63,7 @@ describe('store', () => {
   })
 
   it('grades a correct item into the card, the skill and the day counter', () => {
-    useStore.getState().gradeItem('survival_0', 'listen', true, false, NOW)
+    useStore.getState().gradeItem('survival_0', 'listen', 2, NOW)
     const s = useStore.getState()
     expect(s.cards.survival_0.reps).toBe(1)
     expect(s.skills.listening).toEqual({ correct: 1, total: 1 })
@@ -72,14 +72,36 @@ describe('store', () => {
   })
 
   it('grades a wrong item without crediting the skill', () => {
-    useStore.getState().gradeItem('survival_0', 'type', false, false, NOW)
+    useStore.getState().gradeItem('survival_0', 'type', 0, NOW)
     const s = useStore.getState()
     expect(s.skills.vocab).toEqual({ correct: 0, total: 1 })
     expect(s.cards.survival_0.lapses).toBe(1)
   })
 
+  it('counts "hard" as a correct answer for the skill, but schedules it as hard', () => {
+    useStore.getState().gradeItem('survival_0', 'listen', 1, NOW)
+    const s = useStore.getState()
+    // rating > 0 is the whole test of correctness now: she got there, slowly.
+    expect(s.skills.listening).toEqual({ correct: 1, total: 1 })
+    expect(s.cards.survival_0.lapses).toBe(0)
+    // Hard on a brand new card is a ten-minute step, not a day.
+    expect(s.cards.survival_0.due).toBeLessThan(NOW + 86_400_000)
+  })
+
+  it('passes "easy" straight through to the scheduler instead of inferring it', () => {
+    useStore.getState().gradeItem('survival_0', 'listen', 3, NOW)
+    const easy = useStore.getState().cards.survival_0
+
+    useStore.setState({ ...createInitialState(NOW), unlocked: null })
+    useStore.getState().gradeItem('survival_0', 'listen', 2, NOW)
+    const good = useStore.getState().cards.survival_0
+
+    expect(easy.interval).toBeGreaterThan(good.interval)
+    expect(easy.ease).toBeGreaterThan(good.ease)
+  })
+
   it('does not credit a skill for the teaching screen', () => {
-    useStore.getState().gradeItem('survival_0', 'learn', true, false, NOW)
+    useStore.getState().gradeItem('survival_0', 'learn', 2, NOW)
     const s = useStore.getState()
     expect(s.skills.vocab.total).toBe(0)
     expect(s.cards.survival_0.reps).toBe(1)
@@ -99,7 +121,7 @@ describe('store', () => {
     // Not yet: only need - 1 cards are solid.
     expect(useStore.getState().unlockedLevel).toBe(1)
 
-    useStore.getState().gradeItem(ids[0], 'recognize', true, false, NOW)
+    useStore.getState().gradeItem(ids[0], 'recognize', 2, NOW)
 
     expect(useStore.getState().unlockedLevel).toBe(2)
     expect(useStore.getState().unlocked).toBe(2)
@@ -109,19 +131,19 @@ describe('store', () => {
 
   it('bumps updatedAt on every mutation', () => {
     const before = useStore.getState().updatedAt
-    useStore.getState().gradeItem('survival_0', 'recognize', true, false, NOW + 5000)
+    useStore.getState().gradeItem('survival_0', 'recognize', 2, NOW + 5000)
     expect(useStore.getState().updatedAt).toBeGreaterThan(before)
   })
 
   it('resets progress but keeps the app usable', () => {
-    useStore.getState().gradeItem('survival_0', 'recognize', true, false, NOW)
+    useStore.getState().gradeItem('survival_0', 'recognize', 2, NOW)
     useStore.getState().resetProgress(NOW)
     expect(useStore.getState().cards).toEqual({})
     expect(useStore.getState().placed).toBe(false)
   })
 
   it('sends her back to placement without wiping her cards', () => {
-    useStore.getState().gradeItem('survival_0', 'recognize', true, false, NOW)
+    useStore.getState().gradeItem('survival_0', 'recognize', 2, NOW)
     useStore.getState().retakePlacement()
     expect(useStore.getState().placed).toBe(false)
     expect(useStore.getState().cards.survival_0).toBeDefined()
