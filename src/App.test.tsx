@@ -137,12 +137,21 @@ describe('App', () => {
   })
 
   /**
-   * First run is now two screens long: her name, then Home. There used to be
-   * a fifteen-question placement test in between, and a whole class of bugs
-   * about which screen won the moment it finished. Nothing to sit, nothing to
-   * skip: she starts at A1 like everyone else.
+   * This whole file runs against the real (absent) Supabase configuration —
+   * see src/sync/client.test.ts — so `isSyncConfigured()` is false and the
+   * sync-code step is correctly skipped. That is the local-dev case and it
+   * must keep working exactly as it did: with no cloud to save to, showing her
+   * a code field that can do nothing would be worse than not asking.
+   *
+   * The configured first run (name -> sync code -> Home) is a different branch
+   * with a different mock, and lives in src/App.sync.test.tsx.
+   *
+   * There used to be a fifteen-question placement test between the name and
+   * Home, and a whole class of bugs about which screen won the moment it
+   * finished. Nothing to sit, nothing to skip: she starts at A1 like everyone
+   * else.
    */
-  it('takes a brand-new profile from the name question straight to Home, at A1 with nothing known', async () => {
+  it('takes a brand-new profile from the name question straight to Home when there is no cloud to sync to', async () => {
     useStore.setState({ profileName: '' })
     render(<App />)
 
@@ -151,6 +160,10 @@ describe('App', () => {
 
     expect(screen.getByText(/kia ora, ana/i)).toBeInTheDocument()
     expect(screen.getByTestId('study-now')).toBeInTheDocument()
+    // No sync step, and no nagging status line about a feature this build
+    // cannot perform.
+    expect(screen.queryByRole('heading', { name: /keep your progress safe/i })).not.toBeInTheDocument()
+    expect(screen.queryByTestId('sync-line')).not.toBeInTheDocument()
 
     const s = useStore.getState()
     expect(s.unlockedLevel).toBe(1)

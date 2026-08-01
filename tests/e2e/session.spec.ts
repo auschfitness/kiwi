@@ -14,8 +14,13 @@ test('first run: name, home, a session, and progress that survives reload', asyn
   await stubSpeech(page)
   await page.goto('/')
 
-  // Name — and that is the whole of onboarding now. There is no test to sit
-  // between here and Home, and no way to start above A1.
+  // Name. Onboarding now has a second question — her sync code — but it only
+  // appears when the build has a Supabase project to save to, and this build
+  // has none (Playwright runs `npm run build` against the repo's own empty
+  // environment; see src/sync/client.test.ts for why no .env is deliberate).
+  // So the real assertion here is the degradation one: with nothing to sync
+  // to, first run stays exactly one question long and she is never shown a
+  // code field that could not do anything.
   await page.getByRole('textbox').fill('Ana')
   await page.getByRole('button', { name: /continue/i }).click()
 
@@ -23,6 +28,10 @@ test('first run: name, home, a session, and progress that survives reload', asyn
   await expect(page.getByText(/kia ora, ana/i)).toBeVisible()
   await expect(page.getByTestId('study-now')).toBeVisible()
   await expect(page.getByRole('button', { name: /^typing$/i })).toHaveCount(0)
+  // Skipped, not merely passed through: no sync step, and no status line
+  // nagging her about a feature this build cannot perform.
+  await expect(page.getByRole('heading', { name: /keep your progress safe/i })).toHaveCount(0)
+  await expect(page.getByTestId('sync-line')).toHaveCount(0)
 
   // Locked level
   await expect(page.getByTestId('deck-money')).toBeDisabled()

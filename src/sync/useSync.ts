@@ -61,21 +61,34 @@ export function useSync(): { status: SyncStatus; restore: (code: string) => Prom
     }
   }, [push])
 
+  /**
+   * Adopt `code` on this device: pull whatever is already saved under it,
+   * merge it in, and push the result back — in that order, right now.
+   *
+   * The immediate push is the whole point, not a nicety. It used to happen
+   * only on the "nothing there yet" branch; a merge left the debounced timer
+   * above to do it four seconds later, which is four seconds in which she can
+   * close the tab, lose signal, or never come back. A real user lost a day of
+   * work to a code that was set but never pushed, so from the moment this
+   * resolves there is a snapshot in the cloud, whichever branch it took.
+   *
+   * Note where `setSyncCode` sits: after the pull, before the push. If the
+   * *pull* throws, the code is never adopted — we do not know whether it
+   * already holds her progress, and arming the background push against it
+   * could overwrite a good remote snapshot with an empty local one. If only
+   * the *push* throws, the code is hers and the merge already landed locally,
+   * so the debounced push and the pagehide flush go on retrying it.
+   */
   const restore = useCallback(async (code: string) => {
     if (!isSyncConfigured()) return 'error' as const
     setStatus('syncing')
     try {
       const remote = await loadProgress(code)
-      if (remote) {
-        useStore.getState().replaceState(mergeSnapshots(snapshot(), remote))
-        useStore.getState().setSyncCode(code)
-        setStatus('synced')
-        return 'merged' as const
-      }
+      if (remote) useStore.getState().replaceState(mergeSnapshots(snapshot(), remote))
       useStore.getState().setSyncCode(code)
       await saveProgress(code, snapshot())
       setStatus('synced')
-      return 'pushed' as const
+      return remote ? ('merged' as const) : ('pushed' as const)
     } catch { setStatus('error'); return 'error' as const }
   }, [])
 

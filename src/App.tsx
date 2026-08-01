@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react'
 import { setDefaultRate, warmUp } from './audio/speak'
 import { useStore } from './store/useStore'
 import { useSync } from './sync/useSync'
+import { isSyncConfigured } from './sync/client'
 import { LEVEL_NAMES } from './core/leveling'
 import { shouldNudge } from './core/reminder'
 import { useReminders } from './notify/delivery'
 import { dayKey } from './core/time'
 import { Button, Toast } from './components/ui'
 import { Name } from './screens/Name'
+import { SyncSetup } from './screens/SyncSetup'
 import { Home } from './screens/Home'
 import { Session } from './screens/Session'
 import { Dashboard } from './screens/Dashboard'
@@ -25,7 +27,7 @@ import { Settings } from './screens/Settings'
 const NUDGE_MESSAGE = 'Time for a little English 🥝 — keep your 🔥 streak alive'
 
 export type Screen =
-  | 'home' | 'name' | 'session' | 'dashboard'
+  | 'home' | 'name' | 'sync' | 'session' | 'dashboard'
   | 'plan' | 'practice' | 'dialogues' | 'shadowing' | 'roleplay' | 'drills' | 'earTraining'
   | 'settings' | 'done' | 'conjugation'
 
@@ -47,6 +49,12 @@ export default function App() {
   // hub included — clears it, so that entry point keeps its mixed practice
   // set rather than accidentally reusing a stale scope.
   const [shadowDialogueId, setShadowDialogueId] = useState<string | undefined>(undefined)
+  // True only between answering the name question and leaving the sync step,
+  // and only when there is a cloud to sync to. Deliberately not persisted: if
+  // she reloads mid-onboarding she lands on Home, where the status line is
+  // still asking her the same question — a stuck onboarding flag would be a
+  // worse failure than a second chance to answer it.
+  const [askingForSyncCode, setAskingForSyncCode] = useState(false)
 
   const profileName = useStore(s => s.profileName)
   const unlocked = useStore(s => s.unlocked)
@@ -98,6 +106,23 @@ export default function App() {
     setScreen('home')
   }
 
+  /**
+   * She has just told us her name. With a Supabase project in the build, the
+   * next question is her sync code — asked here, up front, rather than left
+   * for a Settings screen she may never open. Without one, there is nothing to
+   * ask and first run stays one question long.
+   */
+  function handleNameDone() {
+    if (isSyncConfigured()) { setAskingForSyncCode(true); return }
+    goHome()
+  }
+
+  /** Saved, or "Not now" — either way the next screen is Home. */
+  function leaveSyncSetup() {
+    setAskingForSyncCode(false)
+    setScreen('home')
+  }
+
   // Dialogues, Role-play and Drills are all reached only through the
   // Practice hub now (Home's row no longer links to them directly), so back
   // from any of them returns to Practice, not Home. Shadowing is the one
@@ -135,13 +160,26 @@ export default function App() {
     setScreen(backToDialogues ? 'dialogues' : 'practice')
   }
 
-  // First run is one question long: her name, then Home. There is no test to
-  // sit and nothing to skip — everyone starts at A1 and unlocks A2 by actually
-  // working through A1 (see src/core/leveling.ts).
+  // First run is two questions long: her name, then her sync code, then Home.
+  // There is no test to sit and nothing to skip on the way up — everyone
+  // starts at A1 and unlocks A2 by actually working through A1 (see
+  // src/core/leveling.ts). The sync question is the one thing standing between
+  // her and a device-only profile that a cleared browser can erase, so it is
+  // asked before she has a single card to lose — and it disappears entirely
+  // when the build has no cloud to save to.
   function renderScreen() {
-    if (!profileName) return <Name onNext={goHome} />
+    if (!profileName) return <Name onNext={handleNameDone} />
+
+    if (askingForSyncCode) {
+      return <SyncSetup onDone={leaveSyncSetup} onSkip={leaveSyncSetup} onRestore={onRestore} />
+    }
 
     switch (screen) {
+      case 'sync':
+        // The same screen, reached later from Home's status line — her way
+        // back in if she skipped, and her way to check the code if she did not.
+        return <SyncSetup onDone={goHome} onSkip={goHome} onRestore={onRestore} />
+
       case 'session':
         return <Session deckId={studyDeckId} onDone={() => setScreen('done')} />
       case 'done':
@@ -173,7 +211,7 @@ export default function App() {
           />
         )
       default:
-        return <Home onNavigate={handleNavigate} onStudy={handleStudy} />
+        return <Home onNavigate={handleNavigate} onStudy={handleStudy} syncStatus={syncStatus} />
     }
   }
 

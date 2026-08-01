@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { Accent } from '../types'
 import { useStore } from '../store/useStore'
 import { isSyncConfigured, validateSyncCode, type SyncStatus } from '../sync/client'
+import { STATUS_LABEL, STATUS_TONE, isLiveStatus } from '../sync/status'
 import { isPushConfigured } from '../sync/push'
 import { refreshReminderDelivery } from '../notify/delivery'
 import { Button, Card, Chip, ScreenHeader } from '../components/ui'
@@ -82,25 +83,9 @@ function notificationApi(): typeof Notification | null {
   return typeof Notification === 'undefined' ? null : Notification
 }
 
-type LiveStatus = 'syncing' | 'synced' | 'offline' | 'error'
-
-const STATUS_LABEL: Record<LiveStatus, string> = {
-  syncing: '⟳ syncing',
-  synced: '✓ synced',
-  offline: '⚠︎ offline',
-  error: '⚠︎ error',
-}
-
-const STATUS_TONE: Record<LiveStatus, 'brand' | 'good' | 'hard'> = {
-  syncing: 'brand',
-  synced: 'good',
-  offline: 'hard',
-  error: 'hard',
-}
-
-function isLiveStatus(s: string): s is LiveStatus {
-  return s === 'syncing' || s === 'synced' || s === 'offline' || s === 'error'
-}
+// STATUS_LABEL / STATUS_TONE / isLiveStatus now live in src/sync/status.ts —
+// Home's status line shows the same four badges, and two copies of that
+// mapping would eventually disagree about what "⚠︎ offline" looks like.
 
 type SyncOutcome = 'merged' | 'pushed' | 'error'
 
