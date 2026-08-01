@@ -1,116 +1,104 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useStore } from '../store/useStore'
-import { validateSyncCode } from '../sync/client'
+import type { CreateOutcome, SignInOutcome, SyncOutcome } from '../sync/client'
 import { Button, Card } from '../components/ui'
-
-export type SyncOutcome = 'merged' | 'pushed' | 'error'
+import { SyncCodeForm } from './SyncCodeForm'
 
 export interface SyncSetupProps {
+  /**
+   * True when this is the gate: she has no code, the build has a cloud, and
+   * there is no way past except setting one up — or the cloud being down.
+   */
+  mandatory: boolean
   /** She is set up and ready to go on — App sends her to Home. */
   onDone: () => void
-  /** "Not now". Also Home, with no code set and nothing saved. */
-  onSkip: () => void
-  // The restore/merge/push path from App's single instance of useSync, passed
-  // down the same way Settings receives it. This screen never mounts its own
-  // copy of that hook: one set of debounced push timers and visibility
-  // listeners per session, not one per screen that happens to render.
-  onRestore: (code: string) => Promise<SyncOutcome>
+  /**
+   * Only ever offered when the cloud could not be reached. App remembers the
+   * code is still owed and puts the gate back the moment she is online again.
+   */
+  onDefer?: () => void
+  /** Present only when the code is not owed: her way back to Home unchanged. */
+  onCancel?: () => void
+  // The create/sign-in pair from App's single instance of useSync, passed down
+  // the same way Settings receives them. This screen never mounts its own copy
+  // of that hook: one set of debounced push timers and visibility listeners
+  // per session, not one per screen that happens to render.
+  onCreate: (code: string) => Promise<CreateOutcome>
+  onSignIn: (code: string) => Promise<SignInOutcome>
 }
 
 /**
- * Why she is being asked this at all, in the order the questions actually
- * occur to her: what is it, what does it do for me, what do I do with it.
+ * Why there is no "Not now" any more, said once and without menace.
  *
- * Not "enter a sync code" — that names the field, not the reason, and a person
- * who does not know the reason skips the step. The reason is the whole point:
- * a real user studied for a day, opened the app the next morning from a
- * different place (Home Screen icon versus Safari tab, which on iOS can be two
- * separate stores) and found nothing there, because sync was opt-in and buried
- * in Settings and she had never been told it existed.
- *
- * "Write it down" is the one instruction, because a code she cannot remember
- * is a code that cannot bring her progress back.
+ * The owner made the code mandatory, and the reason is the one thing she cares
+ * about: a device-only profile is one cleared browser away from nothing. So
+ * the note explains the requirement rather than announcing it.
  */
-const WHY =
-  "Pick a sync code — a word with a few numbers, like kiwi2026. It's how your progress gets saved, and how it comes with you if you ever change phone or use a computer. Write it down somewhere you'll find it again."
+const REQUIRED_NOTE =
+  "Your code is the one thing that keeps your work safe, so it's the one thing we ask for before you start. It only takes a moment."
 
 /**
- * Said plainly, once. This is not a password and the app must never let her
- * think it is one — there is no account and no recovery, so the honest framing
- * is "same code, same progress", which is also exactly how she gets her own
- * work back on a new device.
- */
-const WHO =
-  'Anyone who types this same code sees this same progress, so keep it to yourself.'
-
-/**
- * The cost of "Not now", on the screen rather than buried.
+ * The single honest exception, and the reason it exists.
  *
- * She is allowed to skip — a hard wall on first open is hostile, and Settings
- * can do this any day. What she is not allowed to do is skip it without
- * knowing what she gave up. The last sentence is the way back in, so the
- * paragraph ends on a door rather than a warning.
+ * She is moving countries. An aeroplane, a new SIM, a dead café wifi — locking
+ * her out of studying because Supabase timed out would be indefensible. So
+ * when the cloud genuinely cannot be reached the door opens, and the app says
+ * plainly that the question is only postponed, not dropped.
  */
-const SKIP_NOTE =
-  "Without a code, your progress stays on this device only. If the app gets cleared, or you open it somewhere else, it starts from zero. You can add a code any time in Settings."
+const OFFLINE_NOTE =
+  "No internet just now? That's alright — carry on studying, and we'll ask for your code as soon as you're back online. Nothing you do in the meantime gets lost."
 
-/**
- * What actually happened, in her words.
- *
- * 'merged' is the recovery case — a lost phone, a fresh install, the Safari
- * tab that could not see the Home Screen app's storage — and it is the one
- * that has to read like relief. 'pushed' is the first-run case and its promise
- * is deliberately about *now*: the snapshot exists already, not after her
- * first card.
- */
-const OUTCOME_MESSAGE: Record<SyncOutcome, string> = {
-  merged: "✓ Found progress already saved under that code — it's all here, joined up with this device.",
-  pushed: '✓ Saved. Your progress is in the cloud from right now.',
-  error:
-    "⚠︎ Couldn't reach the cloud just now. Check your internet and have another go — or carry on, and set this up later in Settings.",
+/** True unless the browser positively says otherwise. */
+function browserOnline(): boolean {
+  return typeof navigator === 'undefined' || navigator.onLine !== false
 }
 
 /**
- * The second question of first run: her sync code.
+ * The second question of first run: her sync code. Now a real account key —
+ * one code, one account, nobody else can hold it.
  *
  * App only renders this when `isSyncConfigured()` is true. With an empty .env
- * there is no cloud to save to, so first run stays one question long rather
- * than showing her a field that can never do anything.
+ * there is no cloud to save to, no way to check whether a code is free, and
+ * nothing a code could do — so first run stays one question long rather than
+ * gating her behind a field that can never answer.
  *
- * Nothing here can trap her. A code that will not validate keeps her on the
- * screen with the reason in front of her; a code that validates but cannot
- * reach the network shows what went wrong and leaves both the retry and the
- * way out ("Not now") on screen. She reaches Home either way.
+ * Nothing here can trap her, even though it is mandatory. A code that will not
+ * validate keeps her on the screen with the reason under the field; a code
+ * that cannot be checked because the cloud is unreachable opens the door, with
+ * the promise that the question comes back. What she cannot do is walk past a
+ * cloud that is perfectly reachable.
  */
-export function SyncSetup({ onDone, onSkip, onRestore }: SyncSetupProps) {
+export function SyncSetup({
+  mandatory, onDone, onDefer, onCancel, onCreate, onSignIn,
+}: SyncSetupProps) {
   // Prefilled when she already has a code and came here from Home's status
   // line to check or change it. Empty on first run.
   const syncCode = useStore(s => s.syncCode)
 
-  const [value, setValue] = useState(syncCode ?? '')
-  const [error, setError] = useState<string | null>(null)
-  const [saving, setSaving] = useState(false)
-  const [outcome, setOutcome] = useState<SyncOutcome | null>(null)
+  const [done, setDone] = useState(false)
+  const [unreachable, setUnreachable] = useState(false)
+  const [online, setOnline] = useState(browserOnline)
 
-  const saved = outcome === 'merged' || outcome === 'pushed'
+  // A browser that already knows it is offline should not make her type a code
+  // and press a button to find that out. Either signal — the browser's, or a
+  // request that actually failed — opens the door.
+  useEffect(() => {
+    const up = () => { setOnline(true); setUnreachable(false) }
+    const down = () => setOnline(false)
+    window.addEventListener('online', up)
+    window.addEventListener('offline', down)
+    return () => {
+      window.removeEventListener('online', up)
+      window.removeEventListener('offline', down)
+    }
+  }, [])
 
-  async function handleSave() {
-    if (saving) return
-    const trimmed = value.trim()
-    const invalid = validateSyncCode(trimmed)
-    setError(invalid)
-    // An invalid code never reaches the network: no pull, no push, no code
-    // adopted. She stays here with the reason under the field.
-    if (invalid) return
-
-    setSaving(true)
-    setOutcome(null)
-    // onRestore never rejects — it resolves 'error' instead (see useSync) — so
-    // there is no failure mode in which she is left staring at a spinner.
-    const result = await onRestore(trimmed)
-    setOutcome(result)
-    setSaving(false)
+  function handleOutcome(outcome: SyncOutcome) {
+    if (outcome === 'created' || outcome === 'merged') { setDone(true); return }
+    if (outcome === 'unreachable') setUnreachable(true)
   }
+
+  const canDefer = mandatory && onDefer !== undefined && (unreachable || !online)
 
   return (
     <div className="flex flex-col gap-5 pt-12">
@@ -119,60 +107,47 @@ export function SyncSetup({ onDone, onSkip, onRestore }: SyncSetupProps) {
         <h1 className="text-2xl font-extrabold text-ink">Keep your progress safe</h1>
       </div>
 
-      <Card className="flex flex-col gap-3">
-        <p className="text-sm text-ink">{WHY}</p>
-        <p className="text-sm text-muted">{WHO}</p>
-
-        <label className="flex flex-col gap-1">
-          <span className="text-sm font-bold text-ink">Sync code</span>
-          <input
-            type="text"
-            value={value}
-            onChange={e => { setValue(e.target.value); setError(null); setOutcome(null) }}
-            autoCapitalize="none"
-            autoCorrect="off"
-            spellCheck={false}
-            aria-label="Sync code"
-            placeholder="a word plus some numbers, e.g. kiwi2026"
-            className="min-h-[44px] w-full rounded-2xl border border-line bg-card2 px-4 text-ink"
-          />
-        </label>
-
-        {error && <p className="text-sm text-again">{error}</p>}
-
-        {outcome && (
-          <p role="status" className="text-sm text-ink">
-            {OUTCOME_MESSAGE[outcome]}
-          </p>
-        )}
+      <Card>
+        <SyncCodeForm
+          initialMode={syncCode ? 'signin' : 'create'}
+          initialValue={syncCode ?? ''}
+          onCreate={onCreate}
+          onSignIn={onSignIn}
+          onOutcome={handleOutcome}
+        />
       </Card>
 
-      {/* Once it is saved, the only thing left to do is start — so the primary
-        * button stops offering to save again and becomes the way forward. */}
-      {saved ? (
+      {/* Once it is saved, the only thing left to do is start — so the screen
+        * stops asking and becomes the way forward. */}
+      {done && (
         <Button variant="primary" onClick={onDone}>
           Let's go
         </Button>
-      ) : (
-        <Button variant="primary" disabled={saving} onClick={handleSave}>
-          {saving ? 'Saving…' : 'Save my progress'}
-        </Button>
       )}
 
-      {/* Deliberately not a Button: skipping is a real option and it is right
-        * there, but it must not compete with the thing that keeps her work.
-        * Still a full 44px target — quiet is not the same as fiddly. */}
-      {!saved && (
+      {!done && mandatory && !canDefer && (
+        <p className="px-2 text-center text-xs text-muted">{REQUIRED_NOTE}</p>
+      )}
+
+      {/* Deliberately not a primary Button: this is the exception, not the
+        * road. Still a full 44px target — quiet is not the same as fiddly. */}
+      {!done && canDefer && (
         <div className="flex flex-col items-center gap-3">
           <button
             type="button"
-            onClick={onSkip}
+            onClick={onDefer}
             className="min-h-[44px] px-4 text-sm font-bold text-muted underline underline-offset-4 transition active:scale-[0.98]"
           >
-            Not now
+            Carry on for now
           </button>
-          <p className="px-2 text-center text-xs text-muted">{SKIP_NOTE}</p>
+          <p className="px-2 text-center text-xs text-muted">{OFFLINE_NOTE}</p>
         </div>
+      )}
+
+      {!done && !mandatory && onCancel && (
+        <Button variant="ghost" size="md" onClick={onCancel}>
+          Back home
+        </Button>
       )}
     </div>
   )

@@ -143,6 +143,11 @@ describe('App', () => {
    * must keep working exactly as it did: with no cloud to save to, showing her
    * a code field that can do nothing would be worse than not asking.
    *
+   * This is the first of the two exceptions to the code being mandatory, and
+   * the reason it has to exist: with an empty .env there is no way to check
+   * whether a code is free, so a required code would be a locked door with no
+   * key behind it. The app must build and run with no .env.
+   *
    * The configured first run (name -> sync code -> Home) is a different branch
    * with a different mock, and lives in src/App.sync.test.tsx.
    *
@@ -164,6 +169,11 @@ describe('App', () => {
     // cannot perform.
     expect(screen.queryByRole('heading', { name: /keep your progress safe/i })).not.toBeInTheDocument()
     expect(screen.queryByTestId('sync-line')).not.toBeInTheDocument()
+    // Skipped entirely, not merely escapable: none of the mandatory step's
+    // furniture is on screen, so there is nothing for her to notice or dismiss.
+    expect(screen.queryByLabelText('Sync code')).not.toBeInTheDocument()
+    expect(screen.queryByText(/the one thing we ask for before you start/i)).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /carry on for now/i })).not.toBeInTheDocument()
 
     const s = useStore.getState()
     expect(s.unlockedLevel).toBe(1)

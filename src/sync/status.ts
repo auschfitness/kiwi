@@ -33,3 +33,28 @@ export const STATUS_TONE: Record<LiveStatus, 'brand' | 'good' | 'hard'> = {
 export function isLiveStatus(s: SyncStatus): s is LiveStatus {
   return s === 'syncing' || s === 'synced' || s === 'offline' || s === 'error'
 }
+
+/**
+ * What Home's one-line answer to "is my work safe?" should be.
+ *
+ * `'owed'` is how a still-missing code is represented, and it is deliberately
+ * *derived* rather than a persisted flag. Since the code became mandatory
+ * there is exactly one way to be sitting on Home without one: the gate let her
+ * through because the cloud could not be reached. So "configured, and no code"
+ * already means "she still owes us a code", with no second piece of state to
+ * fall out of step with the first, no migration, and no way for a stale flag
+ * to nag someone who has since signed in.
+ *
+ * `'idle'` with a code set becomes `'syncing'`: it only survives the moment
+ * between mount and the launch pull answering, and a pull genuinely is in
+ * flight, so saying so beats blanking the line and flickering it back in.
+ */
+export type SyncLineState = 'hidden' | 'owed' | LiveStatus
+
+export function syncLineState(status: SyncStatus, syncCode: string | null): SyncLineState {
+  // No Supabase project in this build: nagging her about a feature the app
+  // cannot perform is worse than silence.
+  if (status === 'unconfigured') return 'hidden'
+  if (!syncCode) return 'owed'
+  return isLiveStatus(status) ? status : 'syncing'
+}

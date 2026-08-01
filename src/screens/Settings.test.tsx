@@ -22,26 +22,26 @@ afterEach(() => {
 
 describe('Settings without Supabase configured', () => {
   it('explains that sync is not set up instead of showing a broken field', () => {
-    render(<Settings onBack={vi.fn()} syncStatus="unconfigured" onRestore={vi.fn()} />)
+    render(<Settings onBack={vi.fn()} syncStatus="unconfigured" onCreate={vi.fn()} onSignIn={vi.fn()} />)
     expect(screen.getByText(/cloud sync isn't set up yet/i)).toBeInTheDocument()
     expect(screen.queryByLabelText(/sync code/i)).not.toBeInTheDocument()
   })
 
   it('still exposes every local setting', async () => {
-    render(<Settings onBack={vi.fn()} syncStatus="unconfigured" onRestore={vi.fn()} />)
+    render(<Settings onBack={vi.fn()} syncStatus="unconfigured" onCreate={vi.fn()} onSignIn={vi.fn()} />)
     expect(screen.getByLabelText(/daily goal/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/show portuguese/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/accent/i)).toBeInTheDocument()
   })
 
   it('changes a preference in the store', async () => {
-    render(<Settings onBack={vi.fn()} syncStatus="unconfigured" onRestore={vi.fn()} />)
+    render(<Settings onBack={vi.fn()} syncStatus="unconfigured" onCreate={vi.fn()} onSignIn={vi.fn()} />)
     await userEvent.click(screen.getByLabelText(/show portuguese/i))
     expect(useStore.getState().showPortuguese).toBe(false)
   })
 
   it('requires a second confirmation before wiping progress', async () => {
-    render(<Settings onBack={vi.fn()} syncStatus="unconfigured" onRestore={vi.fn()} />)
+    render(<Settings onBack={vi.fn()} syncStatus="unconfigured" onCreate={vi.fn()} onSignIn={vi.fn()} />)
     await userEvent.click(screen.getByRole('button', { name: /reset progress/i }))
     expect(screen.getByRole('button', { name: /yes, erase everything/i })).toBeInTheDocument()
     // `placed` is gone; her name is now the marker that nothing was wiped —
@@ -53,13 +53,13 @@ describe('Settings without Supabase configured', () => {
 describe('Settings — additional behaviour (still unconfigured)', () => {
   it('back button calls onBack', async () => {
     const onBack = vi.fn()
-    render(<Settings onBack={onBack} syncStatus="unconfigured" onRestore={vi.fn()} />)
+    render(<Settings onBack={onBack} syncStatus="unconfigured" onCreate={vi.fn()} onSignIn={vi.fn()} />)
     await userEvent.click(screen.getByRole('button', { name: /go back/i }))
     expect(onBack).toHaveBeenCalledTimes(1)
   })
 
   it('offers no shortcut past the levels — "Reset progress" is the only level-changing control', () => {
-    render(<Settings onBack={vi.fn()} syncStatus="unconfigured" onRestore={vi.fn()} />)
+    render(<Settings onBack={vi.fn()} syncStatus="unconfigured" onCreate={vi.fn()} onSignIn={vi.fn()} />)
     expect(screen.queryByRole('button', { name: /placement/i })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /retake/i })).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: /reset progress/i })).toBeInTheDocument()
@@ -67,7 +67,7 @@ describe('Settings — additional behaviour (still unconfigured)', () => {
 
   it('only wipes progress on the second tap, and clears it on that tap', async () => {
     useStore.setState({ unlockedLevel: 3 })
-    render(<Settings onBack={vi.fn()} syncStatus="unconfigured" onRestore={vi.fn()} />)
+    render(<Settings onBack={vi.fn()} syncStatus="unconfigured" onCreate={vi.fn()} onSignIn={vi.fn()} />)
     await userEvent.click(screen.getByRole('button', { name: /reset progress/i }))
     await userEvent.click(screen.getByRole('button', { name: /yes, erase everything/i }))
     expect(useStore.getState().cards).toEqual({})
@@ -77,7 +77,7 @@ describe('Settings — additional behaviour (still unconfigured)', () => {
   })
 
   it('cancel on the reset confirm leaves progress untouched', async () => {
-    render(<Settings onBack={vi.fn()} syncStatus="unconfigured" onRestore={vi.fn()} />)
+    render(<Settings onBack={vi.fn()} syncStatus="unconfigured" onCreate={vi.fn()} onSignIn={vi.fn()} />)
     await userEvent.click(screen.getByRole('button', { name: /reset progress/i }))
     await userEvent.click(screen.getByRole('button', { name: /cancel/i }))
     expect(screen.queryByRole('button', { name: /yes, erase everything/i })).not.toBeInTheDocument()
@@ -86,7 +86,7 @@ describe('Settings — additional behaviour (still unconfigured)', () => {
 
   it('daily goal stepper disables decrease at the floor and steps by 5 off it', async () => {
     useStore.setState({ dailyGoal: 5 })
-    render(<Settings onBack={vi.fn()} syncStatus="unconfigured" onRestore={vi.fn()} />)
+    render(<Settings onBack={vi.fn()} syncStatus="unconfigured" onCreate={vi.fn()} onSignIn={vi.fn()} />)
     expect(screen.getByRole('button', { name: /decrease how many cards a day/i })).toBeDisabled()
 
     await userEvent.click(screen.getByRole('button', { name: /increase how many cards a day/i }))
@@ -95,23 +95,23 @@ describe('Settings — additional behaviour (still unconfigured)', () => {
 
   it('daily goal stepper disables increase at the 100 ceiling', () => {
     useStore.setState({ dailyGoal: 100 })
-    render(<Settings onBack={vi.fn()} syncStatus="unconfigured" onRestore={vi.fn()} />)
+    render(<Settings onBack={vi.fn()} syncStatus="unconfigured" onCreate={vi.fn()} onSignIn={vi.fn()} />)
     expect(screen.getByRole('button', { name: /increase how many cards a day/i })).toBeDisabled()
   })
 
   it('new-cards stepper disables decrease at 1 and increase at 20', () => {
     useStore.setState({ newPerSession: 1 })
-    const { unmount } = render(<Settings onBack={vi.fn()} syncStatus="unconfigured" onRestore={vi.fn()} />)
+    const { unmount } = render(<Settings onBack={vi.fn()} syncStatus="unconfigured" onCreate={vi.fn()} onSignIn={vi.fn()} />)
     expect(screen.getByRole('button', { name: /decrease new cards per session/i })).toBeDisabled()
     unmount()
 
     useStore.setState({ newPerSession: 20 })
-    render(<Settings onBack={vi.fn()} syncStatus="unconfigured" onRestore={vi.fn()} />)
+    render(<Settings onBack={vi.fn()} syncStatus="unconfigured" onCreate={vi.fn()} onSignIn={vi.fn()} />)
     expect(screen.getByRole('button', { name: /increase new cards per session/i })).toBeDisabled()
   })
 
   it('accent selector marks the active accent and switches on click', async () => {
-    render(<Settings onBack={vi.fn()} syncStatus="unconfigured" onRestore={vi.fn()} />)
+    render(<Settings onBack={vi.fn()} syncStatus="unconfigured" onCreate={vi.fn()} onSignIn={vi.fn()} />)
     const nz = screen.getByRole('radio', { name: /nz/i })
     expect(nz).toHaveAttribute('aria-checked', 'true')
 
@@ -121,7 +121,7 @@ describe('Settings — additional behaviour (still unconfigured)', () => {
   })
 
   it('speech-speed selector marks Normal as active by default and switches on click', async () => {
-    render(<Settings onBack={vi.fn()} syncStatus="unconfigured" onRestore={vi.fn()} />)
+    render(<Settings onBack={vi.fn()} syncStatus="unconfigured" onCreate={vi.fn()} onSignIn={vi.fn()} />)
     const normal = screen.getByRole('radio', { name: /normal/i })
     expect(normal).toHaveAttribute('aria-checked', 'true')
 
@@ -135,7 +135,7 @@ describe('Settings — additional behaviour (still unconfigured)', () => {
   })
 
   it('offers the daily reminder switched off, at 19:00, with the iPhone caveat stated up front', () => {
-    render(<Settings onBack={vi.fn()} syncStatus="unconfigured" onRestore={vi.fn()} />)
+    render(<Settings onBack={vi.fn()} syncStatus="unconfigured" onCreate={vi.fn()} onSignIn={vi.fn()} />)
     expect(screen.getByLabelText(/daily reminder/i)).not.toBeChecked()
     expect(screen.getByLabelText(/reminder time/i)).toHaveValue('19:00')
     // Honest about the platform: never promise what iOS cannot do.
@@ -147,14 +147,14 @@ describe('Settings — additional behaviour (still unconfigured)', () => {
     // Today's shipping reality: no VITE_VAPID_PUBLIC_KEY, no sender deployed.
     // She must not be left expecting a buzz on a locked phone that cannot
     // come — and must be told the reminder she *does* have is unaffected.
-    render(<Settings onBack={vi.fn()} syncStatus="unconfigured" onRestore={vi.fn()} />)
+    render(<Settings onBack={vi.fn()} syncStatus="unconfigured" onCreate={vi.fn()} onSignIn={vi.fn()} />)
     expect(screen.getByText(/aren't set up yet/i)).toBeInTheDocument()
     expect(screen.getByText(/the reminder inside the app works today/i)).toBeInTheDocument()
     expect(screen.queryByText(/your phone can buzz/i)).not.toBeInTheDocument()
   })
 
   it('turns the reminder on and saves a new time', async () => {
-    render(<Settings onBack={vi.fn()} syncStatus="unconfigured" onRestore={vi.fn()} />)
+    render(<Settings onBack={vi.fn()} syncStatus="unconfigured" onCreate={vi.fn()} onSignIn={vi.fn()} />)
     await userEvent.click(screen.getByLabelText(/daily reminder/i))
     expect(useStore.getState().reminderEnabled).toBe(true)
 
@@ -165,7 +165,7 @@ describe('Settings — additional behaviour (still unconfigured)', () => {
   })
 
   it('keeps the last good time when the picker is cleared mid-edit', async () => {
-    render(<Settings onBack={vi.fn()} syncStatus="unconfigured" onRestore={vi.fn()} />)
+    render(<Settings onBack={vi.fn()} syncStatus="unconfigured" onCreate={vi.fn()} onSignIn={vi.fn()} />)
     fireEvent.change(screen.getByLabelText(/reminder time/i), { target: { value: '' } })
     // An empty picker is her halfway through choosing, not a decision to
     // silence the reminder.
@@ -177,7 +177,7 @@ describe('Settings — additional behaviour (still unconfigured)', () => {
     // before 16.4 and a good few in-app browsers. Layer 1 needs no
     // permission, so the switch must still work and nothing may throw.
     expect('Notification' in window).toBe(false)
-    render(<Settings onBack={vi.fn()} syncStatus="unconfigured" onRestore={vi.fn()} />)
+    render(<Settings onBack={vi.fn()} syncStatus="unconfigured" onCreate={vi.fn()} onSignIn={vi.fn()} />)
 
     await userEvent.click(screen.getByLabelText(/daily reminder/i))
 
@@ -188,7 +188,7 @@ describe('Settings — additional behaviour (still unconfigured)', () => {
   it('asks for notification permission the first time she switches the reminder on', async () => {
     const requestPermission = vi.fn().mockResolvedValue('granted')
     vi.stubGlobal('Notification', { permission: 'default', requestPermission })
-    render(<Settings onBack={vi.fn()} syncStatus="unconfigured" onRestore={vi.fn()} />)
+    render(<Settings onBack={vi.fn()} syncStatus="unconfigured" onCreate={vi.fn()} onSignIn={vi.fn()} />)
 
     await userEvent.click(screen.getByLabelText(/daily reminder/i))
 
@@ -200,7 +200,7 @@ describe('Settings — additional behaviour (still unconfigured)', () => {
   it('does not re-ask when permission was already granted', async () => {
     const requestPermission = vi.fn().mockResolvedValue('granted')
     vi.stubGlobal('Notification', { permission: 'granted', requestPermission })
-    render(<Settings onBack={vi.fn()} syncStatus="unconfigured" onRestore={vi.fn()} />)
+    render(<Settings onBack={vi.fn()} syncStatus="unconfigured" onCreate={vi.fn()} onSignIn={vi.fn()} />)
 
     await userEvent.click(screen.getByLabelText(/daily reminder/i))
 
@@ -213,7 +213,7 @@ describe('Settings — additional behaviour (still unconfigured)', () => {
       permission: 'default',
       requestPermission: vi.fn().mockResolvedValue('denied'),
     })
-    render(<Settings onBack={vi.fn()} syncStatus="unconfigured" onRestore={vi.fn()} />)
+    render(<Settings onBack={vi.fn()} syncStatus="unconfigured" onCreate={vi.fn()} onSignIn={vi.fn()} />)
 
     await userEvent.click(screen.getByLabelText(/daily reminder/i))
 
@@ -229,7 +229,7 @@ describe('Settings — additional behaviour (still unconfigured)', () => {
       permission: 'default',
       requestPermission: vi.fn().mockResolvedValue('denied'),
     })
-    render(<Settings onBack={vi.fn()} syncStatus="unconfigured" onRestore={vi.fn()} />)
+    render(<Settings onBack={vi.fn()} syncStatus="unconfigured" onCreate={vi.fn()} onSignIn={vi.fn()} />)
 
     await userEvent.click(screen.getByLabelText(/daily reminder/i))
     expect(screen.getByText(/said no to notifications/i)).toBeInTheDocument()
@@ -244,7 +244,7 @@ describe('Settings — additional behaviour (still unconfigured)', () => {
       permission: 'default',
       requestPermission: vi.fn().mockRejectedValue(new Error('nope')),
     })
-    render(<Settings onBack={vi.fn()} syncStatus="unconfigured" onRestore={vi.fn()} />)
+    render(<Settings onBack={vi.fn()} syncStatus="unconfigured" onCreate={vi.fn()} onSignIn={vi.fn()} />)
 
     await userEvent.click(screen.getByLabelText(/daily reminder/i))
 
@@ -252,7 +252,7 @@ describe('Settings — additional behaviour (still unconfigured)', () => {
   })
 
   it('commits an edited name on blur, ignoring an attempt to clear it', async () => {
-    render(<Settings onBack={vi.fn()} syncStatus="unconfigured" onRestore={vi.fn()} />)
+    render(<Settings onBack={vi.fn()} syncStatus="unconfigured" onCreate={vi.fn()} onSignIn={vi.fn()} />)
     const input = screen.getByDisplayValue('Ana')
     await userEvent.clear(input)
     await userEvent.tab()

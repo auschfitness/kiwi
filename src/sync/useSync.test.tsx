@@ -43,36 +43,103 @@ afterEach(() => {
   vi.useRealTimers()
 })
 
-describe('useSync().restore', () => {
-  it('pushes immediately when the code is brand new — no waiting for the debounce', async () => {
+describe('useSync().createAccount', () => {
+  it('claims a free code and pushes immediately — no waiting for the debounce', async () => {
     loadProgress.mockResolvedValue(null)
     const { result } = renderHook(() => useSync())
 
     let outcome: string | undefined
-    await act(async () => { outcome = await result.current.restore('kiwi2026') })
+    await act(async () => { outcome = await result.current.createAccount('kiwi2026') })
 
-    expect(outcome).toBe('pushed')
+    expect(outcome).toBe('created')
     expect(loadProgress).toHaveBeenCalledWith('kiwi2026')
     expect(saveProgress).toHaveBeenCalledWith('kiwi2026', expect.objectContaining({ syncCode: 'kiwi2026' }))
     expect(useStore.getState().syncCode).toBe('kiwi2026')
   })
 
-  it('pulls before it pushes, so an existing code is never overwritten blind', async () => {
+  it('asks whether the code is free before it writes anything', async () => {
     loadProgress.mockResolvedValue(null)
     const { result } = renderHook(() => useSync())
-    await act(async () => { await result.current.restore('kiwi2026') })
+    await act(async () => { await result.current.createAccount('kiwi2026') })
 
     expect(loadProgress.mock.invocationCallOrder[0])
       .toBeLessThan(saveProgress.mock.invocationCallOrder[0])
   })
 
-  it('merges progress that already exists under that code — the lost-device recovery', async () => {
+  /**
+   * Requirement 2, as code. `load_progress` returning a blob is the existence
+   * check — no new table and no new RPC — and a blob means somebody already
+   * owns that code.
+   */
+  it('refuses a code that already exists and writes absolutely nothing', async () => {
     const now = Date.now()
     loadProgress.mockResolvedValue(remoteSnapshot(now))
     const { result } = renderHook(() => useSync())
 
     let outcome: string | undefined
-    await act(async () => { outcome = await result.current.restore('kiwi2026') })
+    await act(async () => { outcome = await result.current.createAccount('kiwi2026') })
+
+    expect(outcome).toBe('taken')
+    // The other account's progress is untouched, and this device did not adopt
+    // the code or pull the stranger's cards in.
+    expect(saveProgress).not.toHaveBeenCalled()
+    expect(useStore.getState().syncCode).toBeNull()
+    expect(useStore.getState().cards.survival_0).toBeUndefined()
+    expect(useStore.getState().unlockedLevel).toBe(1)
+  })
+
+  it('leaves the badge where it was after a refusal, not stuck on "syncing"', async () => {
+    loadProgress.mockResolvedValue(remoteSnapshot(Date.now()))
+    const { result } = renderHook(() => useSync())
+    await act(async () => { await result.current.createAccount('kiwi2026') })
+    expect(result.current.status).toBe('idle')
+  })
+
+  it('claims nothing when the existence check itself fails', async () => {
+    loadProgress.mockRejectedValue(new Error('offline'))
+    const { result } = renderHook(() => useSync())
+
+    let outcome: string | undefined
+    await act(async () => { outcome = await result.current.createAccount('kiwi2026') })
+
+    // We do not know whether the code is free, so we must not write to it.
+    expect(outcome).toBe('unreachable')
+    expect(saveProgress).not.toHaveBeenCalled()
+    expect(useStore.getState().syncCode).toBeNull()
+    expect(result.current.status).toBe('error')
+  })
+
+  it('keeps the code when only the claiming push fails, so retries can land it', async () => {
+    loadProgress.mockResolvedValue(null)
+    saveProgress.mockRejectedValue(new Error('offline'))
+    const { result } = renderHook(() => useSync())
+
+    let outcome: string | undefined
+    await act(async () => { outcome = await result.current.createAccount('kiwi2026') })
+
+    // She is told the truth — the claim did not land — but the code is on the
+    // device and setSyncCode bumped updatedAt, which arms the debounced push.
+    expect(outcome).toBe('unreachable')
+    expect(useStore.getState().syncCode).toBe('kiwi2026')
+    expect(result.current.status).toBe('error')
+  })
+
+  it('resolves rather than rejects on failure, so no caller can be left hanging', async () => {
+    loadProgress.mockRejectedValue(new Error('offline'))
+    const { result } = renderHook(() => useSync())
+    await expect(act(async () => { await result.current.createAccount('kiwi2026') }))
+      .resolves.not.toThrow()
+  })
+})
+
+describe('useSync().signIn', () => {
+  it('merges progress that already exists under that code — the second device', async () => {
+    const now = Date.now()
+    loadProgress.mockResolvedValue(remoteSnapshot(now))
+    const { result } = renderHook(() => useSync())
+
+    let outcome: string | undefined
+    await act(async () => { outcome = await result.current.signIn('kiwi2026') })
 
     expect(outcome).toBe('merged')
     const s = useStore.getState()
@@ -89,7 +156,7 @@ describe('useSync().restore', () => {
     const now = Date.now()
     loadProgress.mockResolvedValue(remoteSnapshot(now))
     const { result } = renderHook(() => useSync())
-    await act(async () => { await result.current.restore('kiwi2026') })
+    await act(async () => { await result.current.signIn('kiwi2026') })
 
     expect(saveProgress).toHaveBeenCalledTimes(1)
     const [code, pushed] = saveProgress.mock.calls[0]
@@ -99,14 +166,28 @@ describe('useSync().restore', () => {
     expect(pushed.syncCode).toBe('kiwi2026')
   })
 
+  /** A typo must never quietly create a second, empty account. */
+  it('adopts nothing when no account uses that code', async () => {
+    loadProgress.mockResolvedValue(null)
+    const { result } = renderHook(() => useSync())
+
+    let outcome: string | undefined
+    await act(async () => { outcome = await result.current.signIn('kiwi2026') })
+
+    expect(outcome).toBe('unknown')
+    expect(saveProgress).not.toHaveBeenCalled()
+    expect(useStore.getState().syncCode).toBeNull()
+    expect(result.current.status).toBe('idle')
+  })
+
   it('adopts no code when the pull fails, rather than risking an overwrite', async () => {
     loadProgress.mockRejectedValue(new Error('offline'))
     const { result } = renderHook(() => useSync())
 
     let outcome: string | undefined
-    await act(async () => { outcome = await result.current.restore('kiwi2026') })
+    await act(async () => { outcome = await result.current.signIn('kiwi2026') })
 
-    expect(outcome).toBe('error')
+    expect(outcome).toBe('unreachable')
     expect(saveProgress).not.toHaveBeenCalled()
     expect(useStore.getState().syncCode).toBeNull()
     expect(result.current.status).toBe('error')
@@ -115,7 +196,7 @@ describe('useSync().restore', () => {
   it('resolves rather than rejects on failure, so no caller can be left hanging', async () => {
     loadProgress.mockRejectedValue(new Error('offline'))
     const { result } = renderHook(() => useSync())
-    await expect(act(async () => { await result.current.restore('kiwi2026') })).resolves.not.toThrow()
+    await expect(act(async () => { await result.current.signIn('kiwi2026') })).resolves.not.toThrow()
   })
 
   it('keeps the code when only the push fails — the merge landed and retries can carry it', async () => {
@@ -125,14 +206,13 @@ describe('useSync().restore', () => {
     const { result } = renderHook(() => useSync())
 
     let outcome: string | undefined
-    await act(async () => { outcome = await result.current.restore('kiwi2026') })
+    await act(async () => { outcome = await result.current.signIn('kiwi2026') })
 
-    // What she is told is the truth: the screen shows the "couldn't reach the
-    // cloud" message, not a tick.
-    expect(outcome).toBe('error')
-    // But the code is hers now and the merge is on the device, so the
-    // debounced push and the pagehide flush go on retrying it — setSyncCode
-    // bumped updatedAt, which is exactly what arms that timer.
+    // Her progress genuinely did arrive, so the sign-in succeeded; the
+    // debounced push and the pagehide flush carry the retry. The status is
+    // deliberately not asserted here: adopting the code re-runs the launch
+    // pull, which succeeds and legitimately reports 'synced' a tick later.
+    expect(outcome).toBe('merged')
     expect(useStore.getState().syncCode).toBe('kiwi2026')
     expect(useStore.getState().cards.survival_0).toBeDefined()
   })

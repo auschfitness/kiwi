@@ -8,7 +8,7 @@ import { levelProgress, LEVEL_NAMES, LEVEL_EMOJI, LEVEL_TITLES } from '../core/l
 import { skillSummary } from '../core/stats'
 import { greeting, studyButtonLabel } from '../core/home'
 import type { SyncStatus } from '../sync/client'
-import { STATUS_LABEL, STATUS_TONE, isLiveStatus } from '../sync/status'
+import { STATUS_LABEL, STATUS_TONE, syncLineState } from '../sync/status'
 import { Button, Card, Ring, Meter, Chip } from '../components/ui'
 
 export interface HomeProps {
@@ -22,42 +22,43 @@ export interface HomeProps {
 }
 
 /**
- * A one-line, honest answer to "is my work safe?" — three states, none of
- * them a banner.
+ * A one-line, honest answer to "is my work safe?" — three shapes, none of
+ * them a banner. The states themselves are decided by `syncLineState`, which
+ * is pure and tested on its own.
  *
  * - No Supabase project in this build: nothing at all. Nagging her about a
  *   feature the app cannot perform is worse than silence.
- * - Configured, no code yet: the prompt she needed the day before her
- *   progress vanished, and a tap straight into the setup screen.
+ * - Configured, no code yet — the *owed* state. Since the code became
+ *   mandatory the only way to be here is the cloud having been unreachable
+ *   when she was asked, so this line is the standing reminder that the
+ *   question is still open, and a tap straight back into it.
  * - Configured, code set: the live status, so "it is working" is something
  *   she can see rather than assume.
  */
 function SyncLine({ status, onOpen }: { status: SyncStatus; onOpen: () => void }) {
   const syncCode = useStore(s => s.syncCode)
+  const state = syncLineState(status, syncCode)
 
-  if (status === 'unconfigured') return null
+  if (state === 'hidden') return null
 
-  if (!syncCode) {
+  if (state === 'owed') {
     return (
       <button
         type="button"
         data-testid="sync-line"
         onClick={onOpen}
-        className="flex min-h-[44px] w-full items-center gap-2 rounded-card border border-line bg-card2 px-3 py-2 text-left transition active:scale-[0.98]"
+        className="flex min-h-[44px] w-full items-center gap-2 rounded-card border border-brand bg-card2 px-3 py-2 text-left transition active:scale-[0.98]"
       >
         <span className="text-base" aria-hidden="true">☁️</span>
         <span className="text-xs text-muted">
-          Saved on this device only.{' '}
+          Your progress isn't in the cloud yet.{' '}
           <span className="font-bold text-brand">Set up a sync code</span>
         </span>
       </button>
     )
   }
 
-  // 'idle' only survives the moment between mount and the launch pull
-  // answering, and a code is set, so a pull genuinely is in flight — say
-  // "syncing" rather than blanking the line and flickering it back in.
-  const live = isLiveStatus(status) ? status : 'syncing'
+  const live = state
 
   return (
     <button

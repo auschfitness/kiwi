@@ -126,11 +126,29 @@ describe("Home's cloud-sync line", () => {
     expect(screen.queryByTestId('sync-line')).not.toBeInTheDocument()
   })
 
-  it('prompts her to set up a code when she has none — the thing she needed yesterday', () => {
+  /**
+   * The owed state. Since the code became mandatory there is only one way to
+   * be sitting on Home without one — the cloud was unreachable when she was
+   * asked — so this line is the standing reminder that the question is still
+   * open, not a soft "you could if you liked".
+   */
+  it('says the progress is not in the cloud yet when she owes a code', () => {
     render(<Home onNavigate={vi.fn()} onStudy={vi.fn()} syncStatus="idle" />)
     const line = screen.getByTestId('sync-line')
-    expect(line).toHaveTextContent(/saved on this device only/i)
+    expect(line).toHaveTextContent(/your progress isn't in the cloud yet/i)
     expect(line).toHaveTextContent(/set up a sync code/i)
+  })
+
+  it('keeps saying it is owed whatever the connection is doing', () => {
+    const { rerender } = render(
+      <Home onNavigate={vi.fn()} onStudy={vi.fn()} syncStatus="offline" />,
+    )
+    expect(screen.getByTestId('sync-line')).toHaveTextContent(/set up a sync code/i)
+
+    // Never a bare "✓ synced" while there is no code to sync to.
+    rerender(<Home onNavigate={vi.fn()} onStudy={vi.fn()} syncStatus="synced" />)
+    expect(screen.getByTestId('sync-line')).toHaveTextContent(/set up a sync code/i)
+    expect(screen.getByTestId('sync-line')).not.toHaveTextContent(/✓ synced/)
   })
 
   it('taps through from that prompt straight to the sync setup screen', async () => {
@@ -138,6 +156,18 @@ describe("Home's cloud-sync line", () => {
     render(<Home onNavigate={onNavigate} onStudy={vi.fn()} syncStatus="idle" />)
     await userEvent.click(screen.getByTestId('sync-line'))
     expect(onNavigate).toHaveBeenCalledWith('sync')
+  })
+
+  it('stops nagging the instant a code is set', () => {
+    const { rerender } = render(
+      <Home onNavigate={vi.fn()} onStudy={vi.fn()} syncStatus="syncing" />,
+    )
+    expect(screen.getByTestId('sync-line')).toHaveTextContent(/set up a sync code/i)
+
+    useStore.setState({ syncCode: 'kiwi2026' })
+    rerender(<Home onNavigate={vi.fn()} onStudy={vi.fn()} syncStatus="syncing" />)
+    expect(screen.getByTestId('sync-line')).not.toHaveTextContent(/set up a sync code/i)
+    expect(screen.getByTestId('sync-line')).toHaveTextContent(/syncing/i)
   })
 
   it('shows the live status once a code is set, so "it works" is visible not assumed', () => {

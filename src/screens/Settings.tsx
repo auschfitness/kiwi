@@ -1,20 +1,22 @@
 import { useState } from 'react'
 import type { Accent } from '../types'
 import { useStore } from '../store/useStore'
-import { isSyncConfigured, validateSyncCode, type SyncStatus } from '../sync/client'
+import { isSyncConfigured, type CreateOutcome, type SignInOutcome, type SyncStatus } from '../sync/client'
 import { STATUS_LABEL, STATUS_TONE, isLiveStatus } from '../sync/status'
 import { isPushConfigured } from '../sync/push'
 import { refreshReminderDelivery } from '../notify/delivery'
 import { Button, Card, Chip, ScreenHeader } from '../components/ui'
+import { SyncCodeForm } from './SyncCodeForm'
 
 export interface SettingsProps {
   onBack: () => void
-  // Sync status + restore action live in App's single instance of the sync
-  // hook — Settings is a presentational consumer of them, not a second
+  // Sync status + the create/sign-in pair live in App's single instance of the
+  // sync hook — Settings is a presentational consumer of them, not a second
   // mount of that hook (which would double the debounced push timers, the
   // visibilitychange/pagehide listeners, and the launch pull).
   syncStatus: SyncStatus
-  onRestore: (code: string) => Promise<'merged' | 'pushed' | 'error'>
+  onCreate: (code: string) => Promise<CreateOutcome>
+  onSignIn: (code: string) => Promise<SignInOutcome>
 }
 
 const ACCENTS: { value: Accent; label: string }[] = [
@@ -87,18 +89,10 @@ function notificationApi(): typeof Notification | null {
 // Home's status line shows the same four badges, and two copies of that
 // mapping would eventually disagree about what "⚠︎ offline" looks like.
 
-type SyncOutcome = 'merged' | 'pushed' | 'error'
-
-/**
- * What actually happened, in her words. onRestore always merges — there is no
- * "replace" — so the copy never promises one, and 'pushed' (the code was
- * empty in the cloud) is a different, equally honest sentence.
- */
-const OUTCOME_MESSAGE: Record<SyncOutcome, string> = {
-  merged: '✓ Joined up with the progress already saved under that code.',
-  pushed: "✓ This device's progress is now saved in the cloud.",
-  error: "⚠︎ That didn't work just now. Check your internet and try again.",
-}
+// The sync field itself — and the taken/free question behind it — lives in
+// src/screens/SyncCodeForm.tsx, shared with the onboarding gate. Changing a
+// code here has to answer the same question first run does, or the uniqueness
+// rule would hold in one place and not the other.
 
 /**
  * A +/- control with a label naming what it changes — never bare symbols.
@@ -178,7 +172,7 @@ function Toggle({
  * the only level-changing control, and it starts her over at A1 rather than
  * dropping her somewhere she has not earned.
  */
-export function Settings({ onBack, syncStatus, onRestore }: SettingsProps) {
+export function Settings({ onBack, syncStatus, onCreate, onSignIn }: SettingsProps) {
   const profileName = useStore(s => s.profileName)
   const syncCode = useStore(s => s.syncCode)
   const dailyGoal = useStore(s => s.dailyGoal)
@@ -199,10 +193,6 @@ export function Settings({ onBack, syncStatus, onRestore }: SettingsProps) {
   const pushConfigured = isPushConfigured()
 
   const [name, setName] = useState(profileName)
-  const [codeInput, setCodeInput] = useState(syncCode ?? '')
-  const [codeError, setCodeError] = useState<string | null>(null)
-  const [restoring, setRestoring] = useState(false)
-  const [outcome, setOutcome] = useState<SyncOutcome | null>(null)
   const [confirmingReset, setConfirmingReset] = useState(false)
   const [notificationsDenied, setNotificationsDenied] = useState(false)
 
@@ -259,18 +249,6 @@ export function Settings({ onBack, syncStatus, onRestore }: SettingsProps) {
     if (trimmed !== profileName) setPref('profileName', trimmed)
   }
 
-  async function handleSyncSubmit() {
-    const trimmed = codeInput.trim()
-    const err = validateSyncCode(trimmed)
-    setCodeError(err)
-    if (err) return
-    setRestoring(true)
-    setOutcome(null)
-    const result = await onRestore(trimmed)
-    setOutcome(result)
-    setRestoring(false)
-  }
-
   function handleResetClick() {
     if (!confirmingReset) { setConfirmingReset(true); return }
     resetProgress(Date.now())
@@ -310,36 +288,17 @@ export function Settings({ onBack, syncStatus, onRestore }: SettingsProps) {
             <p className="font-bold text-ink">Cloud sync</p>
             {liveStatus && <Chip tone={STATUS_TONE[liveStatus]}>{STATUS_LABEL[liveStatus]}</Chip>}
           </div>
-          <label className="flex flex-col gap-1">
-            <span className="text-sm text-muted">Sync code</span>
-            <input
-              type="text"
-              value={codeInput}
-              onChange={e => { setCodeInput(e.target.value); setCodeError(null); setOutcome(null) }}
-              placeholder="a word plus some numbers, e.g. kiwi2026"
-              autoCapitalize="none"
-              autoCorrect="off"
-              spellCheck={false}
-              className="min-h-[44px] rounded-2xl border border-line bg-card2 px-4 text-ink"
-            />
-          </label>
-          {codeError && <p className="text-sm text-again">{codeError}</p>}
-          {/* One button, because there is only one behaviour. The old pair
-            * ("Save & sync" and "Restore from a code") called the same merge,
-            * and "restore" promised a replace this app cannot do. */}
-          <p className="text-xs text-muted">
-            Typing a code puts this device's progress together with whatever is already
-            saved under that code. Nothing is lost either way — use the same code on your
-            other phone or laptop to keep them all in step.
-          </p>
-          <Button variant="primary" size="md" disabled={restoring} onClick={handleSyncSubmit}>
-            Save &amp; sync this device
-          </Button>
-          {outcome && (
-            <p role="status" className="text-sm text-ink">
-              {OUTCOME_MESSAGE[outcome]}
-            </p>
-          )}
+          {/* Same form, same taken/free question, as the onboarding gate.
+            * Defaults to "I already have a code" when one is set, because the
+            * commonest thing she does here is check or move it — but creating
+            * a fresh account is one tap away, and either way the code has to
+            * be free before anything is written. */}
+          <SyncCodeForm
+            initialMode={syncCode ? 'signin' : 'create'}
+            initialValue={syncCode ?? ''}
+            onCreate={onCreate}
+            onSignIn={onSignIn}
+          />
         </Card>
       )}
 

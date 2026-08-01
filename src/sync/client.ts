@@ -3,6 +3,29 @@ import type { AppState } from '../types'
 
 export type SyncStatus = 'unconfigured' | 'offline' | 'idle' | 'syncing' | 'synced' | 'error'
 
+/**
+ * A sync code is an account key, so there are two different things she can be
+ * doing with the field — and they have to be different operations, because
+ * they want opposite answers from the cloud.
+ *
+ * "Create" wants the code to be *free*: if `load_progress` hands back a blob,
+ * somebody already owns it and we must refuse rather than push over the top.
+ * "Sign in" wants the code to *exist*: a blob is her own progress arriving
+ * from another device, and nothing there means she has mistyped it.
+ *
+ * That split is the whole reason a unique code can still be typed on a second
+ * device — same account, not a second one.
+ */
+export type SyncMode = 'create' | 'signin'
+
+/** `taken` means the code exists and nothing at all was written. */
+export type CreateOutcome = 'created' | 'taken' | 'unreachable'
+
+/** `unknown` means no account uses that code and nothing at all was written. */
+export type SignInOutcome = 'merged' | 'unknown' | 'unreachable'
+
+export type SyncOutcome = CreateOutcome | SignInOutcome
+
 const URL = import.meta.env.VITE_SUPABASE_URL as string | undefined
 const KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined
 

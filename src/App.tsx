@@ -49,14 +49,37 @@ export default function App() {
   // hub included — clears it, so that entry point keeps its mixed practice
   // set rather than accidentally reusing a stale scope.
   const [shadowDialogueId, setShadowDialogueId] = useState<string | undefined>(undefined)
-  // True only between answering the name question and leaving the sync step,
-  // and only when there is a cloud to sync to. Deliberately not persisted: if
-  // she reloads mid-onboarding she lands on Home, where the status line is
-  // still asking her the same question — a stuck onboarding flag would be a
-  // worse failure than a second chance to answer it.
-  const [askingForSyncCode, setAskingForSyncCode] = useState(false)
+  /**
+   * How an owed code is represented: a session-only "we already asked, the
+   * cloud was down, let her study" flag — and nothing else.
+   *
+   * There is deliberately no persisted `syncCodeOwed` field. Since the code
+   * became mandatory, "configured, and no code set" *is* the owed state; a
+   * second stored flag could only ever disagree with the first. Not persisting
+   * this one is the point: a reload, a new day, or the browser firing `online`
+   * all put the question straight back in front of her, which is exactly what
+   * "do not silently drop it" means.
+   */
+  const [codeDeferred, setCodeDeferred] = useState(false)
+
+  /**
+   * Whether the sync-code step is on screen right now.
+   *
+   * Latched rather than derived straight from "no code set", and that is not
+   * an accident: the instant she claims a code the owed condition goes false,
+   * so a purely derived gate would unmount itself mid-success and she would
+   * never see "that code is yours now". She leaves this step when she says so
+   * — "Let's go", or the offline "Carry on for now" — and not a moment before.
+   *
+   * Seeded at mount so first run goes name -> code with no flash of Home in
+   * between; the effect below is what re-raises it later.
+   */
+  const [askingForCode, setAskingForCode] = useState(
+    () => isSyncConfigured() && useStore.getState().syncCode === null,
+  )
 
   const profileName = useStore(s => s.profileName)
+  const syncCode = useStore(s => s.syncCode)
   const unlocked = useStore(s => s.unlocked)
   const clearUnlockToast = useStore(s => s.clearUnlockToast)
   const speechRate = useStore(s => s.speechRate)
@@ -80,7 +103,29 @@ export default function App() {
   // restore passed down as props) rather than mounting its own — one set of
   // debounced push timers and visibility listeners per session, not one per
   // screen that happens to render Settings.
-  const { status: syncStatus, restore: onRestore } = useSync()
+  const { status: syncStatus, createAccount, signIn } = useSync()
+
+  /**
+   * The code is owed until she sets one. Derived, never stored — see
+   * `codeDeferred` above and `syncLineState` in src/sync/status.ts.
+   */
+  const codeOwed = isSyncConfigured() && !syncCode
+
+  // Re-raise the step whenever a code is owed and there is no live excuse.
+  // Two things reach it: the deferral expiring (below), and "Reset progress"
+  // in Settings clearing the code she had. It cannot fire on success — a
+  // claimed code makes `codeOwed` false in the same commit.
+  useEffect(() => {
+    if (codeOwed && !codeDeferred) setAskingForCode(true)
+  }, [codeOwed, codeDeferred])
+
+  // "Prompt for it from Home as soon as she is online." The browser telling us
+  // the connection is back is the moment the excuse expires.
+  useEffect(() => {
+    const askAgain = () => setCodeDeferred(false)
+    window.addEventListener('online', askAgain)
+    return () => window.removeEventListener('online', askAgain)
+  }, [])
 
   // Layers 2 and 3 of the daily reminder: a Web Push subscription if the
   // backend exists, otherwise a locally scheduled notification where the
@@ -103,23 +148,6 @@ export default function App() {
   }, [speechRate])
 
   function goHome() {
-    setScreen('home')
-  }
-
-  /**
-   * She has just told us her name. With a Supabase project in the build, the
-   * next question is her sync code — asked here, up front, rather than left
-   * for a Settings screen she may never open. Without one, there is nothing to
-   * ask and first run stays one question long.
-   */
-  function handleNameDone() {
-    if (isSyncConfigured()) { setAskingForSyncCode(true); return }
-    goHome()
-  }
-
-  /** Saved, or "Not now" — either way the next screen is Home. */
-  function leaveSyncSetup() {
-    setAskingForSyncCode(false)
     setScreen('home')
   }
 
@@ -165,20 +193,42 @@ export default function App() {
   // starts at A1 and unlocks A2 by actually working through A1 (see
   // src/core/leveling.ts). The sync question is the one thing standing between
   // her and a device-only profile that a cleared browser can erase, so it is
-  // asked before she has a single card to lose — and it disappears entirely
-  // when the build has no cloud to save to.
+  // now required rather than offered — and it disappears entirely when the
+  // build has no cloud to save to.
+  //
+  // The gate is scoped to Home on purpose. It catches first run, because
+  // `screen` starts as 'home'; it catches a returning profile that still has
+  // no code; and when the browser comes back online mid-session it waits until
+  // she is out of the session rather than yanking her off a card she is
+  // halfway through answering.
   function renderScreen() {
-    if (!profileName) return <Name onNext={handleNameDone} />
+    if (!profileName) return <Name onNext={goHome} />
 
-    if (askingForSyncCode) {
-      return <SyncSetup onDone={leaveSyncSetup} onSkip={leaveSyncSetup} onRestore={onRestore} />
+    if (askingForCode && screen === 'home') {
+      return (
+        <SyncSetup
+          mandatory
+          onDone={() => { setAskingForCode(false); goHome() }}
+          onDefer={() => { setCodeDeferred(true); setAskingForCode(false) }}
+          onCreate={createAccount}
+          onSignIn={signIn}
+        />
+      )
     }
 
     switch (screen) {
       case 'sync':
-        // The same screen, reached later from Home's status line — her way
-        // back in if she skipped, and her way to check the code if she did not.
-        return <SyncSetup onDone={goHome} onSkip={goHome} onRestore={onRestore} />
+        // The same screen, reached later from Home's status line — her way to
+        // check the code she has, or to move this device to another account.
+        return (
+          <SyncSetup
+            mandatory={false}
+            onDone={goHome}
+            onCancel={goHome}
+            onCreate={createAccount}
+            onSignIn={signIn}
+          />
+        )
 
       case 'session':
         return <Session deckId={studyDeckId} onDone={() => setScreen('done')} />
@@ -207,7 +257,8 @@ export default function App() {
           <Settings
             onBack={goHome}
             syncStatus={syncStatus}
-            onRestore={onRestore}
+            onCreate={createAccount}
+            onSignIn={signIn}
           />
         )
       default:
