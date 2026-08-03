@@ -1,0 +1,110 @@
+import type { Deck } from '../../types'
+
+/**
+ * Verb mass, and the two tenses the earlier decks left out.
+ *
+ * A learner with opinions and no verbs stalls mid-sentence. These are the
+ * high-frequency ones a Brazilian either does not have (`lograr`, `acudir`,
+ * `plantear`) or has and conjugates by guessing.
+ */
+export const ES_VERBS2_DECK: Deck = {
+  id: 'es_verbs2',
+  name: 'Mais verbos',
+  emoji: '⚡',
+  desc: 'A massa de verbos que sustenta uma conversa longa',
+  level: 2,
+  cards: [
+    { id: 'es_verbs2_0', deckId: 'es_verbs2', en: 'sostener', pt: 'sustentar / segurar', exampleHtml: '<b>Sostengo</b> lo que dije ayer.', examplePt: 'Sustento o que eu disse ontem.', pos: 'verb' },
+    { id: 'es_verbs2_1', deckId: 'es_verbs2', en: 'suponer', pt: 'supor', exampleHtml: '<b>Supongo</b> que ya se fueron.', examplePt: 'Suponho que já foram embora.', pos: 'verb' },
+    { id: 'es_verbs2_2', deckId: 'es_verbs2', en: 'proponer', pt: 'propor', exampleHtml: 'Quiero <b>proponer</b> algo distinto.', examplePt: 'Quero propor algo diferente.', pos: 'verb' },
+    { id: 'es_verbs2_3', deckId: 'es_verbs2', en: 'aportar', pt: 'contribuir', exampleHtml: 'Cada uno <b>aporta</b> lo que puede.', examplePt: 'Cada um contribui com o que pode.', pos: 'verb' },
+    { id: 'es_verbs2_4', deckId: 'es_verbs2', en: 'acudir', pt: 'comparecer / recorrer', exampleHtml: 'Mucha gente <b>acudió</b> al evento.', examplePt: 'Muita gente compareceu ao evento.', pos: 'verb' },
+    { id: 'es_verbs2_5', deckId: 'es_verbs2', en: 'permanecer', pt: 'permanecer', exampleHtml: 'Todo <b>permanece</b> igual aquí.', examplePt: 'Tudo permanece igual aqui.', pos: 'verb' },
+    { id: 'es_verbs2_6', deckId: 'es_verbs2', en: 'ocurrir', pt: 'ocorrer', exampleHtml: 'Nunca se me <b>ocurrió</b> eso.', examplePt: 'Nunca me ocorreu isso.', pos: 'verb' },
+    { id: 'es_verbs2_7', deckId: 'es_verbs2', en: 'surgir', pt: 'surgir', exampleHtml: '<b>Surgió</b> un problema al final.', examplePt: 'Surgiu um problema no final.', pos: 'verb' },
+    { id: 'es_verbs2_8', deckId: 'es_verbs2', en: 'resultar', pt: 'acabar sendo', exampleHtml: '<b>Resultó</b> más fácil de lo pensado.', examplePt: 'Acabou sendo mais fácil do que pensei.', pos: 'verb' },
+    { id: 'es_verbs2_9', deckId: 'es_verbs2', en: 'implicar', pt: 'implicar', exampleHtml: 'Eso <b>implica</b> más trabajo.', examplePt: 'Isso implica mais trabalho.', pos: 'verb' },
+    { id: 'es_verbs2_10', deckId: 'es_verbs2', en: 'requerir', pt: 'exigir', exampleHtml: 'El puesto <b>requiere</b> experiencia.', examplePt: 'A vaga exige experiência.', pos: 'verb' },
+    { id: 'es_verbs2_11', deckId: 'es_verbs2', en: 'llevar a cabo', pt: 'realizar / levar a cabo', exampleHtml: '<b>Llevaron a cabo</b> el proyecto.', examplePt: 'Realizaram o projeto.', pos: 'phrase' },
+    { id: 'es_verbs2_12', deckId: 'es_verbs2', en: 'darse por', pt: 'dar-se por', exampleHtml: 'No me <b>doy por</b> vencido todavía.', examplePt: 'Não me dou por vencido ainda.', pos: 'verb' },
+    { id: 'es_verbs2_13', deckId: 'es_verbs2', en: 'atreverse', pt: 'ousar / se atrever', exampleHtml: 'No me <b>atreví</b> a decirlo.', examplePt: 'Não me atrevi a dizer.', pos: 'verb' },
+    { id: 'es_verbs2_14', deckId: 'es_verbs2', en: 'arrepentirse', pt: 'se arrepender', exampleHtml: 'Me <b>arrepiento</b> de aquello.', examplePt: 'Me arrependo daquilo.', pos: 'verb' },
+    { id: 'es_verbs2_15', deckId: 'es_verbs2', en: 'quejarse', pt: 'reclamar', exampleHtml: 'Siempre se <b>queja</b> del clima.', examplePt: 'Sempre reclama do clima.', pos: 'verb' },
+    { id: 'es_verbs2_16', deckId: 'es_verbs2', en: 'burlarse', pt: 'zombar', exampleHtml: 'No te <b>burles</b> de él.', examplePt: 'Não zomba dele.', pos: 'verb' },
+    { id: 'es_verbs2_17', deckId: 'es_verbs2', en: 'fijarse', pt: 'reparar', exampleHtml: '<b>Fíjate</b> bien en el detalle.', examplePt: 'Repara bem no detalhe.', pos: 'verb' },
+    { id: 'es_verbs2_18', deckId: 'es_verbs2', en: 'acordarse', pt: 'lembrar', exampleHtml: 'No me <b>acuerdo</b> de su nombre.', examplePt: 'Não lembro o nome dele.', pos: 'verb' },
+    { id: 'es_verbs2_19', deckId: 'es_verbs2', en: 'darse prisa', pt: 'se apressar', exampleHtml: '<b>Date prisa</b> que ya cierran.', examplePt: 'Se apressa que já vão fechar.', pos: 'phrase' },
+    { id: 'es_verbs2_20', deckId: 'es_verbs2', en: 'echar un vistazo', pt: 'dar uma olhada', exampleHtml: 'Voy a <b>echar un vistazo</b>.', examplePt: 'Vou dar uma olhada.', pos: 'phrase' },
+    { id: 'es_verbs2_21', deckId: 'es_verbs2', en: 'tomar en cuenta', pt: 'levar em conta', exampleHtml: 'Hay que <b>tomar en cuenta</b> eso.', examplePt: 'Tem que levar isso em conta.', pos: 'phrase' },
+    { id: 'es_verbs2_22', deckId: 'es_verbs2', en: 'ponerse de acuerdo', pt: 'entrar em acordo', exampleHtml: 'Nunca se <b>ponen de acuerdo</b>.', examplePt: 'Nunca entram em acordo.', pos: 'phrase' },
+    { id: 'es_verbs2_23', deckId: 'es_verbs2', en: 'darse cuenta de', pt: 'perceber que', exampleHtml: 'Me <b>di cuenta de</b> algo raro.', examplePt: 'Percebi algo estranho.', pos: 'phrase' },
+    { id: 'es_verbs2_24', deckId: 'es_verbs2', en: 'sacar provecho', pt: 'tirar proveito', exampleHtml: 'Supo <b>sacar provecho</b> de eso.', examplePt: 'Soube tirar proveito disso.', pos: 'phrase' },
+    { id: 'es_verbs2_25', deckId: 'es_verbs2', en: 'salir adelante', pt: 'seguir em frente', exampleHtml: 'Vamos a <b>salir adelante</b> igual.', examplePt: 'Vamos seguir em frente do mesmo jeito.', pos: 'phrase' },
+    { id: 'es_verbs2_26', deckId: 'es_verbs2', en: 'estar dispuesto', pt: 'estar disposto', exampleHtml: '<b>Estoy dispuesto</b> a intentarlo.', examplePt: 'Estou disposto a tentar.', pos: 'phrase' },
+    { id: 'es_verbs2_27', deckId: 'es_verbs2', en: 'hacer hincapié', pt: 'enfatizar', exampleHtml: 'Quiero <b>hacer hincapié</b> aquí.', examplePt: 'Quero enfatizar aqui.', pos: 'phrase' },
+    { id: 'es_verbs2_28', deckId: 'es_verbs2', en: 'dejar en claro', pt: 'deixar claro', exampleHtml: 'Quiero <b>dejar en claro</b> algo.', examplePt: 'Quero deixar uma coisa clara.', pos: 'phrase' },
+    { id: 'es_verbs2_29', deckId: 'es_verbs2', en: 'poner en duda', pt: 'colocar em dúvida', exampleHtml: 'Nadie <b>pone en duda</b> eso.', examplePt: 'Ninguém coloca isso em dúvida.', pos: 'phrase' },
+  ],
+}
+
+export const ES_FUTURE_DECK: Deck = {
+  id: 'es_future',
+  name: 'Futuro e condicional',
+  emoji: '🔮',
+  desc: 'Falar do que vem e do que seria',
+  level: 3,
+  cards: [
+    { id: 'es_future_0', deckId: 'es_future', en: 'voy a', pt: 'vou (futuro próximo)', exampleHtml: '<b>Voy a</b> llamarlo más tarde.', examplePt: 'Vou ligar para ele mais tarde.', pos: 'phrase' },
+    { id: 'es_future_1', deckId: 'es_future', en: 'haré', pt: 'eu farei', exampleHtml: 'Mañana <b>haré</b> las compras.', examplePt: 'Amanhã farei as compras.', pos: 'verb' },
+    { id: 'es_future_2', deckId: 'es_future', en: 'tendré', pt: 'eu terei', exampleHtml: '<b>Tendré</b> tiempo el jueves.', examplePt: 'Terei tempo na quinta.', pos: 'verb' },
+    { id: 'es_future_3', deckId: 'es_future', en: 'podré', pt: 'eu poderei', exampleHtml: 'No <b>podré</b> ir esta vez.', examplePt: 'Não poderei ir desta vez.', pos: 'verb' },
+    { id: 'es_future_4', deckId: 'es_future', en: 'vendrá', pt: 'ele virá', exampleHtml: 'Creo que <b>vendrá</b> temprano.', examplePt: 'Acho que ele virá cedo.', pos: 'verb' },
+    { id: 'es_future_5', deckId: 'es_future', en: 'sabremos', pt: 'saberemos', exampleHtml: 'Mañana <b>sabremos</b> el resultado.', examplePt: 'Amanhã saberemos o resultado.', pos: 'verb' },
+    { id: 'es_future_6', deckId: 'es_future', en: 'habrá', pt: 'haverá / terá', exampleHtml: '<b>Habrá</b> reunión el lunes.', examplePt: 'Haverá reunião na segunda.', pos: 'verb' },
+    { id: 'es_future_7', deckId: 'es_future', en: 'será', pt: 'será', exampleHtml: 'Eso <b>será</b> más complicado.', examplePt: 'Isso será mais complicado.', pos: 'verb' },
+    { id: 'es_future_8', deckId: 'es_future', en: 'haría', pt: 'eu faria', exampleHtml: 'Yo <b>haría</b> otra cosa.', examplePt: 'Eu faria outra coisa.', pos: 'verb' },
+    { id: 'es_future_9', deckId: 'es_future', en: 'tendría', pt: 'eu teria', exampleHtml: '<b>Tendría</b> que salir ya.', examplePt: 'Eu teria que sair já.', pos: 'verb' },
+    { id: 'es_future_10', deckId: 'es_future', en: 'podría', pt: 'eu poderia', exampleHtml: '<b>Podría</b> ayudarte mañana.', examplePt: 'Eu poderia te ajudar amanhã.', pos: 'verb' },
+    { id: 'es_future_11', deckId: 'es_future', en: 'querría', pt: 'eu queria (formal)', exampleHtml: '<b>Querría</b> hacer una pregunta.', examplePt: 'Eu queria fazer uma pergunta.', pos: 'verb' },
+    { id: 'es_future_12', deckId: 'es_future', en: 'debería', pt: 'eu deveria', exampleHtml: '<b>Debería</b> avisarle antes.', examplePt: 'Eu deveria avisá-lo antes.', pos: 'verb' },
+    { id: 'es_future_13', deckId: 'es_future', en: 'sería mejor', pt: 'seria melhor', exampleHtml: '<b>Sería mejor</b> esperar un poco.', examplePt: 'Seria melhor esperar um pouco.', pos: 'phrase' },
+    { id: 'es_future_14', deckId: 'es_future', en: 'me gustaría', pt: 'eu gostaria', exampleHtml: '<b>Me gustaría</b> conocer ese lugar.', examplePt: 'Eu gostaria de conhecer esse lugar.', pos: 'phrase' },
+    { id: 'es_future_15', deckId: 'es_future', en: 'estaría bien', pt: 'seria bom', exampleHtml: '<b>Estaría bien</b> vernos pronto.', examplePt: 'Seria bom a gente se ver logo.', pos: 'phrase' },
+    { id: 'es_future_16', deckId: 'es_future', en: 'a lo mejor será', pt: 'talvez seja', exampleHtml: '<b>A lo mejor será</b> por eso.', examplePt: 'Talvez seja por isso.', pos: 'phrase' },
+    { id: 'es_future_17', deckId: 'es_future', en: 'estaré', pt: 'eu estarei', exampleHtml: '<b>Estaré</b> en casa a las ocho.', examplePt: 'Estarei em casa às oito.', pos: 'verb' },
+    { id: 'es_future_18', deckId: 'es_future', en: 'iré', pt: 'eu irei', exampleHtml: '<b>Iré</b> apenas termine esto.', examplePt: 'Irei assim que terminar isso.', pos: 'verb' },
+    { id: 'es_future_19', deckId: 'es_future', en: 'diría que', pt: 'eu diria que', exampleHtml: '<b>Diría que</b> vale la pena.', examplePt: 'Eu diria que vale a pena.', pos: 'phrase' },
+  ],
+}
+
+export const ES_IDIOMS_DECK: Deck = {
+  id: 'es_idioms',
+  name: 'Expressões',
+  emoji: '🌶️',
+  desc: 'O que separa quem fala certo de quem soa nativo',
+  level: 3,
+  cards: [
+    { id: 'es_idioms_0', deckId: 'es_idioms', en: 'de golpe', pt: 'de repente', exampleHtml: 'Cambió todo <b>de golpe</b>.', examplePt: 'Mudou tudo de repente.', pos: 'phrase' },
+    { id: 'es_idioms_1', deckId: 'es_idioms', en: 'a la larga', pt: 'a longo prazo / no fim', exampleHtml: '<b>A la larga</b> te conviene.', examplePt: 'No fim das contas te convém.', pos: 'phrase' },
+    { id: 'es_idioms_2', deckId: 'es_idioms', en: 'de la nada', pt: 'do nada', exampleHtml: 'Apareció <b>de la nada</b> ayer.', examplePt: 'Apareceu do nada ontem.', pos: 'phrase' },
+    { id: 'es_idioms_3', deckId: 'es_idioms', en: 'a como dé lugar', pt: 'de qualquer jeito', exampleHtml: 'Hay que hacerlo <b>a como dé lugar</b>.', examplePt: 'Tem que fazer de qualquer jeito.', pos: 'phrase' },
+    { id: 'es_idioms_4', deckId: 'es_idioms', en: 'valer la pena', pt: 'valer a pena', exampleHtml: 'Eso sí <b>vale la pena</b>.', examplePt: 'Isso sim vale a pena.', pos: 'phrase' },
+    { id: 'es_idioms_5', deckId: 'es_idioms', en: 'dar en el clavo', pt: 'acertar em cheio', exampleHtml: '<b>Diste en el clavo</b> con eso.', examplePt: 'Você acertou em cheio nisso.', pos: 'phrase' },
+    { id: 'es_idioms_6', deckId: 'es_idioms', en: 'estar en las nubes', pt: 'estar no mundo da lua', exampleHtml: 'Hoy <b>está en las nubes</b>.', examplePt: 'Hoje ele está no mundo da lua.', pos: 'phrase' },
+    { id: 'es_idioms_7', deckId: 'es_idioms', en: 'costar un ojo', pt: 'custar os olhos da cara', exampleHtml: 'Ese carro <b>cuesta un ojo</b>.', examplePt: 'Esse carro custa os olhos da cara.', pos: 'phrase' },
+    { id: 'es_idioms_8', deckId: 'es_idioms', en: 'echar la culpa', pt: 'botar a culpa', exampleHtml: 'Siempre me <b>echa la culpa</b>.', examplePt: 'Sempre bota a culpa em mim.', pos: 'phrase' },
+    { id: 'es_idioms_9', deckId: 'es_idioms', en: 'hacer la vista gorda', pt: 'fazer vista grossa', exampleHtml: 'Prefirió <b>hacer la vista gorda</b>.', examplePt: 'Preferiu fazer vista grossa.', pos: 'phrase' },
+    { id: 'es_idioms_10', deckId: 'es_idioms', en: 'ni de broma', pt: 'nem brincando', exampleHtml: '<b>Ni de broma</b> hago eso.', examplePt: 'Nem brincando eu faço isso.', pos: 'phrase' },
+    { id: 'es_idioms_11', deckId: 'es_idioms', en: 'por si acaso', pt: 'por via das dúvidas', exampleHtml: 'Llévalo <b>por si acaso</b>.', examplePt: 'Leva por via das dúvidas.', pos: 'phrase' },
+    { id: 'es_idioms_12', deckId: 'es_idioms', en: 'a duras penas', pt: 'a duras penas', exampleHtml: 'Llegamos <b>a duras penas</b>.', examplePt: 'Chegamos a duras penas.', pos: 'phrase' },
+    { id: 'es_idioms_13', deckId: 'es_idioms', en: 'tener ganas de', pt: 'estar a fim de', exampleHtml: 'No <b>tengo ganas de</b> discutir.', examplePt: 'Não estou a fim de discutir.', pos: 'phrase' },
+    { id: 'es_idioms_14', deckId: 'es_idioms', en: 'sin falta', pt: 'sem falta', exampleHtml: 'Te llamo mañana <b>sin falta</b>.', examplePt: 'Te ligo amanhã sem falta.', pos: 'phrase' },
+    { id: 'es_idioms_15', deckId: 'es_idioms', en: 'a como sea', pt: 'de qualquer forma', exampleHtml: 'Lo resolvemos <b>a como sea</b>.', examplePt: 'A gente resolve de qualquer forma.', pos: 'phrase' },
+    { id: 'es_idioms_16', deckId: 'es_idioms', en: 'no tener nada que ver', pt: 'não ter nada a ver', exampleHtml: 'Eso <b>no tiene nada que ver</b>.', examplePt: 'Isso não tem nada a ver.', pos: 'phrase' },
+    { id: 'es_idioms_17', deckId: 'es_idioms', en: 'poco a poco', pt: 'aos poucos', exampleHtml: '<b>Poco a poco</b> vas mejorando.', examplePt: 'Aos poucos você vai melhorando.', pos: 'phrase' },
+    { id: 'es_idioms_18', deckId: 'es_idioms', en: 'de una vez', pt: 'de uma vez', exampleHtml: 'Termínalo <b>de una vez</b>.', examplePt: 'Termina isso de uma vez.', pos: 'phrase' },
+    { id: 'es_idioms_19', deckId: 'es_idioms', en: 'más vale', pt: 'é melhor', exampleHtml: '<b>Más vale</b> prevenir que lamentar.', examplePt: 'É melhor prevenir do que remediar.', pos: 'phrase' },
+  ],
+}
+
+export const ES_VERB_DECKS: Deck[] = [ES_VERBS2_DECK, ES_FUTURE_DECK, ES_IDIOMS_DECK]

@@ -129,6 +129,7 @@ describe('course rules', () => {
   const ES_RULES = {
     modalities: courseById('es-latam').modalities,
     typablePos: new Set(['word', 'noun', 'verb', 'adj', 'number', 'greeting', 'slang', 'phrase'] as const),
+    typableMaxChars: 24,
   }
 
   /**

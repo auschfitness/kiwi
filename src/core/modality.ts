@@ -1,5 +1,5 @@
 import type { Card, CardState, Modality, PartOfSpeech, Skill } from '../types'
-import { isSentence, isTypable, DEFAULT_TYPABLE_POS } from './text'
+import { isSentence, isTypable, DEFAULT_TYPABLE_POS, DEFAULT_TYPABLE_MAX } from './text'
 import { isNew } from './srs'
 
 const ORDER: readonly Modality[] = ['recognize', 'listen', 'type', 'build', 'dictate', 'speak']
@@ -15,12 +15,15 @@ export interface CourseRules {
   /** Exercises this course uses at all. Spanish leaves out `recognize`. */
   modalities: readonly Modality[]
   typablePos: ReadonlySet<PartOfSpeech>
+  /** Longest target still worth typing. See `DEFAULT_TYPABLE_MAX`. */
+  typableMaxChars: number
 }
 
 /** The English course's rules, and the answer when a caller passes none. */
 export const DEFAULT_RULES: CourseRules = {
   modalities: ORDER,
   typablePos: DEFAULT_TYPABLE_POS,
+  typableMaxChars: DEFAULT_TYPABLE_MAX,
 }
 
 const SKILL_OF: Record<Modality, Skill | null> = {
@@ -43,7 +46,7 @@ export function supportedModalities(
   rules: CourseRules = DEFAULT_RULES,
 ): Modality[] {
   const allowed = new Set<Modality>(['recognize'])
-  if (isTypable(card, rules.typablePos)) { allowed.add('listen'); allowed.add('type') }
+  if (isTypable(card, rules.typablePos, rules.typableMaxChars)) { allowed.add('listen'); allowed.add('type') }
   if (isSentence(card)) { allowed.add('build'); allowed.add('dictate') }
   if (canSpeak) allowed.add('speak')
 

@@ -64,11 +64,24 @@ export function exampleWords(card: Card): string[] {
   return stripTags(card.exampleHtml).trim().split(/\s+/).filter(Boolean)
 }
 
+/**
+ * How long a target may be and still be worth typing.
+ *
+ * Sixteen was calibrated for a beginner typing single English words, where a
+ * long target is a long *word* and typing it tests patience rather than
+ * knowledge. A production course is a different bargain: its targets are
+ * ordinary multi-word expressions, and the ones that carry the most
+ * naturalness are the longest ("hacer la vista gorda"). Cutting them to fit
+ * would be letting the limit edit the language.
+ */
+export const DEFAULT_TYPABLE_MAX = 16
+
 export function isTypable(
   card: Card,
   typablePos: ReadonlySet<PartOfSpeech> = DEFAULT_TYPABLE_POS,
+  maxChars: number = DEFAULT_TYPABLE_MAX,
 ): boolean {
-  return card.en.length <= 16 && !card.en.includes('…') && typablePos.has(card.pos)
+  return card.en.length <= maxChars && !card.en.includes('…') && typablePos.has(card.pos)
 }
 
 export function isSentence(card: Card): boolean {

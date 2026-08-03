@@ -1,6 +1,6 @@
 import type { Course, CourseId } from './types'
 import type { CourseRules } from '../core/modality'
-import { DEFAULT_TYPABLE_POS } from '../core/text'
+import { DEFAULT_TYPABLE_POS, DEFAULT_TYPABLE_MAX } from '../core/text'
 import { readActiveCourseId, DEFAULT_COURSE } from './active'
 import { ENGLISH_DECKS } from '../content/english'
 import { ES_DECKS } from '../content/es'
@@ -90,4 +90,7 @@ export const ACTIVE_RULES: CourseRules = {
   typablePos: ACTIVE_COURSE.id === 'es-latam'
     ? new Set([...DEFAULT_TYPABLE_POS, 'phrase' as const])
     : DEFAULT_TYPABLE_POS,
+  // Spanish targets are expressions, not words, and the idiomatic ones are the
+  // longest. 24 fits "hacer la vista gorda" without letting a sentence in.
+  typableMaxChars: ACTIVE_COURSE.id === 'es-latam' ? 24 : DEFAULT_TYPABLE_MAX,
 }

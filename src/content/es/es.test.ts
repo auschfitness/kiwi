@@ -11,6 +11,7 @@ const ES_CARDS = ES_DECKS.flatMap(d => d.cards)
 const ES_RULES = {
   modalities: ['type', 'build', 'dictate', 'speak'] as const,
   typablePos: new Set<PartOfSpeech>([...DEFAULT_TYPABLE_POS, 'phrase']),
+  typableMaxChars: 24,
 }
 
 describe('Spanish corpus', () => {
@@ -40,7 +41,7 @@ describe('Spanish corpus', () => {
    * says the corpus is fit for its purpose rather than merely well-formed.
    */
   it('makes every card typable under the Spanish rules', () => {
-    const untypable = ES_CARDS.filter(c => !isTypable(c, ES_RULES.typablePos))
+    const untypable = ES_CARDS.filter(c => !isTypable(c, ES_RULES.typablePos, ES_RULES.typableMaxChars))
     expect(untypable.map(c => `${c.id}: ${c.en}`)).toEqual([])
   })
 
