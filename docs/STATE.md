@@ -32,6 +32,7 @@ before large changes.
 - **Stack:** Vite · React 19 · TypeScript strict · Tailwind · Zustand + persist ·
   vite-plugin-pwa · @supabase/supabase-js
 - **State:** 793 unit tests, 4 Playwright E2E, `tsc --noEmit` clean, build clean
+- **Corpus:** 581 English cards, 299 Spanish
 
 ## The product decisions that must not be quietly undone
 
