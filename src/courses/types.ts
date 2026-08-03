@@ -1,4 +1,8 @@
-import type { Accent, Deck, Modality } from '../types'
+import type { Accent, Deck, Dialogue, Modality } from '../types'
+import type { Roleplay } from '../content/authored/roleplays'
+
+/** A Practice screen a course can offer. */
+export type PracticeFeature = 'dialogues' | 'shadowing' | 'roleplay' | 'drills' | 'earTraining'
 
 export type CourseId = 'en-nz' | 'es-latam'
 
@@ -55,15 +59,19 @@ export interface Course {
   gated: boolean
 
   /**
-   * Whether the Practice hub is offered.
+   * Which Practice features this course has material for.
    *
-   * Dialogues, Role-play, Ear training and Shadowing are all built on New
-   * Zealand material — Auckland cafés, Kiwi minimal pairs, pronunciation
-   * written for a Brazilian learning English. A Spanish course showing them
-   * would be worse than a Spanish course without them, so it goes without
-   * until it has material of its own.
+   * A list rather than a flag because the answer is per feature, not per
+   * course. Ear training is Kiwi vowel pairs and the drills speak English
+   * numbers, times and dates — neither has a Spanish equivalent yet, and
+   * offering an empty screen would be worse than offering nothing. The hub
+   * itself disappears when this is empty.
    */
-  hasPractice: boolean
+  practice: PracticeFeature[]
 
   decks: Deck[]
+  /** Empty when the course has no scripted scenes. */
+  roleplays: Roleplay[]
+  /** Empty when the course has no listen-along conversations. */
+  dialogues: Dialogue[]
 }

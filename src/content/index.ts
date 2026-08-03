@@ -1,7 +1,6 @@
 import type { Card, Deck, Level } from '../types'
 import { ACTIVE_COURSE } from '../courses'
 
-export { DIALOGUES } from './dialogues.generated'
 export { PLAN } from './plan'
 export { IRREGULAR_TABLE } from './authored/irregular'
 export { PHONETICS } from './authored/phonetics'
@@ -9,8 +8,11 @@ export { PHOTOS } from './authored/photos'
 export { PHOTO_CREDITS } from './authored/photoCredits'
 export { MINIMAL_PAIRS, PAIR_GROUPS } from './authored/minimalPairs'
 export type { MinimalPair, PairGroup, PairGroupInfo } from './authored/minimalPairs'
-export { ROLEPLAYS } from './authored/roleplays'
 export type { Roleplay, RoleplayTurn } from './authored/roleplays'
+
+/** The active course's scripted scenes and listen-along conversations. */
+export const ROLEPLAYS = ACTIVE_COURSE.roleplays
+export const DIALOGUES = ACTIVE_COURSE.dialogues
 export { ENGLISH_DECKS, ENGLISH_CARDS } from './english'
 
 /**

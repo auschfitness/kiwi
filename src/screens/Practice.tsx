@@ -1,4 +1,6 @@
 import type { Screen } from '../App'
+import { ACTIVE_COURSE } from '../courses'
+import type { PracticeFeature } from '../courses/types'
 import { ScreenHeader } from '../components/ui'
 
 export interface PracticeProps {
@@ -26,12 +28,16 @@ const OPTIONS: PracticeOption[] = [
 /** One hub for every speaking and listening exercise, so Home stays tidy —
  * a simple menu, not a study mode of its own. */
 export function Practice({ onBack, onNavigate }: PracticeProps) {
+  // Only what this course has material for. A course showing a screen it
+  // cannot fill would be worse than a shorter list.
+  const options = OPTIONS.filter(o => ACTIVE_COURSE.practice.includes(o.screen as PracticeFeature))
+
   return (
     <div className="flex flex-col gap-4 pt-2">
       <ScreenHeader title="Practice" onBack={onBack} />
 
       <div className="flex flex-col gap-3">
-        {OPTIONS.map(opt => (
+        {options.map(opt => (
           <button
             key={opt.screen}
             type="button"

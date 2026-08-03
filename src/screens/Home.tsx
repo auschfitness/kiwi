@@ -218,9 +218,8 @@ export function Home({ onNavigate, onStudy, syncStatus }: HomeProps) {
             🗺️ 8-week plan
           </Button>
         </div>
-        {/* Every Practice feature is built on New Zealand material. A course
-          * without its own is offered nothing rather than offered Auckland. */}
-        {ACTIVE_COURSE.hasPractice && (
+        {/* A course with no practice material at all gets no hub. */}
+        {ACTIVE_COURSE.practice.length > 0 && (
           <div className="flex-1">
             <Button variant="ghost" size="md" onClick={() => onNavigate('practice')}>
               🎧 Practice

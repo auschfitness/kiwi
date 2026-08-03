@@ -101,10 +101,23 @@ describe('course registry', () => {
     expect(courseById('es-latam').gated).toBe(false)
   })
 
-  // Every Practice screen is built on New Zealand material.
-  it('offers Practice only where there is material for it', () => {
-    expect(courseById('en-nz').hasPractice).toBe(true)
-    expect(courseById('es-latam').hasPractice).toBe(false)
+  /**
+   * Per feature, not per course. Spanish has its own scenes and conversations
+   * but no drills (they speak English numbers and dates) and no ear training
+   * (Kiwi vowel pairs), so it offers three of the five rather than all or none.
+   */
+  it('offers only the Practice features it has material for', () => {
+    expect(courseById('en-nz').practice).toHaveLength(5)
+    expect(courseById('es-latam').practice).toEqual(['dialogues', 'shadowing', 'roleplay'])
+  })
+
+  it('ships practice material for every feature it claims', () => {
+    for (const course of ALL_COURSES) {
+      if (course.practice.includes('roleplay')) expect(course.roleplays.length, course.id).toBeGreaterThan(0)
+      if (course.practice.includes('dialogues')) expect(course.dialogues.length, course.id).toBeGreaterThan(0)
+      // Shadowing reads the dialogues, so claiming it without them is a dead screen.
+      if (course.practice.includes('shadowing')) expect(course.dialogues.length, course.id).toBeGreaterThan(0)
+    }
   })
 
   it('loads the English course by default in tests', () => {

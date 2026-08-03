@@ -31,7 +31,7 @@ before large changes.
 - **Backend:** Supabase project ref `qtjfquuaeslxsiuqfoig`, organisation `kiwi`
 - **Stack:** Vite · React 19 · TypeScript strict · Tailwind · Zustand + persist ·
   vite-plugin-pwa · @supabase/supabase-js
-- **State:** 793 unit tests, 4 Playwright E2E, `tsc --noEmit` clean, build clean
+- **State:** 800 unit tests, 4 Playwright E2E, `tsc --noEmit` clean, build clean
 - **Corpus:** 581 English cards, 299 Spanish
 
 ## The product decisions that must not be quietly undone
@@ -77,9 +77,12 @@ can change underneath it.
 - A course declares its modalities, its speak direction, whether it is gated,
   and whether Practice is offered. `src/content/index.ts` serves the active
   course's decks and everything downstream is unaware there is a second one.
-- Practice (Dialogues, Role-play, Ear training, Shadowing) and the drills are
-  all New Zealand material, so `hasPractice` is false for Spanish. Giving the
-  Spanish course its own is the next piece of work, not a bug.
+- `Course.practice` lists which Practice features a course has material for —
+  per feature, not per course. Spanish has Dialogues, Shadowing and Role-play
+  of its own; it has no Drills (the generator speaks English numbers, times,
+  dates and spelled-out letters) and no Ear training (Kiwi vowel pairs, which
+  a Spanish learner has no use for). A course claiming a feature it cannot
+  fill is caught by a test.
 
 ## Known debt
 

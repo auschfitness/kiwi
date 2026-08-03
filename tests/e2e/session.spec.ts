@@ -207,8 +207,20 @@ test('switching to Spanish keeps the two courses entirely separate', async ({ pa
   await expect(page.getByTestId('deck-es_subj')).toBeEnabled()
   await expect(page.getByText(/to unlock/i)).toHaveCount(0)
 
-  // No Practice hub — every Practice screen is New Zealand material.
-  await expect(page.getByRole('button', { name: /practice/i })).toHaveCount(0)
+  // Practice is offered, but only the three features with Spanish material:
+  // no Drills (they speak English numbers) and no Ear training (Kiwi vowels).
+  await page.getByRole('button', { name: /practice/i }).click()
+  await expect(page.getByRole('button', { name: /role-play/i })).toBeVisible()
+  await expect(page.getByRole('button', { name: /dialogues/i })).toBeVisible()
+  await expect(page.getByRole('button', { name: /shadowing/i })).toBeVisible()
+  await expect(page.getByRole('button', { name: /drills/i })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: /ear training/i })).toHaveCount(0)
+
+  // The scenes really are Spanish.
+  await page.getByRole('button', { name: /role-play/i }).click()
+  await expect(page.getByText(/no café/i)).toBeVisible()
+  await page.getByRole('button', { name: /go back/i }).click()
+  await page.getByRole('button', { name: /go back/i }).click()
 
   // Back to English, and her profile is untouched.
   await page.getByRole('button', { name: /settings/i }).click()

@@ -4,6 +4,10 @@ import { DEFAULT_TYPABLE_POS } from '../core/text'
 import { readActiveCourseId, DEFAULT_COURSE } from './active'
 import { ENGLISH_DECKS } from '../content/english'
 import { ES_DECKS } from '../content/es'
+import { ES_ROLEPLAYS } from '../content/es/roleplays'
+import { ES_DIALOGUES } from '../content/es/dialogues'
+import { ROLEPLAYS } from '../content/authored/roleplays'
+import { DIALOGUES } from '../content/dialogues.generated'
 
 export type { Course, CourseId } from './types'
 export { readActiveCourseId, writeActiveCourseId, ACTIVE_COURSE_KEY, DEFAULT_COURSE } from './active'
@@ -22,8 +26,10 @@ const EN_NZ: Course = {
   modalities: ['recognize', 'listen', 'type', 'build', 'dictate', 'speak'],
   speakDirection: 'repeat',
   gated: true,
-  hasPractice: true,
+  practice: ['dialogues', 'shadowing', 'roleplay', 'drills', 'earTraining'],
   decks: ENGLISH_DECKS,
+  roleplays: ROLEPLAYS,
+  dialogues: DIALOGUES,
 }
 
 const ES_LATAM: Course = {
@@ -46,8 +52,14 @@ const ES_LATAM: Course = {
   // would only be held at "hola, gracias" while what he needs is the
   // subjunctive. Spaced repetition alone decides what comes back and when.
   gated: false,
-  hasPractice: false,
+  // Dialogues, Shadowing and Role-play have Spanish material of their own.
+  // Drills speak English numbers, times and dates, and Ear training is Kiwi
+  // vowel pairs; both are left out rather than shown speaking the wrong
+  // language.
+  practice: ['dialogues', 'shadowing', 'roleplay'],
   decks: ES_DECKS,
+  roleplays: ES_ROLEPLAYS,
+  dialogues: ES_DIALOGUES,
 }
 
 const COURSES: Record<CourseId, Course> = {
