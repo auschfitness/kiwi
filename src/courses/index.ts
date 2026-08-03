@@ -50,10 +50,13 @@ const ES_LATAM: Course = {
   // production, so the wheel is typing, building, dictation and speaking.
   modalities: ['type', 'build', 'dictate', 'speak'],
   speakDirection: 'produce',
-  // No gate. The 80% rule exists to stop a beginner skipping the basics; he
-  // would only be held at "hola, gracias" while what he needs is the
-  // subjunctive. Spaced repetition alone decides what comes back and when.
-  gated: false,
+  // Gated, on evidence. This started ungated on the assumption that someone
+  // who understands Spanish can begin in the middle — and the course opened at
+  // "o sea", a B1 discourse marker, which he had never seen. Understanding a
+  // language passively and having its first thousand words ready to produce
+  // are different abilities. So he starts at A1 like anyone else, and the
+  // seven-tap gesture is there the day he wants to jump ahead.
+  gated: true,
   // Dialogues, Shadowing and Role-play have Spanish material of their own.
   // Drills speak English numbers, times and dates, and Ear training is Kiwi
   // vowel pairs; both are left out rather than shown speaking the wrong

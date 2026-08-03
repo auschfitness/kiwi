@@ -14,7 +14,7 @@ export const ES_ARGUE_DECK: Deck = {
   name: 'Argumentar e discorrer',
   emoji: '🗨️',
   desc: 'Sustentar uma ideia por mais de duas frases',
-  level: 3,
+  level: 4,
   cards: [
     { id: 'es_argue_0', deckId: 'es_argue', en: 'por un lado', pt: 'por um lado', exampleHtml: '<b>Por un lado</b> es más barato.', examplePt: 'Por um lado é mais barato.', pos: 'phrase' },
     { id: 'es_argue_1', deckId: 'es_argue', en: 'por otro lado', pt: 'por outro lado', exampleHtml: '<b>Por otro lado</b> lleva más tiempo.', examplePt: 'Por outro lado leva mais tempo.', pos: 'phrase' },
@@ -72,7 +72,7 @@ export const ES_TOPICS_DECK: Deck = {
   name: 'Assuntos do mundo',
   emoji: '🌐',
   desc: 'Política, economia, tecnologia, saúde — ter o que dizer',
-  level: 3,
+  level: 4,
   cards: [
     { id: 'es_topics_0', deckId: 'es_topics', en: 'el gobierno', pt: 'o governo', exampleHtml: 'El <b>gobierno</b> anunció el plan.', examplePt: 'O governo anunciou o plano.', pos: 'noun' },
     { id: 'es_topics_1', deckId: 'es_topics', en: 'la ley', pt: 'a lei', exampleHtml: 'La nueva <b>ley</b> entra en vigor.', examplePt: 'A nova lei entra em vigor.', pos: 'noun' },

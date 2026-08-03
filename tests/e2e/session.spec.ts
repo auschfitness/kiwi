@@ -190,10 +190,11 @@ test('switching to Spanish keeps the two courses entirely separate', async ({ pa
   await expect(page.getByTestId('deck-es_react')).toBeVisible()
   await expect(page.getByTestId('deck-survival')).toHaveCount(0)
 
-  // Ungated: a level-3 deck is reachable on a brand-new profile, with no
-  // padlock anywhere and no gesture needed.
-  await expect(page.getByTestId('deck-es_subj')).toBeEnabled()
-  await expect(page.getByText(/to unlock/i)).toHaveCount(0)
+  // Gated, and starting at genuine A1: greetings are open on day one and the
+  // subjunctive is not. Spanish began ungated on the theory that someone who
+  // understands it can start in the middle; he could not.
+  await expect(page.getByTestId('deck-es_hello')).toBeEnabled()
+  await expect(page.getByTestId('deck-es_subj')).toBeDisabled()
 
   // Practice is offered, but only the three features with Spanish material:
   // no Drills (they speak English numbers) and no Ear training (Kiwi vowels).

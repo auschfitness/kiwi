@@ -96,9 +96,29 @@ describe('course registry', () => {
     expect(courseById('en-nz').modalities).toContain('recognize')
   })
 
-  it('gates English and leaves Spanish open', () => {
-    expect(courseById('en-nz').gated).toBe(true)
-    expect(courseById('es-latam').gated).toBe(false)
+  /**
+   * Both gated. Spanish started open, on the theory that someone who already
+   * understands it can begin in the middle — and it opened at "o sea", which
+   * he had never seen. Passive comprehension and a thousand words ready to
+   * produce are different abilities, and only the second is what this trains.
+   */
+  it('gates both courses', () => {
+    for (const course of ALL_COURSES) expect(course.gated, course.id).toBe(true)
+  })
+
+  /**
+   * A gated course is only as good as its first level, and Spanish's used to
+   * be B1 discourse markers. Level 1 must be reachable with no Spanish at all.
+   */
+  it('starts the Spanish course at genuine beginner material', () => {
+    const first = courseById('es-latam').decks.filter(d => d.level === 1)
+    expect(first.length).toBeGreaterThanOrEqual(4)
+    const targets = first.flatMap(d => d.cards.map(c => c.en))
+    for (const word of ['hola', 'gracias', 'quiero', 'dónde', 'el agua']) {
+      expect(targets, word).toContain(word)
+    }
+    // The marker that prompted the rethink is emphatically not day one.
+    expect(targets).not.toContain('o sea')
   })
 
   /**

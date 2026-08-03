@@ -7,7 +7,7 @@ export const ES_WORK_DECK: Deck = {
   name: 'Trabalho',
   emoji: '💼',
   desc: 'Reunião, prazo, entrega — o vocabulário que paga a conta',
-  level: 2,
+  level: 3,
   cards: [
     { id: 'es_work_0', deckId: 'es_work', en: 'la reunión', pt: 'a reunião', exampleHtml: '<b>La reunión</b> es a las diez.', examplePt: 'A reunião é às dez.', pos: 'noun' },
     { id: 'es_work_1', deckId: 'es_work', en: 'el plazo', pt: 'o prazo', exampleHtml: 'El <b>plazo</b> vence el viernes.', examplePt: 'O prazo vence na sexta.', pos: 'noun' },
@@ -57,7 +57,7 @@ export const ES_TRAVEL_DECK: Deck = {
   name: 'Viagem e serviços',
   emoji: '✈️',
   desc: 'Restaurante, hotel, transporte, farmácia — resolver as coisas',
-  level: 1,
+  level: 2,
   cards: [
     { id: 'es_travel_0', deckId: 'es_travel', en: 'la cuenta', pt: 'a conta', exampleHtml: '¿Me trae <b>la cuenta</b>, por favor?', examplePt: 'Pode trazer a conta, por favor?', pos: 'noun' },
     { id: 'es_travel_1', deckId: 'es_travel', en: 'la propina', pt: 'a gorjeta', exampleHtml: '¿La <b>propina</b> ya está incluida?', examplePt: 'A gorjeta já está incluída?', pos: 'noun' },

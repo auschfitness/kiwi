@@ -12,7 +12,7 @@ export const ES_VERBS2_DECK: Deck = {
   name: 'Mais verbos',
   emoji: '⚡',
   desc: 'A massa de verbos que sustenta uma conversa longa',
-  level: 2,
+  level: 3,
   cards: [
     { id: 'es_verbs2_0', deckId: 'es_verbs2', en: 'sostener', pt: 'sustentar / segurar', exampleHtml: '<b>Sostengo</b> lo que dije ayer.', examplePt: 'Sustento o que eu disse ontem.', pos: 'verb' },
     { id: 'es_verbs2_1', deckId: 'es_verbs2', en: 'suponer', pt: 'supor', exampleHtml: '<b>Supongo</b> que ya se fueron.', examplePt: 'Suponho que já foram embora.', pos: 'verb' },
@@ -52,7 +52,7 @@ export const ES_FUTURE_DECK: Deck = {
   name: 'Futuro e condicional',
   emoji: '🔮',
   desc: 'Falar do que vem e do que seria',
-  level: 3,
+  level: 4,
   cards: [
     { id: 'es_future_0', deckId: 'es_future', en: 'voy a', pt: 'vou (futuro próximo)', exampleHtml: '<b>Voy a</b> llamarlo más tarde.', examplePt: 'Vou ligar para ele mais tarde.', pos: 'phrase' },
     { id: 'es_future_1', deckId: 'es_future', en: 'haré', pt: 'eu farei', exampleHtml: 'Mañana <b>haré</b> las compras.', examplePt: 'Amanhã farei as compras.', pos: 'verb' },

@@ -32,7 +32,7 @@ before large changes.
 - **Stack:** Vite · React 19 · TypeScript strict · Tailwind · Zustand + persist ·
   vite-plugin-pwa · @supabase/supabase-js
 - **State:** 800 unit tests, 4 Playwright E2E, `tsc --noEmit` clean, build clean
-- **Corpus:** 581 English cards, 449 Spanish
+- **Corpus:** 581 English cards, 561 Spanish
 
 ## The product decisions that must not be quietly undone
 
@@ -74,6 +74,10 @@ can change underneath it.
 - Each course persists under its own key (`english-nz`, `espanol-latam`), so
   two courses can never mix progress or sync codes. **Never rename
   `english-nz`**: every profile that exists is saved under it.
+- Both courses are gated. Spanish shipped ungated on the theory that someone
+  who understands it can start in the middle; it opened at "o sea" and the
+  owner had never seen it. Passive comprehension and a thousand words ready to
+  produce are different abilities — do not confuse them again.
 - A course declares its modalities, its speak direction, whether it is gated,
   and whether Practice is offered. `src/content/index.ts` serves the active
   course's decks and everything downstream is unaware there is a second one.

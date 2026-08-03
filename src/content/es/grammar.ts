@@ -13,7 +13,7 @@ export const ES_FALSE_FRIENDS_DECK: Deck = {
   name: 'Falsos amigos',
   emoji: '🎭',
   desc: 'Parece português e não é — os que derrubam brasileiro',
-  level: 2,
+  level: 3,
   cards: [
     { id: 'es_false_0', deckId: 'es_false', en: 'embarazada', pt: 'grávida (NÃO envergonhada)', exampleHtml: 'Mi hermana está <b>embarazada</b>.', examplePt: 'Minha irmã está grávida.', pos: 'adj' },
     { id: 'es_false_1', deckId: 'es_false', en: 'exquisito', pt: 'delicioso (NÃO esquisito)', exampleHtml: 'El postre estaba <b>exquisito</b>.', examplePt: 'A sobremesa estava deliciosa.', pos: 'adj' },
@@ -49,7 +49,7 @@ export const ES_SER_ESTAR_DECK: Deck = {
   name: 'Ser e estar',
   emoji: '⚖️',
   desc: 'Parecido com o português — até a hora que não é',
-  level: 2,
+  level: 3,
   cards: [
     { id: 'es_ser_estar_0', deckId: 'es_ser_estar', en: 'soy', pt: 'eu sou', exampleHtml: '<b>Soy</b> de São Paulo, Brasil.', examplePt: 'Eu sou de São Paulo, Brasil.', pos: 'verb' },
     { id: 'es_ser_estar_1', deckId: 'es_ser_estar', en: 'estoy', pt: 'eu estou', exampleHtml: '<b>Estoy</b> cansado del viaje.', examplePt: 'Estou cansado da viagem.', pos: 'verb' },
@@ -75,7 +75,7 @@ export const ES_POR_PARA_DECK: Deck = {
   name: 'Por e para',
   emoji: '🔀',
   desc: 'Onde o português usa "por" e o espanhol discorda',
-  level: 2,
+  level: 3,
   cards: [
     { id: 'es_por_para_0', deckId: 'es_por_para', en: 'por la mañana', pt: 'de manhã', exampleHtml: 'Salgo <b>por la mañana</b> temprano.', examplePt: 'Saio de manhã cedo.', pos: 'phrase' },
     { id: 'es_por_para_1', deckId: 'es_por_para', en: 'para mañana', pt: 'para amanhã (prazo)', exampleHtml: 'Lo necesito <b>para mañana</b>.', examplePt: 'Preciso disso para amanhã.', pos: 'phrase' },
@@ -98,7 +98,7 @@ export const ES_SUBJUNCTIVE_DECK: Deck = {
   name: 'Subjuntivo',
   emoji: '🌀',
   desc: 'O tempo que o brasileiro entende e não produz',
-  level: 3,
+  level: 4,
   cards: [
     { id: 'es_subj_0', deckId: 'es_subj', en: 'que venga', pt: 'que ele venha', exampleHtml: 'Espero <b>que venga</b> temprano.', examplePt: 'Espero que ele venha cedo.', pos: 'phrase' },
     { id: 'es_subj_1', deckId: 'es_subj', en: 'que sea', pt: 'que seja', exampleHtml: 'Ojalá <b>que sea</b> verdad.', examplePt: 'Tomara que seja verdade.', pos: 'phrase' },
@@ -123,7 +123,7 @@ export const ES_PAST_DECK: Deck = {
   name: 'Passado: qual usar',
   emoji: '⏳',
   desc: 'Pretérito e imperfeito, onde o português não ajuda',
-  level: 3,
+  level: 4,
   cards: [
     { id: 'es_past_0', deckId: 'es_past', en: 'fui', pt: 'eu fui (uma vez)', exampleHtml: 'Ayer <b>fui</b> al mercado.', examplePt: 'Ontem eu fui ao mercado.', pos: 'verb' },
     { id: 'es_past_1', deckId: 'es_past', en: 'iba', pt: 'eu ia (costumava)', exampleHtml: 'Antes <b>iba</b> todos los días.', examplePt: 'Antes eu ia todos os dias.', pos: 'verb' },

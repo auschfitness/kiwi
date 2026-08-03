@@ -43,7 +43,7 @@ export const ES_HOME_DECK: Deck = {
   name: 'Casa e rotina',
   emoji: '🏠',
   desc: 'A vida entre quatro paredes e a semana inteira',
-  level: 1,
+  level: 2,
   cards: [
     { id: 'es_home_0', deckId: 'es_home', en: 'la cocina', pt: 'a cozinha', exampleHtml: 'La <b>cocina</b> es bastante grande.', examplePt: 'A cozinha é bastante grande.', pos: 'noun' },
     { id: 'es_home_1', deckId: 'es_home', en: 'el cuarto', pt: 'o quarto', exampleHtml: 'Mi <b>cuarto</b> da a la calle.', examplePt: 'Meu quarto dá para a rua.', pos: 'noun' },

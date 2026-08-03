@@ -19,7 +19,7 @@ export const ES_REACT_DECK: Deck = {
   name: 'Reagir e opinar',
   emoji: '💬',
   desc: 'O que dizer quando entendeu tudo e travou na resposta',
-  level: 1,
+  level: 3,
   cards: [
     { id: 'es_react_0', deckId: 'es_react', en: 'o sea', pt: 'ou seja', exampleHtml: 'No vino, <b>o sea</b>, se olvidó.', examplePt: 'Não veio, ou seja, esqueceu.', pos: 'phrase' },
     { id: 'es_react_1', deckId: 'es_react', en: 'de hecho', pt: 'na verdade / aliás', exampleHtml: '<b>De hecho</b>, ya lo terminé.', examplePt: 'Na verdade, já terminei.', pos: 'phrase' },
@@ -54,7 +54,7 @@ export const ES_CONNECT_DECK: Deck = {
   name: 'Conectar ideias',
   emoji: '🔗',
   desc: 'As emendas que separam quem fala de quem enrola',
-  level: 2,
+  level: 3,
   cards: [
     { id: 'es_connect_0', deckId: 'es_connect', en: 'sin embargo', pt: 'no entanto', exampleHtml: 'Es caro; <b>sin embargo</b>, funciona.', examplePt: 'É caro; no entanto, funciona.', pos: 'phrase' },
     { id: 'es_connect_1', deckId: 'es_connect', en: 'aunque', pt: 'embora / mesmo que', exampleHtml: 'Voy <b>aunque</b> esté lloviendo.', examplePt: 'Eu vou embora esteja chovendo.', pos: 'word' },
@@ -84,7 +84,7 @@ export const ES_VERBS_DECK: Deck = {
   name: 'Verbos do dia a dia',
   emoji: '🏃',
   desc: 'Os que você usa toda hora e conjuga no chute',
-  level: 1,
+  level: 2,
   cards: [
     { id: 'es_verbs_0', deckId: 'es_verbs', en: 'conseguir', pt: 'conseguir', exampleHtml: 'No <b>conseguí</b> hablar con él.', examplePt: 'Não consegui falar com ele.', pos: 'verb' },
     { id: 'es_verbs_1', deckId: 'es_verbs', en: 'tratar de', pt: 'tentar', exampleHtml: '<b>Traté de</b> avisarte ayer.', examplePt: 'Tentei te avisar ontem.', pos: 'verb' },
