@@ -4,6 +4,7 @@ import { buildQueue, requeueWrong } from '../core/queue'
 import { cardById, decksForLevel, deckById, levelOfCard } from '../content'
 import { weakestSkill } from '../core/stats'
 import { effectiveLevel } from '../core/leveling'
+import { ACTIVE_COURSE, ACTIVE_RULES } from '../courses'
 import { useStore } from '../store/useStore'
 import { speechRecognitionAvailable } from '../audio/capabilities'
 import { Button, Meter } from '../components/ui'
@@ -36,7 +37,7 @@ export function Session({ deckId, onDone }: SessionProps) {
     // an unscoped session on a fresh profile still opens at A1.
     const scope = deckId
       ? (deckById(deckId)?.cards ?? [])
-      : decksForLevel(effectiveLevel(unlockedLevel, freeAccess)).flatMap(d => d.cards)
+      : decksForLevel(effectiveLevel(unlockedLevel, freeAccess || !ACTIVE_COURSE.gated)).flatMap(d => d.cards)
 
     return buildQueue({
       cards: scope,
@@ -51,6 +52,7 @@ export function Session({ deckId, onDone }: SessionProps) {
       // New cards are introduced easiest-first, by their deck's own level.
       levelOf: id => levelOfCard(id) ?? 1,
       bias: weakestSkill(skills) ?? undefined,
+      rules: ACTIVE_RULES,
     })
   })
   const [index, setIndex] = useState(0)

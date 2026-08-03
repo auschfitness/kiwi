@@ -7,6 +7,7 @@ import { isPushConfigured } from '../sync/push'
 import { refreshReminderDelivery } from '../notify/delivery'
 import { Button, Card, Chip, ScreenHeader } from '../components/ui'
 import { SyncCodeForm } from './SyncCodeForm'
+import { ACTIVE_COURSE, ALL_COURSES, writeActiveCourseId } from '../courses'
 
 export interface SettingsProps {
   onBack: () => void
@@ -19,12 +20,15 @@ export interface SettingsProps {
   onSignIn: (code: string) => Promise<SignInOutcome>
 }
 
-const ACCENTS: { value: Accent; label: string }[] = [
-  { value: 'en-NZ', label: '🇳🇿 NZ' },
-  { value: 'en-AU', label: '🇦🇺 AU' },
-  { value: 'en-GB', label: '🇬🇧 UK' },
-  { value: 'en-US', label: '🇺🇸 US' },
-]
+const ACCENT_LABELS: Record<Accent, string> = {
+  'en-NZ': '🇳🇿 NZ', 'en-AU': '🇦🇺 AU', 'en-GB': '🇬🇧 UK', 'en-US': '🇺🇸 US',
+  'es-419': '🌎 LatAm', 'es-MX': '🇲🇽 MX', 'es-AR': '🇦🇷 AR', 'es-ES': '🇪🇸 ES',
+}
+
+/** Only the voices this course has any use for. */
+const ACCENTS: { value: Accent; label: string }[] = ACTIVE_COURSE.accents.map(
+  value => ({ value, label: ACCENT_LABELS[value] }),
+)
 
 const SPEECH_RATES: { value: number; label: string }[] = [
   { value: 0.75, label: 'Slower' },
@@ -159,6 +163,70 @@ function Toggle({
         className="h-6 w-6 accent-brand"
       />
     </label>
+  )
+}
+
+/**
+ * Switching courses.
+ *
+ * Two things make this simple rather than fiddly. Each course persists under
+ * its own key, so switching cannot mix two sets of progress. And the switch
+ * reloads the page rather than swapping the store underneath a live app —
+ * which means at any moment there is exactly one course loaded and nothing
+ * else in the app has to reason about a second one.
+ *
+ * The confirmation step is not ceremony: two courses means two sync codes, and
+ * someone who expects their streak to follow them across would be looking at
+ * what reads like lost progress.
+ */
+function CoursePicker() {
+  const [confirming, setConfirming] = useState<string | null>(null)
+
+  const target = ALL_COURSES.find(c => c.id === confirming)
+
+  function switchTo(id: typeof ALL_COURSES[number]['id']) {
+    // A refused write means a reload would land back on the old course, which
+    // would read as the button doing nothing at all.
+    if (!writeActiveCourseId(id)) {
+      setConfirming(null)
+      return
+    }
+    window.location.reload()
+  }
+
+  return (
+    <Card className="flex flex-col gap-3">
+      <div>
+        <p className="font-bold text-ink">Curso</p>
+        <p className="text-sm text-muted">
+          {ACTIVE_COURSE.emoji} {ACTIVE_COURSE.name}
+        </p>
+      </div>
+
+      {ALL_COURSES.filter(c => c.id !== ACTIVE_COURSE.id).map(course => (
+        <div key={course.id} className="flex flex-col gap-2">
+          <Button variant="ghost" size="md" onClick={() => setConfirming(course.id)}>
+            {course.emoji} Mudar para {course.shortName}
+          </Button>
+        </div>
+      ))}
+
+      {target && (
+        <Card className="flex flex-col gap-3 border-brand">
+          <p className="text-sm text-ink">
+            Cada curso tem o próprio progresso, a própria ofensiva e o próprio
+            código de sync. Nada do curso atual é apagado — ele fica esperando
+            exatamente como está.
+          </p>
+          <Button variant="primary" onClick={() => switchTo(target.id)}>
+            Ir para {target.shortName}
+          </Button>
+          <Button variant="ghost" size="md" onClick={() => setConfirming(null)}>
+            Cancelar
+          </Button>
+        </Card>
+      )}
+    </Card>
   )
 }
 
@@ -453,6 +521,8 @@ export function Settings({ onBack, syncStatus, onCreate, onSignIn }: SettingsPro
           ))}
         </div>
       </div>
+
+      <CoursePicker />
 
       <Card className="flex flex-col gap-3">
         <Toggle label="Auto-play audio" checked={autoPlayAudio} onChange={v => setPref('autoPlayAudio', v)} />

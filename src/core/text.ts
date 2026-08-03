@@ -1,6 +1,17 @@
 import type { Card, PartOfSpeech } from '../types'
 
-const TYPABLE_POS: ReadonlySet<PartOfSpeech> = new Set<PartOfSpeech>([
+/**
+ * What a beginner may be asked to type: single words, essentially.
+ *
+ * `phrase` and `grammar` are out because of what those cards look like in the
+ * English course — "go → went" is a card, and asking her to reproduce the
+ * arrow would be a test of the notation rather than of the language.
+ *
+ * A course can widen this. The Spanish course does, because its whole point is
+ * production and its phrase cards are short, ordinary things a person says
+ * ("sin embargo", "me da igual") rather than notation.
+ */
+export const DEFAULT_TYPABLE_POS: ReadonlySet<PartOfSpeech> = new Set<PartOfSpeech>([
   'word', 'noun', 'verb', 'adj', 'number', 'greeting', 'slang',
 ])
 
@@ -53,8 +64,11 @@ export function exampleWords(card: Card): string[] {
   return stripTags(card.exampleHtml).trim().split(/\s+/).filter(Boolean)
 }
 
-export function isTypable(card: Card): boolean {
-  return card.en.length <= 16 && !card.en.includes('…') && TYPABLE_POS.has(card.pos)
+export function isTypable(
+  card: Card,
+  typablePos: ReadonlySet<PartOfSpeech> = DEFAULT_TYPABLE_POS,
+): boolean {
+  return card.en.length <= 16 && !card.en.includes('…') && typablePos.has(card.pos)
 }
 
 export function isSentence(card: Card): boolean {

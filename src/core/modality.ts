@@ -1,8 +1,27 @@
-import type { Card, CardState, Modality, Skill } from '../types'
-import { isSentence, isTypable } from './text'
+import type { Card, CardState, Modality, PartOfSpeech, Skill } from '../types'
+import { isSentence, isTypable, DEFAULT_TYPABLE_POS } from './text'
 import { isNew } from './srs'
 
 const ORDER: readonly Modality[] = ['recognize', 'listen', 'type', 'build', 'dictate', 'speak']
+
+/**
+ * The parts of a course that change which exercises a card can become.
+ *
+ * Passed in rather than read from a module global because everything in
+ * `src/core/` is pure — and because it makes the rules visible at the call
+ * site instead of hidden behind an import.
+ */
+export interface CourseRules {
+  /** Exercises this course uses at all. Spanish leaves out `recognize`. */
+  modalities: readonly Modality[]
+  typablePos: ReadonlySet<PartOfSpeech>
+}
+
+/** The English course's rules, and the answer when a caller passes none. */
+export const DEFAULT_RULES: CourseRules = {
+  modalities: ORDER,
+  typablePos: DEFAULT_TYPABLE_POS,
+}
 
 const SKILL_OF: Record<Modality, Skill | null> = {
   learn: null,
@@ -18,12 +37,25 @@ export function skillForModality(m: Modality): Skill | null {
   return SKILL_OF[m]
 }
 
-export function supportedModalities(card: Card, canSpeak: boolean): Modality[] {
+export function supportedModalities(
+  card: Card,
+  canSpeak: boolean,
+  rules: CourseRules = DEFAULT_RULES,
+): Modality[] {
   const allowed = new Set<Modality>(['recognize'])
-  if (isTypable(card)) { allowed.add('listen'); allowed.add('type') }
+  if (isTypable(card, rules.typablePos)) { allowed.add('listen'); allowed.add('type') }
   if (isSentence(card)) { allowed.add('build'); allowed.add('dictate') }
   if (canSpeak) allowed.add('speak')
-  return ORDER.filter(m => allowed.has(m))
+
+  const forCard = ORDER.filter(m => allowed.has(m))
+  const forCourse = forCard.filter(m => rules.modalities.includes(m))
+
+  // A course that drops `recognize` would otherwise leave nothing at all for a
+  // card that supports only `recognize` — and an empty list means `wheel[n %
+  // 0]`, which is `undefined`, which is a blank screen mid-session. Falling
+  // back to what the card can do costs one off-profile exercise; the
+  // alternative costs the session.
+  return forCourse.length > 0 ? forCourse : forCard
 }
 
 /**
@@ -47,9 +79,10 @@ export function pickModality(
   state: CardState | undefined,
   canSpeak: boolean,
   bias?: Skill,
+  rules: CourseRules = DEFAULT_RULES,
 ): Modality {
   if (isNew(state)) return 'learn'
-  const supported = supportedModalities(card, canSpeak)
+  const supported = supportedModalities(card, canSpeak, rules)
   const extra = bias ? supported.filter(m => SKILL_OF[m] === bias) : []
   const wheel = [...supported, ...extra]
   return wheel[state!.reps % wheel.length]

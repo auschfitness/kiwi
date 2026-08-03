@@ -9,6 +9,7 @@ import { applyStudyTick } from '../core/streak'
 import { shouldUnlockNext } from '../core/leveling'
 import { createInitialState } from './defaults'
 import { readFreeAccess, writeFreeAccess } from './freeAccess'
+import { ACTIVE_COURSE } from '../courses'
 
 export function cardIdsAtLevel(level: Level): string[] {
   return DECKS.filter(d => d.level === level).flatMap(d => d.cards.map(c => c.id))
@@ -172,7 +173,11 @@ export const useStore = create<Store>()(
       },
     }),
     {
-      name: 'english-nz',
+      // One key per course, so two courses can never see each other's
+      // progress. Fixed for the life of the page: switching courses writes the
+      // preference and reloads (src/courses/active.ts), which is what lets
+      // this be read once here rather than swapped under a live store.
+      name: ACTIVE_COURSE.storageKey,
       version: PERSIST_VERSION,
       partialize: persistedFields,
       migrate,

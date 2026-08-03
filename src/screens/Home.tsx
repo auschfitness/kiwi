@@ -5,6 +5,7 @@ import { useStore, cardIdsByLevel } from '../store/useStore'
 import { DECKS, decksForLevel } from '../content'
 import { totalKnown, totalDue, deckProgress, isNew } from '../core/srs'
 import { levelProgress, effectiveLevel, LEVEL_NAMES, LEVEL_EMOJI, LEVEL_TITLES } from '../core/leveling'
+import { ACTIVE_COURSE } from '../courses'
 import { skillSummary } from '../core/stats'
 import { greeting, studyButtonLabel } from '../core/home'
 import type { SyncStatus } from '../sync/client'
@@ -94,7 +95,10 @@ export function Home({ onNavigate, onStudy, syncStatus }: HomeProps) {
   // What may be opened, which is the earned level unless free access lifts the
   // gate. `unlockedLevel` itself stays the badge and still names the level in
   // the padlock copy below.
-  const openLevel = effectiveLevel(unlockedLevel, freeAccess)
+    // A course can have no gate at all. Spanish does not: it is for someone who
+    // already understands the language, and holding him at A1 would only delay
+    // the material he actually needs.
+  const openLevel = effectiveLevel(unlockedLevel, freeAccess || !ACTIVE_COURSE.gated)
 
   const now = Date.now()
   const known = totalKnown(cards)
@@ -214,11 +218,15 @@ export function Home({ onNavigate, onStudy, syncStatus }: HomeProps) {
             🗺️ 8-week plan
           </Button>
         </div>
-        <div className="flex-1">
-          <Button variant="ghost" size="md" onClick={() => onNavigate('practice')}>
-            🎧 Practice
-          </Button>
-        </div>
+        {/* Every Practice feature is built on New Zealand material. A course
+          * without its own is offered nothing rather than offered Auckland. */}
+        {ACTIVE_COURSE.hasPractice && (
+          <div className="flex-1">
+            <Button variant="ghost" size="md" onClick={() => onNavigate('practice')}>
+              🎧 Practice
+            </Button>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-col gap-4">

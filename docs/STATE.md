@@ -9,10 +9,21 @@ written.
 
 ## What it is
 
-An offline-capable PWA that teaches English to a Brazilian Portuguese speaker
-moving to New Zealand. She is a real person — the owner's wife — and she uses
-it daily. The owner is in marketing, not engineering: explain things plainly
-and ask before large changes.
+An offline-capable PWA that teaches a language to a Brazilian Portuguese
+speaker, in two courses for two real people.
+
+**English → New Zealand** is the original and the one that matters most: the
+owner's wife uses it daily, moving to NZ, a beginner. **Spanish (Latin
+America)** was added on 2026-08-03 for the owner himself, who understands
+Spanish but cannot write or speak it.
+
+They need opposite things, and the code says so out loud — see
+`src/courses/`. She needs recognition before production and a gate that stops
+her skipping ahead; he needs production only, and a gate would just hold him
+at "hola" while he needs the subjunctive.
+
+The owner is in marketing, not engineering: explain things plainly and ask
+before large changes.
 
 - **Live:** https://kiwi-rust-two.vercel.app
 - **Repo:** `auschfitness/kiwi` (public), branch `master`
@@ -20,7 +31,7 @@ and ask before large changes.
 - **Backend:** Supabase project ref `qtjfquuaeslxsiuqfoig`, organisation `kiwi`
 - **Stack:** Vite · React 19 · TypeScript strict · Tailwind · Zustand + persist ·
   vite-plugin-pwa · @supabase/supabase-js
-- **State:** 736 unit tests, 3 Playwright E2E, `tsc --noEmit` clean, build clean
+- **State:** 793 unit tests, 4 Playwright E2E, `tsc --noEmit` clean, build clean
 
 ## The product decisions that must not be quietly undone
 
@@ -51,6 +62,31 @@ and ask before large changes.
 6. **Content lives in the bundle, not the database.** Supabase stores only her
    progress snapshot. The 581 cards ship with the app so she can study on a
    plane.
+
+## Courses
+
+One course is loaded at a time, chosen at boot and fixed for the life of the
+page. Switching writes `english-nz.course` and reloads — that reload is what
+lets every module treat "the course" as a constant instead of something that
+can change underneath it.
+
+- Each course persists under its own key (`english-nz`, `espanol-latam`), so
+  two courses can never mix progress or sync codes. **Never rename
+  `english-nz`**: every profile that exists is saved under it.
+- A course declares its modalities, its speak direction, whether it is gated,
+  and whether Practice is offered. `src/content/index.ts` serves the active
+  course's decks and everything downstream is unaware there is a second one.
+- Practice (Dialogues, Role-play, Ear training, Shadowing) and the drills are
+  all New Zealand material, so `hasPractice` is false for Spanish. Giving the
+  Spanish course its own is the next piece of work, not a bug.
+
+## Known debt
+
+`Card.en` means "the word in the course's language" and is no longer English
+in half the corpus. Renaming it to `target` is mechanical and the compiler
+would find every site, but it touches ~8,000 lines including the generated
+decks and the script that writes them, and it was deliberately kept out of the
+course change so that neither could be reviewed. Worth doing on its own.
 
 ## Conventions
 

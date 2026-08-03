@@ -1,9 +1,5 @@
 import type { Card, Deck, Level } from '../types'
-import { GENERATED_DECKS } from './decks.generated'
-import { IRREGULAR_DECK } from './authored/irregular'
-import { B2_DECKS } from './authored/b2'
-import { PHONETICS } from './authored/phonetics'
-import { PHOTOS } from './authored/photos'
+import { ACTIVE_COURSE } from '../courses'
 
 export { DIALOGUES } from './dialogues.generated'
 export { PLAN } from './plan'
@@ -15,35 +11,24 @@ export { MINIMAL_PAIRS, PAIR_GROUPS } from './authored/minimalPairs'
 export type { MinimalPair, PairGroup, PairGroupInfo } from './authored/minimalPairs'
 export { ROLEPLAYS } from './authored/roleplays'
 export type { Roleplay, RoleplayTurn } from './authored/roleplays'
+export { ENGLISH_DECKS, ENGLISH_CARDS } from './english'
 
-const RAW_DECKS: Deck[] = [...GENERATED_DECKS, IRREGULAR_DECK, ...B2_DECKS]
-
-/** Pronunciation and photographs are both kept beside the decks rather than
- * in them, because decks.generated.ts is machine-written and must not be
- * hand-edited: PHONETICS is authored by hand (see
- * authored/PHONETICS-CONVENTION.md), PHOTOS is written by
- * scripts/fetch-photos.mjs. A card missing from either table just renders
- * without that piece. */
-/** PHOTOS stores root-absolute paths (`/photos/x.webp`), which is right when
- * the app is served from the root of a domain. Hosted in a subfolder — the
- * `base` case the README describes — it has to become `/english/photos/x.webp`
- * or every picture 404s. BASE_URL is `/` unless someone sets `base`, so this
- * is a no-op in the normal deploy and in tests. */
-const BASE = import.meta.env.BASE_URL
-
-function photoSrc(id: string): string | undefined {
-  const p = PHOTOS[id]
-  return p === undefined ? undefined : BASE + p.replace(/^\//, '')
-}
-
-export const DECKS: Deck[] = RAW_DECKS.map(deck => ({
-  ...deck,
-  cards: deck.cards.map(card => ({
-    ...card,
-    phonetic: PHONETICS[card.id] ?? card.phonetic,
-    photo: photoSrc(card.id) ?? card.photo,
-  })),
-}))
+/**
+ * The decks of whichever course this device is studying.
+ *
+ * Everything downstream — the session, Home, the dashboard — reads the corpus
+ * through here and never learns that more than one course exists. That works
+ * because the active course cannot change while the page is open: switching
+ * writes the preference and reloads (see src/courses/active.ts). A course that
+ * could change under a running app would make every one of these constants a
+ * lie.
+ *
+ * Note what stays English above: DIALOGUES, ROLEPLAYS, MINIMAL_PAIRS and
+ * PHONETICS are all New Zealand material. The Practice screens built on them
+ * are hidden in the Spanish course rather than shown full of Auckland cafés —
+ * see `Course.hasPractice`.
+ */
+export const DECKS: Deck[] = ACTIVE_COURSE.decks
 
 export const ALL_CARDS: Card[] = DECKS.flatMap(d => d.cards)
 

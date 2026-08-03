@@ -1,6 +1,7 @@
 import type { Card, CardState, QueueItem, Skill } from '../types'
 import { isDue, isNew } from './srs'
 import { pickModality } from './modality'
+import type { CourseRules } from './modality'
 
 /**
  * One in every N review items follows the weak-skill nudge. §10 asks for a
@@ -20,6 +21,8 @@ export interface QueueOptions {
   /** A card's CEFR band, 1..4. Used to introduce new cards easiest-first. */
   levelOf: (cardId: string) => number
   bias?: Skill
+  /** The active course's exercise rules. Omitted means the English defaults. */
+  rules?: CourseRules
 }
 
 /** Spread `extras` proportionally through `base`, never leading with an extra. */
@@ -50,6 +53,7 @@ function applyBias(
   states: Record<string, CardState>,
   canSpeak: boolean,
   bias: Skill,
+  rules?: CourseRules,
 ): QueueItem[] {
   const byId = new Map(cards.map(c => [c.id, c] as const))
   let eligible = 0
@@ -59,7 +63,7 @@ function applyBias(
     if (eligible % BIAS_EVERY !== 0) return item
     const card = byId.get(item.cardId)
     if (!card) return item
-    return { ...item, modality: pickModality(card, states[item.cardId], canSpeak, bias) }
+    return { ...item, modality: pickModality(card, states[item.cardId], canSpeak, bias, rules) }
   })
 }
 
@@ -83,12 +87,12 @@ function recognitionPass(queue: QueueItem[], cap: number): QueueItem[] {
 }
 
 export function buildQueue(opts: QueueOptions): QueueItem[] {
-  const { cards, states, now, newPerSession, cap, canSpeak, levelOf, bias } = opts
+  const { cards, states, now, newPerSession, cap, canSpeak, levelOf, bias, rules } = opts
 
   const due: QueueItem[] = cards
     .filter(c => isDue(states[c.id], now))
     .sort((a, b) => (states[a.id]!.due - states[b.id]!.due))
-    .map(c => ({ cardId: c.id, modality: pickModality(c, states[c.id], canSpeak) }))
+    .map(c => ({ cardId: c.id, modality: pickModality(c, states[c.id], canSpeak, undefined, rules) }))
 
   // Easiest first. This used to order by distance from a placement-measured
   // `cefrLevel`; with the placement test gone everyone climbs from A1, so the
@@ -109,13 +113,13 @@ export function buildQueue(opts: QueueOptions): QueueItem[] {
       .filter(c => !chosen.has(c.id) && !isNew(states[c.id]) && !isDue(states[c.id], now))
       .sort((a, b) => states[a.id]!.due - states[b.id]!.due)
       .slice(0, cap - queue.length)
-      .map(c => ({ cardId: c.id, modality: pickModality(c, states[c.id], canSpeak) }))
+      .map(c => ({ cardId: c.id, modality: pickModality(c, states[c.id], canSpeak, undefined, rules) }))
     queue = [...queue, ...backfill]
   }
 
   // The nudge is applied to the assembled review items, not to each card as it
   // is picked, so its share of the session is bounded.
-  if (bias) queue = applyBias(queue, cards, states, canSpeak, bias)
+  if (bias) queue = applyBias(queue, cards, states, canSpeak, bias, rules)
 
   // Last resort, after due + new + backfill: recall checks on this session's
   // own new cards. Deliberately after applyBias — these cards are brand new,

@@ -164,3 +164,56 @@ test('the version footer unlocks every level after seven taps, and it sticks', a
   await page.getByRole('button', { name: /go back/i }).click()
   await expect(page.getByTestId('deck-money')).toBeDisabled()
 })
+
+/**
+ * Two courses, two profiles, one app.
+ *
+ * The parts only a real browser can prove: that the switch survives the reload
+ * it depends on, that each course keeps its progress under its own key, and
+ * that coming back finds the first course exactly as it was left.
+ */
+test('switching to Spanish keeps the two courses entirely separate', async ({ page }) => {
+  await stubSpeech(page)
+  await page.goto('/')
+
+  await page.getByRole('textbox').fill('Ana')
+  await page.getByRole('button', { name: /continue/i }).click()
+  await expect(page.getByText(/kia ora, ana/i)).toBeVisible()
+
+  // Switch. The confirmation exists because two courses mean two sync codes.
+  await page.getByRole('button', { name: /settings/i }).click()
+  await page.getByRole('button', { name: /mudar para espanhol/i }).click()
+  await page.getByRole('button', { name: /ir para espanhol/i }).click()
+
+  // A fresh profile in the new course: the name did not come across, because
+  // the name belongs to the English profile and nothing was copied.
+  //
+  // By its aria-label, not by role: switching reloads, and for a moment either
+  // the old Settings DOM (which has two textboxes) or an empty document is
+  // what a bare `getByRole('textbox')` sees. The generous timeout covers the
+  // reload itself.
+  const nameField = page.getByLabel('What should I call you?')
+  await expect(nameField).toBeVisible({ timeout: 15_000 })
+  await expect(nameField).toHaveValue('')
+  await nameField.fill('Lucas')
+  await page.getByRole('button', { name: /continue/i }).click()
+
+  // Spanish decks, and none of the English ones.
+  await expect(page.getByTestId('deck-es_react')).toBeVisible()
+  await expect(page.getByTestId('deck-survival')).toHaveCount(0)
+
+  // Ungated: a level-3 deck is reachable on a brand-new profile, with no
+  // padlock anywhere and no gesture needed.
+  await expect(page.getByTestId('deck-es_subj')).toBeEnabled()
+  await expect(page.getByText(/to unlock/i)).toHaveCount(0)
+
+  // No Practice hub — every Practice screen is New Zealand material.
+  await expect(page.getByRole('button', { name: /practice/i })).toHaveCount(0)
+
+  // Back to English, and her profile is untouched.
+  await page.getByRole('button', { name: /settings/i }).click()
+  await page.getByRole('button', { name: /mudar para inglês/i }).click()
+  await page.getByRole('button', { name: /ir para inglês/i }).click()
+  await expect(page.getByText(/kia ora, ana/i)).toBeVisible({ timeout: 15_000 })
+  await expect(page.getByTestId('deck-survival')).toBeVisible()
+})

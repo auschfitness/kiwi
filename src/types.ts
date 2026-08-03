@@ -54,7 +54,9 @@ export type Modality =
   | 'learn' | 'recognize' | 'type' | 'listen'
   | 'dictate' | 'build' | 'speak'
 
-export type Accent = 'en-NZ' | 'en-AU' | 'en-GB' | 'en-US'
+export type Accent =
+  | 'en-NZ' | 'en-AU' | 'en-GB' | 'en-US'
+  | 'es-419' | 'es-MX' | 'es-AR' | 'es-ES'
 
 export interface AppState {
   profileName: string

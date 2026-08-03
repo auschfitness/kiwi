@@ -1,4 +1,5 @@
 import type { AppState } from '../types'
+import { ACTIVE_COURSE } from '../courses'
 
 export function createInitialState(now: number): AppState {
   return {
@@ -15,7 +16,9 @@ export function createInitialState(now: number): AppState {
     },
     dailyGoal: 20,
     newPerSession: 8,
-    accent: 'en-NZ',
+    // The course's own voice, not English's — a Spanish profile that opened
+    // speaking with a New Zealand accent would be a bug you could hear.
+    accent: ACTIVE_COURSE.defaultAccent,
     showPortuguese: true,
     autoPlayAudio: true,
     speechRate: 0.95,
