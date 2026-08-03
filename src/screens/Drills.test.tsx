@@ -73,9 +73,11 @@ describe('Drills runner', () => {
   it('speaks the item on arrival and offers a replay and a slow replay', async () => {
     await startPrices()
     expect(speak).toHaveBeenCalledWith('one dollar', 'en-NZ')
-    expect(screen.getByRole('button', { name: /play audio/i })).toBeInTheDocument()
+    // Exact names: the slow control is "Play audio slowly", so a /play audio/
+    // substring match now finds both buttons rather than the one meant.
+    expect(screen.getByRole('button', { name: 'Play audio' })).toBeInTheDocument()
 
-    await userEvent.click(screen.getByRole('button', { name: /slow/i }))
+    await userEvent.click(screen.getByRole('button', { name: 'Play audio slowly' }))
     const slow = vi.mocked(speak).mock.calls.at(-1)
     expect(slow?.[2]?.rate).toBeLessThan(useStore.getState().speechRate)
   })

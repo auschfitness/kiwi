@@ -145,7 +145,7 @@ describe('Ear training quiz', () => {
     const b = screen.getByTestId('ear-choice-b').textContent
     expect([a, b]).toContain(said)
     expect(screen.getByText('Item 1 of 10')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /play audio/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Play audio' })).toBeInTheDocument()
   })
 
   it('never quizzes a pair Kiwis genuinely merge', async () => {

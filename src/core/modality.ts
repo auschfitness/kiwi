@@ -30,6 +30,17 @@ export function supportedModalities(card: Card, canSpeak: boolean): Modality[] {
  * New cards teach. Everything else rotates on reps so a word returns in a
  * different modality each review. `bias` pulls toward a weak skill when the
  * card can serve it.
+ *
+ * "Pulls" is the operative word, and it did not always hold. The bias used to
+ * *replace* the rotation: `biased[reps % biased.length]`, which returned only
+ * modalities serving the weak skill and nothing else, forever. Speaking is the
+ * hardest skill and so is usually the weakest, which meant a learner could end
+ * up doing speaking on every review of every card and never be asked to write
+ * anything again — reported from real use, not theorised.
+ *
+ * The fix is to weight the wheel rather than swap it. The weak skill's
+ * modalities go round a second time, so they come up about twice as often as
+ * they otherwise would, and everything else still comes up.
  */
 export function pickModality(
   card: Card,
@@ -39,9 +50,7 @@ export function pickModality(
 ): Modality {
   if (isNew(state)) return 'learn'
   const supported = supportedModalities(card, canSpeak)
-  if (bias) {
-    const biased = supported.filter(m => SKILL_OF[m] === bias)
-    if (biased.length > 0) return biased[state!.reps % biased.length]
-  }
-  return supported[state!.reps % supported.length]
+  const extra = bias ? supported.filter(m => SKILL_OF[m] === bias) : []
+  const wheel = [...supported, ...extra]
+  return wheel[state!.reps % wheel.length]
 }

@@ -61,17 +61,44 @@ describe('pickModality', () => {
     expect(pickModality(c, state(3), true)).toBe(pickModality(c, state(3), true))
   })
 
-  it('narrows to the weak skill when the card supports it', () => {
+  /**
+   * The bias pulls; it does not take over.
+   *
+   * It used to replace the rotation outright, and that had a consequence
+   * nobody wanted: speaking is the hardest skill and therefore usually the
+   * weakest, so a learner whose weak skill was speaking got a speaking
+   * exercise on *every* review of every card and never saw a writing one
+   * again. Reported from real use — "I haven't seen a single writing
+   * exercise".
+   */
+  it('still shows every supported modality while biased', () => {
     const c = card()
-    expect(pickModality(c, state(2), true, 'listening')).toBe('listen')
-    expect(pickModality(c, state(1), true, 'listening')).toBe('dictate')
-    expect(pickModality(c, state(1), true, 'speaking')).toBe('speak')
+    const supported = supportedModalities(c, true)
+    const seen = new Set<string>()
+    for (let reps = 1; reps <= 40; reps++) seen.add(pickModality(c, state(reps), true, 'speaking'))
+    expect(seen).toEqual(new Set(supported))
+  })
+
+  // The specific complaint, as a test: a speaking bias must not cost her writing.
+  it('still reaches typing when speaking is the weak skill', () => {
+    const c = card()
+    const picks = Array.from({ length: 40 }, (_, i) => pickModality(c, state(i + 1), true, 'speaking'))
+    expect(picks).toContain('type')
+  })
+
+  it('favours the weak skill more often than an unbiased rotation would', () => {
+    const c = card()
+    const count = (bias?: 'listening') =>
+      Array.from({ length: 40 }, (_, i) => pickModality(c, state(i + 1), true, bias))
+        .filter(m => m === 'listen' || m === 'dictate').length
+    expect(count('listening')).toBeGreaterThan(count())
   })
 
   it('keeps rotating within the biased skill instead of pinning one modality', () => {
     const c = card()
-    const picks = [1, 2, 3, 4].map(reps => pickModality(c, state(reps), true, 'listening'))
-    expect(new Set(picks)).toEqual(new Set(['listen', 'dictate']))
+    const picks = Array.from({ length: 40 }, (_, i) => pickModality(c, state(i + 1), true, 'listening'))
+    expect(picks).toContain('listen')
+    expect(picks).toContain('dictate')
   })
 
   it('ignores a bias the card cannot serve', () => {

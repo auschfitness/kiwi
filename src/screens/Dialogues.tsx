@@ -11,12 +11,24 @@ export interface DialoguesProps {
   onShadow: (dialogueId: string) => void
 }
 
-/** Rough reading time for one line, so "Play all" can pace itself without
- * any callback from speechSynthesis (src/audio/ owns that API — this just
- * waits a sensible amount before moving on). */
-function lineDurationMs(text: string): number {
+/** A beat between lines, so a conversation sounds like turns rather than one voice. */
+const GAP_MS = 450
+
+/**
+ * How long to wait for a line before giving up on ever being told it finished.
+ *
+ * "Play all" is driven by the real `onEnd` now. This is only the safety net for
+ * browsers that never fire it, so it is deliberately generous: it divides by
+ * the speech rate (a slower voice takes proportionally longer, which the old
+ * fixed estimate ignored — that is why the slowest setting cut off the most)
+ * and then doubles. Firing early is the one failure that matters, because the
+ * next `speak()` cancels the line still being spoken, which is exactly the
+ * clipping this replaced.
+ */
+function safetyNetMs(text: string, rate: number): number {
   const words = text.trim().split(/\s+/).filter(Boolean).length
-  return Math.max(900, words * 340) + 400
+  const spoken = Math.max(900, words * 340) / (rate > 0 ? rate : 1)
+  return spoken * 2 + 1500
 }
 
 /** Whole conversations to listen to and read along with — a resource, not a
@@ -24,6 +36,7 @@ function lineDurationMs(text: string): number {
 export function Dialogues({ onBack, onShadow }: DialoguesProps) {
   const accent = useStore(s => s.accent)
   const showPortuguese = useStore(s => s.showPortuguese)
+  const speechRate = useStore(s => s.speechRate)
 
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [playingId, setPlayingId] = useState<string | null>(null)
@@ -76,10 +89,21 @@ export function Dialogues({ onBack, onShadow }: DialoguesProps) {
         return
       }
       const line = dialogue.lines[i]
-      speak(line.en, accent)
-      const delay = lineDurationMs(line.en)
       i += 1
-      timerRef.current = window.setTimeout(step, delay)
+
+      // Whichever signal arrives first moves the conversation on, and only the
+      // first one does. The old code moved on by estimate alone, so any line
+      // that ran longer than its estimate was cut off by the next line's
+      // `speak()` — the clipping she heard.
+      let moved = false
+      const next = () => {
+        if (moved || playTokenRef.current !== token) return
+        moved = true
+        timerRef.current = window.setTimeout(step, GAP_MS)
+      }
+
+      speak(line.en, accent, { onEnd: next })
+      timerRef.current = window.setTimeout(next, safetyNetMs(line.en, speechRate))
     }
     step()
   }

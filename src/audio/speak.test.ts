@@ -137,3 +137,44 @@ describe('speak rate', () => {
     })
   }
 })
+
+describe('speak text', () => {
+  let spoken: string[]
+
+  beforeEach(() => {
+    spoken = []
+    class FakeUtterance {
+      rate = 1
+      pitch = 1
+      lang = ''
+      voice: SpeechSynthesisVoice | null = null
+      constructor(public text: string) {}
+    }
+    vi.stubGlobal('SpeechSynthesisUtterance', FakeUtterance)
+    vi.stubGlobal('speechSynthesis', {
+      getVoices: () => [],
+      speak: (u: { text: string }) => { spoken.push(u.text) },
+      cancel: vi.fn(),
+    })
+  })
+
+  afterEach(() => vi.unstubAllGlobals())
+
+  // The reported bug: the three forms ran together into one phrase.
+  it('gives an irregular verb card its pauses', () => {
+    speak('be → was / were', 'en-NZ')
+    expect(spoken[0]).toBe('be. was. were')
+  })
+
+  it('leaves an ordinary sentence exactly as written', () => {
+    speak('The bus was late this morning.', 'en-NZ')
+    expect(spoken[0]).toBe('The bus was late this morning.')
+  })
+
+  // The blank-text guard runs on the original, so a string that is only a
+  // separator still reaches synthesis as nothing rather than as a lone stop.
+  it('says nothing for whitespace', () => {
+    speak('   ', 'en-NZ')
+    expect(spoken).toHaveLength(0)
+  })
+})

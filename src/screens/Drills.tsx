@@ -42,9 +42,6 @@ const SPELLING_WORDS: string[] = ALL_CARDS
   .map(c => c.en)
   .filter(en => /^[A-Za-z]+$/.test(en) && en.length >= 4 && en.length <= 9)
 
-const SLOW_FACTOR = 0.6
-const MIN_RATE = 0.5
-
 function answerLabel(item: DrillItem): string {
   return item.kind === 'price' ? `$${item.accept[0]}` : item.accept[0]
 }
@@ -67,7 +64,6 @@ interface RunnerProps {
 
 function DrillRunner({ mode, title, onQuit, onAgain }: RunnerProps) {
   const accent = useStore(s => s.accent)
-  const speechRate = useStore(s => s.speechRate)
   const recordListeningPractice = useStore(s => s.recordListeningPractice)
 
   // Built once per mounted runner. "Play again" remounts this component with a
@@ -86,7 +82,6 @@ function DrillRunner({ mode, title, onQuit, onAgain }: RunnerProps) {
   const answeredRef = useRef(false)
 
   const item = items[index]
-  const slowRate = Math.max(MIN_RATE, speechRate * SLOW_FACTOR)
 
   // Keyed on the index, not on the text: two items in a row can legitimately
   // say the same thing (there are only so many ways to say "a fortnight"), and
@@ -163,16 +158,11 @@ function DrillRunner({ mode, title, onQuit, onAgain }: RunnerProps) {
         {item.display && (
           <p className="text-2xl font-extrabold tracking-wide text-ink">{item.display}</p>
         )}
+        {/* The slow replay used to be a bespoke button here — this screen had
+          * it first. It is part of SpeakerButton now, so every card in the app
+          * gets it and there is one definition of "slower" rather than two. */}
         <div className="flex items-center gap-3 pt-1">
           <SpeakerButton text={item.spoken} />
-          <button
-            type="button"
-            onClick={() => speak(item.spoken, accent, { rate: slowRate })}
-            aria-label="Play slowly"
-            className="flex h-11 items-center justify-center gap-2 rounded-full border border-line bg-card2 px-4 text-sm font-bold text-ink transition active:scale-[0.98]"
-          >
-            <span aria-hidden="true">🐢</span> Slow
-          </button>
         </div>
       </Card>
 

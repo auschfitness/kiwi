@@ -109,3 +109,73 @@ describe('Dialogues play-all concurrency', () => {
     expect(speak).toHaveBeenCalledTimes(1)
   })
 })
+
+/**
+ * The clipping bug. "Play all" used to move to the next line on a fixed
+ * estimate of how long the current one takes, and `speak()` opens by
+ * cancelling whatever is speaking — so every line that ran longer than its
+ * estimate was cut off mid-word. It now waits for the utterance to say it has
+ * finished, and the timer is only a safety net for browsers that never do.
+ */
+describe('Dialogues play-all pacing', () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    vi.mocked(speak).mockClear()
+  })
+
+  afterEach(() => vi.useRealTimers())
+
+  async function startPlayAll() {
+    const user = userEvent.setup({ delay: null })
+    render(<Dialogues onBack={vi.fn()} onShadow={vi.fn()} />)
+    await user.click(screen.getAllByTestId('dialogue-card')[0])
+    await user.click(screen.getByRole('button', { name: /play all/i }))
+  }
+
+  /** The onEnd callback handed to the nth speak() call. */
+  function endOf(call: number): (() => void) | undefined {
+    return vi.mocked(speak).mock.calls[call]?.[2]?.onEnd
+  }
+
+  it('asks to be told when each line finishes', async () => {
+    await startPlayAll()
+    expect(endOf(0)).toBeTypeOf('function')
+  })
+
+  it('does not start the next line while the current one is still speaking', async () => {
+    await startPlayAll()
+    expect(speak).toHaveBeenCalledTimes(1)
+
+    // Well past the old fixed estimate for a short line. Nothing has reported
+    // finishing, so nothing may cancel it by starting the next one.
+    await vi.advanceTimersByTimeAsync(4000)
+    expect(speak).toHaveBeenCalledTimes(1)
+  })
+
+  it('moves on once the line reports it has finished', async () => {
+    await startPlayAll()
+    endOf(0)!()
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(speak).toHaveBeenCalledTimes(2)
+  })
+
+  // Two signals race for every line — the utterance's own and the safety net —
+  // and a browser can deliver onend and onerror both. Whichever arrives first
+  // wins; the rest are ignored, or one line would skip two.
+  it('advances only once when the end is reported more than once', async () => {
+    await startPlayAll()
+    endOf(0)!()
+    endOf(0)!()
+    endOf(0)!()
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(speak).toHaveBeenCalledTimes(2)
+  })
+
+  // Without a net, a browser that never fires onend would leave her staring at
+  // a "Stop" button that plays nothing.
+  it('still moves on when the browser never reports the end', async () => {
+    await startPlayAll()
+    await vi.advanceTimersByTimeAsync(60_000)
+    expect(vi.mocked(speak).mock.calls.length).toBeGreaterThan(1)
+  })
+})

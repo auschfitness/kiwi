@@ -1,30 +1,8 @@
 import type { Accent } from '../types'
 import { speechSynthesisAvailable } from './capabilities'
+import { speakable, clampRate, DEFAULT_RATE } from '../core/speech'
 
 const FALLBACKS: Accent[] = ['en-NZ', 'en-AU', 'en-GB', 'en-US']
-
-const MIN_RATE = 0.5
-const MAX_RATE = 1.2
-/** Today's speed, and the answer whenever the rate on hand is not a number. */
-const DEFAULT_RATE = 0.95
-
-/**
- * A usable rate, whatever arrives.
- *
- * The type says `number`, and at every call site it is one — but the value
- * behind it has travelled through localStorage and, once cloud sync is wired,
- * through a JSON snapshot written by an older build that had no `speechRate`
- * at all. `undefined` there makes `Math.max` return NaN, and
- * `SpeechSynthesisUtterance.rate` is a WebIDL *restricted* float: assigning
- * NaN throws a TypeError. That throw would come out of an effect and an
- * onClick with no error boundary above either, and every sound in the app
- * would stop. `src/core/reminder.ts` already parses rather than trusts the
- * same class of value for exactly this reason.
- */
-function clampRate(rate: number): number {
-  if (!Number.isFinite(rate)) return DEFAULT_RATE
-  return Math.min(MAX_RATE, Math.max(MIN_RATE, rate))
-}
 
 // Module-level default so this file never has to import the Zustand store
 // (the store imports content and core; importing it back from here would be
@@ -68,14 +46,47 @@ export function cancelSpeech(): void {
   if (speechSynthesisAvailable()) window.speechSynthesis.cancel()
 }
 
-export function speak(text: string, accent: Accent, opts: { rate?: number } = {}): void {
-  if (!speechSynthesisAvailable() || !text.trim()) return
+/**
+ * `onEnd` fires when this utterance stops — finished, errored, or cancelled by
+ * the next `speak()`. Callers that chain lines need the real signal: estimating
+ * how long a line takes and moving on by timer means every underestimate cuts
+ * the line off mid-word, because the next `speak()` cancels it. Dialogues did
+ * exactly that and it was audible.
+ *
+ * Cancellation counts as an end on purpose — a caller waiting on this must not
+ * hang when its audio is stopped. Chaining callers guard with their own token.
+ */
+export function speak(
+  text: string,
+  accent: Accent,
+  opts: { rate?: number; onEnd?: () => void } = {},
+): void {
+  // A caller that cannot be spoken for still has to be told, or a chain that
+  // waits on `onEnd` stalls on the one line synthesis refused.
+  if (!speechSynthesisAvailable() || !text.trim()) {
+    opts.onEnd?.()
+    return
+  }
   window.speechSynthesis.cancel()
-  const u = new SpeechSynthesisUtterance(text)
+  // Written for the eye, spoken for the ear: arrows and spaced slashes become
+  // the pause they look like. See src/core/speech.ts.
+  const u = new SpeechSynthesisUtterance(speakable(text))
   const voice = pickVoice(window.speechSynthesis.getVoices(), accent)
   if (voice) u.voice = voice
   u.lang = voice?.lang ?? accent
   u.rate = clampRate(opts.rate ?? defaultRate)
   u.pitch = 1
+  if (opts.onEnd) {
+    let done = false
+    // onerror as well as onend: a voice that fails to load fires only the
+    // former, and a chain waiting on the latter alone would stop dead there.
+    const finish = () => {
+      if (done) return
+      done = true
+      opts.onEnd!()
+    }
+    u.onend = finish
+    u.onerror = finish
+  }
   window.speechSynthesis.speak(u)
 }
