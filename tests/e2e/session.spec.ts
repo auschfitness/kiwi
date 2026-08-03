@@ -180,23 +180,11 @@ test('switching to Spanish keeps the two courses entirely separate', async ({ pa
   await page.getByRole('button', { name: /continue/i }).click()
   await expect(page.getByText(/kia ora, ana/i)).toBeVisible()
 
-  // Switch. The confirmation exists because two courses mean two sync codes.
-  await page.getByRole('button', { name: /settings/i }).click()
-  await page.getByRole('button', { name: /mudar para espanhol/i }).click()
-  await page.getByRole('button', { name: /ir para espanhol/i }).click()
-
-  // A fresh profile in the new course: the name did not come across, because
-  // the name belongs to the English profile and nothing was copied.
-  //
-  // By its aria-label, not by role: switching reloads, and for a moment either
-  // the old Settings DOM (which has two textboxes) or an empty document is
-  // what a bare `getByRole('textbox')` sees. The generous timeout covers the
-  // reload itself.
-  const nameField = page.getByLabel('What should I call you?')
-  await expect(nameField).toBeVisible({ timeout: 15_000 })
-  await expect(nameField).toHaveValue('')
-  await nameField.fill('Lucas')
-  await page.getByRole('button', { name: /continue/i }).click()
+  // One tap, from Home. The name follows the person, so there is no second
+  // onboarding: Spanish opens straight on Home, already greeting her.
+  await page.getByTestId('course-switch').click()
+  await expect(page.getByText(/kia ora, ana/i)).toBeVisible({ timeout: 15_000 })
+  await expect(page.getByLabel('What should I call you?')).toHaveCount(0)
 
   // Spanish decks, and none of the English ones.
   await expect(page.getByTestId('deck-es_react')).toBeVisible()
@@ -223,9 +211,7 @@ test('switching to Spanish keeps the two courses entirely separate', async ({ pa
   await page.getByRole('button', { name: /go back/i }).click()
 
   // Back to English, and her profile is untouched.
-  await page.getByRole('button', { name: /settings/i }).click()
-  await page.getByRole('button', { name: /mudar para inglês/i }).click()
-  await page.getByRole('button', { name: /ir para inglês/i }).click()
+  await page.getByTestId('course-switch').click()
   await expect(page.getByText(/kia ora, ana/i)).toBeVisible({ timeout: 15_000 })
   await expect(page.getByTestId('deck-survival')).toBeVisible()
 })

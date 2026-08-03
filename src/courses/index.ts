@@ -17,6 +17,7 @@ const EN_NZ: Course = {
   name: 'Inglês → Nova Zelândia',
   shortName: 'Inglês',
   emoji: '🥝',
+  flag: '🇳🇿',
   // The original key, unchanged and unchangeable: every profile that exists
   // today is saved under it. Renaming this would look to her like the app had
   // forgotten her streak.
@@ -37,6 +38,7 @@ const ES_LATAM: Course = {
   name: 'Espanhol (América Latina)',
   shortName: 'Espanhol',
   emoji: '🌎',
+  flag: '🇪🇸',
   storageKey: 'espanol-latam',
   // es-419 is the tag for Latin American Spanish. Not every device has a voice
   // for it; pickVoice falls back through the accent list and then to any

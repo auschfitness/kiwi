@@ -10,6 +10,7 @@ import { shouldUnlockNext } from '../core/leveling'
 import { createInitialState } from './defaults'
 import { readFreeAccess, writeFreeAccess } from './freeAccess'
 import { ACTIVE_COURSE } from '../courses'
+import { writeIdentity, baseOfSyncCode, readIdentity, syncCodeFor } from '../courses/identity'
 
 export function cardIdsAtLevel(level: Level): string[] {
   return DECKS.filter(d => d.level === level).flatMap(d => d.cards.map(c => c.id))
@@ -120,6 +121,11 @@ export const useStore = create<Store>()(
   persist(
     (set, get) => ({
       ...createInitialState(Date.now()),
+      // The person, inherited across courses, applied at boot rather than
+      // inside createInitialState — that function is "a blank profile" to
+      // every test that builds one, and must not read the disk.
+      profileName: readIdentity().name,
+      syncCode: syncCodeFor(ACTIVE_COURSE.id, readIdentity().code),
       unlocked: null,
       freeAccess: readFreeAccess(),
 
@@ -131,7 +137,11 @@ export const useStore = create<Store>()(
         set({ freeAccess: on })
       },
 
-      setName: name => set({ profileName: name.trim(), updatedAt: Date.now() }),
+      setName: name => {
+        const trimmed = name.trim()
+        writeIdentity({ name: trimmed })
+        set({ profileName: trimmed, updatedAt: Date.now() })
+      },
 
       gradeItem: (cardId, modality, rating, now) => {
         const s = get()
@@ -161,7 +171,12 @@ export const useStore = create<Store>()(
 
       setPref: (key, value) => set({ [key]: value, updatedAt: Date.now() } as Partial<Store>),
 
-      setSyncCode: code => set({ syncCode: code, updatedAt: Date.now() }),
+      setSyncCode: code => {
+        // Store the typed code, not the per-course one, so the other course
+        // can derive its own row from it.
+        writeIdentity({ code: baseOfSyncCode(ACTIVE_COURSE.id, code) })
+        set({ syncCode: code, updatedAt: Date.now() })
+      },
 
       replaceState: next => set({ ...next }),
 

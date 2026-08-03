@@ -26,6 +26,8 @@ export interface Course {
   /** One word, for places that just need to say which course this is. */
   shortName: string
   emoji: string
+  /** Shown on the Home switch. */
+  flag: string
 
   /**
    * Where this course's profile is persisted, and therefore what the sync

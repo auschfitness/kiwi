@@ -5,7 +5,7 @@ import { useStore, cardIdsByLevel } from '../store/useStore'
 import { DECKS, decksForLevel } from '../content'
 import { totalKnown, totalDue, deckProgress, isNew } from '../core/srs'
 import { levelProgress, effectiveLevel, LEVEL_NAMES, LEVEL_EMOJI, LEVEL_TITLES } from '../core/leveling'
-import { ACTIVE_COURSE } from '../courses'
+import { ACTIVE_COURSE, ALL_COURSES, writeActiveCourseId } from '../courses'
 import { skillSummary } from '../core/stats'
 import { greeting, studyButtonLabel } from '../core/home'
 import type { SyncStatus } from '../sync/client'
@@ -75,6 +75,34 @@ function SyncLine({ status, onOpen }: { status: SyncStatus; onOpen: () => void }
   )
 }
 
+/**
+ * One tap to change language, on the screen he opens every day.
+ *
+ * Settings has the same switch with an explanation beside it; this is the
+ * shortcut for someone who moves between the two courses often. It reloads —
+ * see src/courses/active.ts for why that is the whole trick — and it does not
+ * confirm, because there is nothing to confirm any more: the name and sync
+ * code follow the person now, and no progress is touched by moving.
+ */
+function CourseSwitch() {
+  const other = ALL_COURSES.find(c => c.id !== ACTIVE_COURSE.id)
+  if (!other) return null
+
+  return (
+    <button
+      type="button"
+      data-testid="course-switch"
+      aria-label={`Studying ${ACTIVE_COURSE.name}. Switch to ${other.name}`}
+      onClick={() => { if (writeActiveCourseId(other.id)) window.location.reload() }}
+      className="flex h-11 shrink-0 items-center gap-1 rounded-full bg-card2 px-3 text-lg transition active:scale-[0.98]"
+    >
+      <span aria-hidden="true">{ACTIVE_COURSE.flag}</span>
+      <span aria-hidden="true" className="text-xs text-muted">⇄</span>
+      <span aria-hidden="true" className="opacity-40">{other.flag}</span>
+    </button>
+  )
+}
+
 const LEVELS: Level[] = [1, 2, 3, 4]
 
 const SKILL_LABELS: Record<string, string> = {
@@ -129,6 +157,8 @@ export function Home({ onNavigate, onStudy, syncStatus }: HomeProps) {
           <h1 className="text-xl font-extrabold text-ink">Kia ora, {profileName} 👋</h1>
           <p className="text-sm text-muted">{greeting(now)}</p>
         </div>
+        <div className="flex shrink-0 items-center gap-2">
+        <CourseSwitch />
         <button
           type="button"
           aria-label="Settings"
@@ -137,6 +167,7 @@ export function Home({ onNavigate, onStudy, syncStatus }: HomeProps) {
         >
           ⚙️
         </button>
+        </div>
       </header>
 
       <SyncLine status={syncStatus} onOpen={() => onNavigate('sync')} />
