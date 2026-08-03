@@ -4,7 +4,7 @@ import type { Level } from '../types'
 import { useStore, cardIdsByLevel } from '../store/useStore'
 import { DECKS, decksForLevel } from '../content'
 import { totalKnown, totalDue, deckProgress, isNew } from '../core/srs'
-import { levelProgress, LEVEL_NAMES, LEVEL_EMOJI, LEVEL_TITLES } from '../core/leveling'
+import { levelProgress, effectiveLevel, LEVEL_NAMES, LEVEL_EMOJI, LEVEL_TITLES } from '../core/leveling'
 import { skillSummary } from '../core/stats'
 import { greeting, studyButtonLabel } from '../core/home'
 import type { SyncStatus } from '../sync/client'
@@ -89,16 +89,22 @@ export function Home({ onNavigate, onStudy, syncStatus }: HomeProps) {
   const doneToday = useStore(s => s.doneToday)
   const skills = useStore(s => s.skills)
   const unlockedLevel = useStore(s => s.unlockedLevel)
+  const freeAccess = useStore(s => s.freeAccess)
+
+  // What may be opened, which is the earned level unless free access lifts the
+  // gate. `unlockedLevel` itself stays the badge and still names the level in
+  // the padlock copy below.
+  const openLevel = effectiveLevel(unlockedLevel, freeAccess)
 
   const now = Date.now()
   const known = totalKnown(cards)
   const due = totalDue(cards, now)
 
-  // newAvailable is scoped to unlocked decks only — offering "Learn new
+  // newAvailable is scoped to reachable decks only — offering "Learn new
   // words" for content she can't reach yet would be a lie.
   const newAvailable = useMemo(
-    () => decksForLevel(unlockedLevel).flatMap(d => d.cards).filter(c => isNew(cards[c.id])).length,
-    [unlockedLevel, cards],
+    () => decksForLevel(openLevel).flatMap(d => d.cards).filter(c => isNew(cards[c.id])).length,
+    [openLevel, cards],
   )
 
   const label = studyButtonLabel(due, newAvailable)
@@ -223,7 +229,7 @@ export function Home({ onNavigate, onStudy, syncStatus }: HomeProps) {
           // skip the whole group rather than render a bare, empty header.
           if (decks.length === 0) return null
 
-          const locked = level > unlockedLevel
+          const locked = level > openLevel
           const progress = levelProgress(cardIdsByLevel[level], cards)
 
           return (

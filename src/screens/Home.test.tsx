@@ -8,7 +8,7 @@ import { createInitialState } from '../store/defaults'
 beforeEach(() => {
   useStore.setState({
     ...createInitialState(Date.now()),
-    unlocked: null, profileName: 'Ana', unlockedLevel: 1,
+    unlocked: null, profileName: 'Ana', unlockedLevel: 1, freeAccess: false,
   })
 })
 
@@ -43,6 +43,44 @@ describe('Home', () => {
     render(<Home onNavigate={vi.fn()} onStudy={vi.fn()} syncStatus="unconfigured" />)
     expect(screen.getAllByText(/finish a1 to unlock/i).length).toBeGreaterThan(0)
     expect(screen.getByTestId('deck-money')).toBeDisabled()
+  })
+
+  /**
+   * With free access on, the gate is lifted but nothing is awarded: the badge
+   * still says A1. These four assertions are the whole visible feature.
+   */
+  describe('with free access on', () => {
+    beforeEach(() => useStore.setState({ freeAccess: true, unlockedLevel: 1 }))
+
+    it('unlocks every deck', () => {
+      render(<Home onNavigate={vi.fn()} onStudy={vi.fn()} syncStatus="unconfigured" />)
+      expect(screen.getByTestId('deck-money')).toBeEnabled()
+    })
+
+    it('drops the padlock copy', () => {
+      render(<Home onNavigate={vi.fn()} onStudy={vi.fn()} syncStatus="unconfigured" />)
+      expect(screen.queryByText(/to unlock/i)).not.toBeInTheDocument()
+    })
+
+    it('lets her open a deck that was locked a moment ago', async () => {
+      const onStudy = vi.fn()
+      render(<Home onNavigate={vi.fn()} onStudy={onStudy} syncStatus="unconfigured" />)
+      await userEvent.click(screen.getByTestId('deck-money'))
+      expect(onStudy).toHaveBeenCalledWith('money')
+    })
+
+    // The mirror of "does not offer new words that are still locked": with
+    // every A1 card reviewed the button used to go dead, because the new words
+    // left were all out of reach. Now they are in reach, so it must offer them.
+    it('offers new words from levels above the earned one', () => {
+      const a1 = cardIdsByLevel[1]
+      const seen = Object.fromEntries(
+        a1.map(id => [id, { due: Date.now() + 86_400_000, interval: 5, ease: 2.5, reps: 3, lapses: 0 }]),
+      )
+      useStore.setState({ cards: seen })
+      render(<Home onNavigate={vi.fn()} onStudy={vi.fn()} syncStatus="unconfigured" />)
+      expect(screen.getByTestId('study-now')).toBeEnabled()
+    })
   })
 
   it('lets her study an unlocked deck directly', async () => {

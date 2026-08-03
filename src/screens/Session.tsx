@@ -3,6 +3,7 @@ import type { QueueItem, Rating } from '../types'
 import { buildQueue, requeueWrong } from '../core/queue'
 import { cardById, decksForLevel, deckById, levelOfCard } from '../content'
 import { weakestSkill } from '../core/stats'
+import { effectiveLevel } from '../core/leveling'
 import { useStore } from '../store/useStore'
 import { speechRecognitionAvailable } from '../audio/capabilities'
 import { Button, Meter } from '../components/ui'
@@ -25,13 +26,17 @@ export function Session({ deckId, onDone }: SessionProps) {
   const cards = useStore(s => s.cards)
   const skills = useStore(s => s.skills)
   const unlockedLevel = useStore(s => s.unlockedLevel)
+  const freeAccess = useStore(s => s.freeAccess)
   const newPerSession = useStore(s => s.newPerSession)
   const gradeItem = useStore(s => s.gradeItem)
 
   const [queue, setQueue] = useState<QueueItem[]>(() => {
+    // Free access widens what the session may draw from; it changes nothing
+    // about how it chooses. New cards still arrive easiest-first by level, so
+    // an unscoped session on a fresh profile still opens at A1.
     const scope = deckId
       ? (deckById(deckId)?.cards ?? [])
-      : decksForLevel(unlockedLevel).flatMap(d => d.cards)
+      : decksForLevel(effectiveLevel(unlockedLevel, freeAccess)).flatMap(d => d.cards)
 
     return buildQueue({
       cards: scope,

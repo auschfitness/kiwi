@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Session } from './Session'
-import { useStore } from '../store/useStore'
+import { useStore, cardIdsByLevel } from '../store/useStore'
 import { createInitialState } from '../store/defaults'
 import { recognizeOnce } from '../audio/listen'
 
@@ -35,7 +35,7 @@ async function advance(): Promise<boolean> {
 beforeEach(() => {
   useStore.setState({
     ...createInitialState(Date.now()),
-    unlocked: null, unlockedLevel: 1,
+    unlocked: null, unlockedLevel: 1, freeAccess: false,
     newPerSession: 3, autoPlayAudio: false,
   })
 })
@@ -44,6 +44,36 @@ describe('Session', () => {
   it('teaches new cards first time through', () => {
     render(<Session onDone={vi.fn()} />)
     expect(screen.getByRole('button', { name: /got it/i })).toBeInTheDocument()
+  })
+
+  /**
+   * Scope, not order. With every A1 card reviewed and nothing due, an unscoped
+   * session has nothing left to offer at the earned level — the only new cards
+   * left sit above it. Gated, that session is empty; with free access it is
+   * not, which is the difference the switch is meant to make.
+   */
+  describe('scope with free access', () => {
+    function reviewAllOf(level: 1 | 2) {
+      const future = Date.now() + 86_400_000
+      return Object.fromEntries(
+        cardIdsByLevel[level].map(id => [id, { due: future, interval: 5, ease: 2.5, reps: 3, lapses: 0 }]),
+      )
+    }
+
+    // Gated, the queue comes back empty and there is nothing to show. (Home
+    // is what stops her reaching an empty session: its study button goes
+    // disabled in exactly this state.)
+    it('builds nothing beyond the earned level when that level is exhausted', () => {
+      useStore.setState({ cards: reviewAllOf(1), freeAccess: false })
+      render(<Session onDone={vi.fn()} />)
+      expect(screen.queryByRole('button', { name: /got it/i })).not.toBeInTheDocument()
+    })
+
+    it('reaches cards above the earned level once free access is on', () => {
+      useStore.setState({ cards: reviewAllOf(1), freeAccess: true })
+      render(<Session onDone={vi.fn()} />)
+      expect(screen.getByRole('button', { name: /got it/i })).toBeInTheDocument()
+    })
   })
 
   it('advances through the queue and finishes', async () => {

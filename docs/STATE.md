@@ -20,7 +20,7 @@ and ask before large changes.
 - **Backend:** Supabase project ref `qtjfquuaeslxsiuqfoig`, organisation `kiwi`
 - **Stack:** Vite · React 19 · TypeScript strict · Tailwind · Zustand + persist ·
   vite-plugin-pwa · @supabase/supabase-js
-- **State:** 706 unit tests, 2 Playwright E2E, `tsc --noEmit` clean, build clean
+- **State:** 736 unit tests, 3 Playwright E2E, `tsc --noEmit` clean, build clean
 
 ## The product decisions that must not be quietly undone
 
@@ -30,6 +30,12 @@ and ask before large changes.
    reason v2 exists.
 2. **There is no placement test.** Removed on request: everyone starts at A1 and
    must reach 80% of a level to unlock the next. Nothing is pre-marked as known.
+   Since 2026-08-03 that gate can be lifted per device by a hidden switch —
+   seven taps on the version footer in Settings. It is the owner's, for
+   reaching any level himself and for handing to whoever he chooses; her app is
+   untouched unless someone tells her the gesture. `unlockedLevel` is now the
+   badge and `effectiveLevel()` is the gate. See
+   `docs/superpowers/specs/2026-08-03-free-access-design.md`.
 3. **The app never blames her for her device.** No microphone means no grade. No
    speech recognition means say so. An unpractised skill reads "not practised
    yet", never 0%. This rule is enforced in Session, Shadowing, Speak, Drills,
@@ -62,6 +68,11 @@ and ask before large changes.
   `AppState` field. Adding a field to `AppState` means touching it.
 - Persist version is 3. Changing `AppState` means bumping it and writing a
   preserving migration, with a test that loads a realistic old profile.
+- Device-scoped state stays out of `AppState`. `freeAccess` lives on the store
+  next to `unlocked` and in its own localStorage key, and `persistedFields()`
+  strips both — that is what stops one person's switch riding the sync snapshot
+  onto another person's phone. There is a test asserting exactly this; do not
+  "tidy" the flag into `AppState`.
 - Palette tokens only, no raw hex. Every accessible name must contain its
   visible text. Tap targets ≥44px.
 

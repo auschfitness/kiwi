@@ -117,3 +117,50 @@ test('dashboard reflects what she practised', async ({ page }) => {
   await expect(speakingLabel).toBeVisible()
   await expect(speakingLabel.locator('xpath=..')).toContainText('not practised yet')
 })
+
+/**
+ * The hidden switch, in a real browser. Everything here is covered by unit
+ * tests except the two things only a browser can prove: that the flag survives
+ * a reload out of real localStorage, and that the padlock genuinely lifts on
+ * the rendered Home rather than in a jsdom tree.
+ */
+test('the version footer unlocks every level after seven taps, and it sticks', async ({ page }) => {
+  await stubSpeech(page)
+  await page.goto('/')
+
+  await page.getByRole('textbox').fill('Ana')
+  await page.getByRole('button', { name: /continue/i }).click()
+
+  await expect(page.getByTestId('deck-money')).toBeDisabled()
+
+  await page.getByRole('button', { name: /settings/i }).click()
+  const footer = page.getByRole('button', { name: /kiwi ·/i })
+
+  // Six is not enough, and the counter shows from the third so someone who was
+  // told the gesture can see it working.
+  for (let i = 0; i < 6; i++) await footer.click()
+  await expect(page.getByText(/1 more/i)).toBeVisible()
+  await expect(page.getByLabel(/free access to all levels/i)).toHaveCount(0)
+
+  await footer.click()
+  await expect(page.getByLabel(/free access to all levels/i)).toBeChecked()
+
+  // The gate is lifted on Home...
+  await page.getByRole('button', { name: /go back/i }).click()
+  await expect(page.getByTestId('deck-money')).toBeEnabled()
+  await expect(page.getByText(/to unlock/i)).toHaveCount(0)
+
+  // ...and survives a reload, which is the whole reason it is persisted.
+  await page.reload()
+  await expect(page.getByTestId('deck-money')).toBeEnabled()
+
+  // Turning it off puts the padlock back exactly where it was. `click`, not
+  // `uncheck`: the toggle only exists while free access is on, so switching it
+  // off takes the control out of the DOM with it, and `uncheck` would sit
+  // waiting for an element that has gone to report itself unchecked.
+  await page.getByRole('button', { name: /settings/i }).click()
+  await page.getByLabel(/free access to all levels/i).click()
+  await expect(page.getByLabel(/free access to all levels/i)).toHaveCount(0)
+  await page.getByRole('button', { name: /go back/i }).click()
+  await expect(page.getByTestId('deck-money')).toBeDisabled()
+})

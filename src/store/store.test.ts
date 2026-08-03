@@ -1,13 +1,14 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { useStore, cardIdsByLevel, migrate, PERSIST_VERSION } from './useStore'
+import { useStore, cardIdsByLevel, migrate, PERSIST_VERSION, persistedFields } from './useStore'
 import { createInitialState } from './defaults'
+import { FREE_ACCESS_KEY, readFreeAccess } from './freeAccess'
 import type { AppState } from '../types'
 
 const NOW = 1_700_000_000_000
 
 describe('store', () => {
   beforeEach(() => {
-    useStore.setState({ ...createInitialState(NOW), unlocked: null })
+    useStore.setState({ ...createInitialState(NOW), unlocked: null, freeAccess: false })
   })
 
   /**
@@ -154,6 +155,48 @@ describe('store', () => {
   it('remembers her speech-rate preference', () => {
     useStore.getState().setPref('speechRate', 0.75)
     expect(useStore.getState().speechRate).toBe(0.75)
+  })
+
+  describe('free access', () => {
+    beforeEach(() => localStorage.clear())
+
+    it('is off for a fresh profile', () => {
+      expect(useStore.getState().freeAccess).toBe(false)
+    })
+
+    it('flips the switch and remembers it', () => {
+      useStore.getState().setFreeAccess(true)
+      expect(useStore.getState().freeAccess).toBe(true)
+      expect(readFreeAccess()).toBe(true)
+    })
+
+    /**
+     * The test this feature exists to satisfy. `freeAccess` must never reach
+     * the persisted profile, because the persisted profile is what the sync
+     * snapshot carries: a flag in there would lift the level gate on every
+     * device sharing a sync code, which is the one outcome the design forbids.
+     */
+    it('never enters the persisted profile', () => {
+      useStore.getState().setFreeAccess(true)
+      const saved = persistedFields(useStore.getState())
+      expect(saved).not.toHaveProperty('freeAccess')
+      expect(saved).not.toHaveProperty('unlocked')
+      expect(JSON.stringify(saved)).not.toContain('freeAccess')
+    })
+
+    it('does not touch the earned level', () => {
+      useStore.getState().setFreeAccess(true)
+      expect(useStore.getState().unlockedLevel).toBe(1)
+    })
+
+    // "This erases every card, streak and setting on this device" has to stay
+    // true, and the switch is a setting on this device.
+    it('is cleared by a reset', () => {
+      useStore.getState().setFreeAccess(true)
+      useStore.getState().resetProgress(NOW)
+      expect(useStore.getState().freeAccess).toBe(false)
+      expect(localStorage.getItem(FREE_ACCESS_KEY)).toBeNull()
+    })
   })
 
   it('defaults speechRate to 0.95 — today\'s speed — for a fresh profile', () => {

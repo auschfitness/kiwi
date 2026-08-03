@@ -1,8 +1,13 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
+import { version } from './package.json' with { type: 'json' }
 
 export default defineConfig({
+  // Read here rather than imported by the app, so package.json never reaches
+  // the bundle. Settings prints it, and it is also the target of the tap
+  // gesture that turns free access on.
+  define: { __APP_VERSION__: JSON.stringify(version) },
   plugins: [
     react(),
     VitePWA({

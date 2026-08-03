@@ -15,6 +15,24 @@ export function levelProgress(cardIds: string[], states: Record<string, CardStat
   return solid / cardIds.length
 }
 
+export const TOP_LEVEL: Level = 4
+
+/**
+ * The level whose content may be opened, as opposed to the one she has earned.
+ *
+ * These were the same number until free access existed. `unlockedLevel` is now
+ * only the badge — what she worked up to, what the Dashboard shows and what the
+ * unlock toast celebrates — and this is the gate. Free access lifts the gate
+ * without touching the badge, so switching it off puts her back exactly where
+ * she was rather than somewhere she did not earn.
+ *
+ * `decksForLevel` is cumulative (`d.level <= max`), so the top level means all
+ * of them.
+ */
+export function effectiveLevel(unlockedLevel: Level, freeAccess: boolean): Level {
+  return freeAccess ? TOP_LEVEL : unlockedLevel
+}
+
 /** The level to unlock next, or null. */
 export function shouldUnlockNext(
   unlockedLevel: Level,

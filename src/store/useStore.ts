@@ -8,6 +8,7 @@ import { recordSkill } from '../core/stats'
 import { applyStudyTick } from '../core/streak'
 import { shouldUnlockNext } from '../core/leveling'
 import { createInitialState } from './defaults'
+import { readFreeAccess, writeFreeAccess } from './freeAccess'
 
 export function cardIdsAtLevel(level: Level): string[] {
   return DECKS.filter(d => d.level === level).flatMap(d => d.cards.map(c => c.id))
@@ -20,6 +21,13 @@ export const cardIdsByLevel: Record<Level, string[]> = {
 interface Actions {
   /** Transient: set when a level unlocks, cleared once the toast is dismissed. */
   unlocked: Level | null
+  /**
+   * Whether the level gate is lifted on this device. Device-scoped on purpose
+   * — it lives here rather than in `AppState` so it stays out of the persisted
+   * profile and therefore out of the sync snapshot. See ./freeAccess.ts.
+   */
+  freeAccess: boolean
+  setFreeAccess: (on: boolean) => void
   setName: (name: string) => void
   /** `rating` is hers: 0 again, 1 hard, 2 good, 3 easy. Anything above 0 counts as correct. */
   gradeItem: (cardId: string, modality: Modality, rating: Rating, now: number) => void
@@ -96,11 +104,31 @@ export function migrate(persisted: unknown, version: number): Store {
   } as Store
 }
 
+/**
+ * Exactly what gets written to localStorage, and so exactly what the sync
+ * snapshot carries. Named and exported rather than inlined into `partialize`
+ * so a test can assert on it directly: the guarantee that `freeAccess` never
+ * leaves this device is only as good as something checking it.
+ */
+export function persistedFields(state: Store): AppState {
+  const { unlocked: _unlocked, freeAccess: _freeAccess, setFreeAccess: _setFreeAccess, ...rest } = state
+  return rest as AppState
+}
+
 export const useStore = create<Store>()(
   persist(
     (set, get) => ({
       ...createInitialState(Date.now()),
       unlocked: null,
+      freeAccess: readFreeAccess(),
+
+      setFreeAccess: on => {
+        writeFreeAccess(on)
+        // No updatedAt bump: this is not part of the profile, and touching the
+        // timestamp would make a local switch win a sync merge it has no
+        // business being involved in.
+        set({ freeAccess: on })
+      },
 
       setName: name => set({ profileName: name.trim(), updatedAt: Date.now() }),
 
@@ -136,15 +164,17 @@ export const useStore = create<Store>()(
 
       replaceState: next => set({ ...next }),
 
-      resetProgress: now => set({ ...createInitialState(now), unlocked: null }),
+      // The confirmation promises to erase every setting on this device, and
+      // the free-access switch is one, so it goes too.
+      resetProgress: now => {
+        writeFreeAccess(false)
+        set({ ...createInitialState(now), unlocked: null, freeAccess: false })
+      },
     }),
     {
       name: 'english-nz',
       version: PERSIST_VERSION,
-      partialize: state => {
-        const { unlocked: _unlocked, ...rest } = state
-        return rest as AppState
-      },
+      partialize: persistedFields,
       migrate,
     },
   ),

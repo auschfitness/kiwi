@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { Settings } from './Settings'
 import { useStore } from '../store/useStore'
 import { createInitialState } from '../store/defaults'
+import { readFreeAccess } from '../store/freeAccess'
 
 vi.mock('../sync/client', async importOriginal => ({
   ...(await importOriginal<typeof import('../sync/client')>()),
@@ -11,7 +12,10 @@ vi.mock('../sync/client', async importOriginal => ({
 }))
 
 beforeEach(() => {
-  useStore.setState({ ...createInitialState(Date.now()), unlocked: null, profileName: 'Ana' })
+  localStorage.clear()
+  useStore.setState({
+    ...createInitialState(Date.now()), unlocked: null, profileName: 'Ana', freeAccess: false,
+  })
 })
 
 afterEach(() => {
@@ -58,10 +62,18 @@ describe('Settings — additional behaviour (still unconfigured)', () => {
     expect(onBack).toHaveBeenCalledTimes(1)
   })
 
-  it('offers no shortcut past the levels — "Reset progress" is the only level-changing control', () => {
+  /**
+   * Free access can lift the level gate, but only for someone who was told the
+   * gesture. Nothing on this screen advertises it: there is no visible control
+   * that skips ahead, so the screen she sees is the screen that always worked
+   * through the levels.
+   */
+  it('advertises no shortcut past the levels', () => {
     render(<Settings onBack={vi.fn()} syncStatus="unconfigured" onCreate={vi.fn()} onSignIn={vi.fn()} />)
     expect(screen.queryByRole('button', { name: /placement/i })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /retake/i })).not.toBeInTheDocument()
+    expect(screen.queryByLabelText(/free access/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/unlock/i)).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: /reset progress/i })).toBeInTheDocument()
   })
 
@@ -263,5 +275,85 @@ describe('Settings — additional behaviour (still unconfigured)', () => {
     await userEvent.type(input, 'Beatriz')
     await userEvent.tab()
     expect(useStore.getState().profileName).toBe('Beatriz')
+  })
+})
+
+/**
+ * The hidden switch. The gesture is Android's developer-mode one: seven taps
+ * on the version footer. It has to be easy to pass on in a text message and
+ * impossible to hit by accident, and once on it has to be possible to turn off
+ * without knowing the trick a second time.
+ */
+describe('Settings — free access', () => {
+  function renderSettings() {
+    render(<Settings onBack={vi.fn()} syncStatus="unconfigured" onCreate={vi.fn()} onSignIn={vi.fn()} />)
+    return screen.getByRole('button', { name: /kiwi/i })
+  }
+
+  async function tap(target: HTMLElement, times: number) {
+    for (let i = 0; i < times; i++) await userEvent.click(target)
+  }
+
+  it('shows the app name and version in a footer', () => {
+    const footer = renderSettings()
+    expect(footer).toHaveTextContent(/kiwi/i)
+    expect(footer).toHaveTextContent(__APP_VERSION__)
+  })
+
+  it('stays off after six taps', async () => {
+    const footer = renderSettings()
+    await tap(footer, 6)
+    expect(useStore.getState().freeAccess).toBe(false)
+  })
+
+  it('turns on at the seventh tap', async () => {
+    const footer = renderSettings()
+    await tap(footer, 7)
+    expect(useStore.getState().freeAccess).toBe(true)
+  })
+
+  it('counts down from the third tap so the gesture is discoverable when told', async () => {
+    const footer = renderSettings()
+    await tap(footer, 3)
+    expect(screen.getByText(/4 more/i)).toBeInTheDocument()
+  })
+
+  it('says nothing before the third tap', async () => {
+    const footer = renderSettings()
+    await tap(footer, 2)
+    expect(screen.queryByText(/more/i)).not.toBeInTheDocument()
+  })
+
+  it('confirms in plain words once it is on', async () => {
+    const footer = renderSettings()
+    await tap(footer, 7)
+    expect(screen.getByText(/all levels are open/i)).toBeInTheDocument()
+  })
+
+  it('hides the toggle while it is off', () => {
+    renderSettings()
+    expect(screen.queryByLabelText(/free access to all levels/i)).not.toBeInTheDocument()
+  })
+
+  it('offers a plain toggle once it is on, so there is a way back out', async () => {
+    useStore.setState({ freeAccess: true })
+    renderSettings()
+    const toggle = screen.getByLabelText(/free access to all levels/i)
+    expect(toggle).toBeChecked()
+    await userEvent.click(toggle)
+    expect(useStore.getState().freeAccess).toBe(false)
+  })
+
+  it('remembers the switch across a reload', async () => {
+    const footer = renderSettings()
+    await tap(footer, 7)
+    expect(readFreeAccess()).toBe(true)
+  })
+
+  // The gate is what it lifts, not what it moves: she is still at A1 after.
+  it('awards no level', async () => {
+    const footer = renderSettings()
+    await tap(footer, 7)
+    expect(useStore.getState().unlockedLevel).toBe(1)
   })
 })

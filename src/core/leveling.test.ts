@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { levelProgress, shouldUnlockNext, UNLOCK_THRESHOLD, LEVEL_NAMES } from './leveling'
-import type { CardState } from '../types'
+import { levelProgress, shouldUnlockNext, effectiveLevel, UNLOCK_THRESHOLD, LEVEL_NAMES } from './leveling'
+import type { CardState, Level } from '../types'
 
 const known = (reps: number): CardState => ({ due: 0, interval: 1, ease: 2.5, reps, lapses: 0 })
 
@@ -47,6 +47,26 @@ describe('shouldUnlockNext', () => {
 
   it('uses an 80 percent threshold', () => {
     expect(UNLOCK_THRESHOLD).toBe(0.8)
+  })
+})
+
+describe('effectiveLevel', () => {
+  const LEVELS: Level[] = [1, 2, 3, 4]
+
+  it('opens every level when free access is on', () => {
+    for (const level of LEVELS) expect(effectiveLevel(level, true)).toBe(4)
+  })
+
+  it('leaves the earned level alone when free access is off', () => {
+    for (const level of LEVELS) expect(effectiveLevel(level, false)).toBe(level)
+  })
+
+  // Free access lifts the gate; it does not award levels. The badge and the
+  // unlock toast keep reading unlockedLevel, so turning the switch off has to
+  // put her back exactly where she was.
+  it('does not promote the earned level', () => {
+    expect(effectiveLevel(1, true)).toBe(4)
+    expect(effectiveLevel(1, false)).toBe(1)
   })
 })
 

@@ -162,15 +162,62 @@ function Toggle({
   )
 }
 
+/** Taps on the version footer that turn free access on. Android's number. */
+const TAPS_TO_UNLOCK = 7
+
+/** Taps after which the counter starts showing, so a told gesture is followable. */
+const COUNTDOWN_FROM = 3
+
+/**
+ * The version footer, and the way in to free access.
+ *
+ * Seven taps here lift the level gate on this device. Hidden rather than
+ * listed because of who each person is: she works through the levels, and a
+ * visible "open everything" switch on her settings screen is an invitation to
+ * do the thing the levelling exists to prevent. The owner, and anyone he tells,
+ * can reach it in seconds.
+ *
+ * It is a real button with its visible text as its accessible name — hidden
+ * from sight is not the same as hidden from a screen reader, and the footer is
+ * genuinely useful on its own for saying which version is installed.
+ */
+function VersionFooter({ onUnlock }: { onUnlock: () => void }) {
+  const [taps, setTaps] = useState(0)
+  const remaining = TAPS_TO_UNLOCK - taps
+
+  function handleTap() {
+    const next = taps + 1
+    if (next >= TAPS_TO_UNLOCK) { setTaps(0); onUnlock(); return }
+    setTaps(next)
+  }
+
+  return (
+    <div className="flex flex-col items-center gap-1 pb-2 pt-4">
+      <button
+        type="button"
+        onClick={handleTap}
+        className="flex min-h-[44px] items-center px-4 text-xs text-muted transition active:scale-[0.98]"
+      >
+        Kiwi · v{__APP_VERSION__}
+      </button>
+      {taps >= COUNTDOWN_FROM && (
+        <p className="text-xs text-muted" aria-live="polite">{remaining} more</p>
+      )}
+    </div>
+  )
+}
+
 /**
  * Settings — one screen for everything she can tweak: her name, cloud sync,
  * study preferences, and the one escape hatch (wipe progress). With no
  * Supabase env vars, the sync section degrades to a plain explanatory card
  * instead of a field that can never work.
  *
- * There is deliberately no way to skip ahead from here. "Reset progress" is
- * the only level-changing control, and it starts her over at A1 rather than
- * dropping her somewhere she has not earned.
+ * Nothing here advertises a way past the levels. "Reset progress" is the only
+ * visible level-changing control, and it starts her over at A1 rather than
+ * dropping her somewhere she has not earned. The one way forward is the tap
+ * gesture on the version footer, which has to be known to be found — see
+ * VersionFooter above for why it is hidden rather than listed.
  */
 export function Settings({ onBack, syncStatus, onCreate, onSignIn }: SettingsProps) {
   const profileName = useStore(s => s.profileName)
@@ -185,6 +232,8 @@ export function Settings({ onBack, syncStatus, onCreate, onSignIn }: SettingsPro
   const reminderTime = useStore(s => s.reminderTime)
   const setPref = useStore(s => s.setPref)
   const resetProgress = useStore(s => s.resetProgress)
+  const freeAccess = useStore(s => s.freeAccess)
+  const setFreeAccess = useStore(s => s.setFreeAccess)
 
   const configured = isSyncConfigured()
   // Both halves of the push setup present: a Supabase project *and* a VAPID
@@ -410,6 +459,23 @@ export function Settings({ onBack, syncStatus, onCreate, onSignIn }: SettingsPro
         <Toggle label="Show Portuguese" checked={showPortuguese} onChange={v => setPref('showPortuguese', v)} />
       </Card>
 
+      {/* Appears only once the gesture has been used. Without it, turning free
+        * access off would mean knowing the trick a second time — and a switch
+        * with no way back is a trap, not a feature. */}
+      {freeAccess && (
+        <Card className="flex flex-col gap-2">
+          <Toggle
+            label="Free access to all levels"
+            checked={freeAccess}
+            onChange={setFreeAccess}
+          />
+          <p className="text-sm text-muted">
+            All levels are open on this device. Your earned level is untouched —
+            turn this off and you're back where you were.
+          </p>
+        </Card>
+      )}
+
       {!confirmingReset && (
         <Button variant="again" onClick={handleResetClick}>
           Reset progress
@@ -429,6 +495,8 @@ export function Settings({ onBack, syncStatus, onCreate, onSignIn }: SettingsPro
           </Button>
         </Card>
       )}
+
+      <VersionFooter onUnlock={() => setFreeAccess(true)} />
     </div>
   )
 }
