@@ -88,6 +88,29 @@ can change underneath it.
   a Spanish learner has no use for). A course claiming a feature it cannot
   fill is caught by a test.
 
+## Decided, not yet done
+
+**Switch the English pronunciation guide to American.** Asked for on
+2026-08-03 and approved knowingly, after being told the risk: his wife is
+moving to New Zealand, where the rhotic R this introduces is not pronounced —
+"first" is *fêst* there, not *fârst*. He owns the decision; it is recorded
+here so nobody undoes it as a mistake, and so the trade-off is not
+rediscovered.
+
+It is a session's work, not an edit. The scope, measured:
+
+- 581 entries in `src/content/authored/phonetics.ts` to rewrite.
+- Two tests in `src/content/phonetics.test.ts` that actively enforce the
+  current accent and would have to be inverted: "is non-rhotic: every r is
+  followed by a vowel", and "encodes the NZ short-front-vowel shift: bad is é,
+  bed is ê".
+- `PHONETICS-CONVENTION.md`, whose §5 is titled "r no fim: não existe (NZ é
+  não-rótico)" and whose stated target is "o inglês da Nova Zelândia".
+- `defaultAccent` on the English course, and probably the accent list.
+
+Do it in one pass or not at all. Half-converted is worse than either accent:
+a learner cannot tell which entries she is meant to trust.
+
 ## Known debt
 
 `Card.en` means "the word in the course's language" and is no longer English
