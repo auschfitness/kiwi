@@ -88,28 +88,37 @@ can change underneath it.
   a Spanish learner has no use for). A course claiming a feature it cannot
   fill is caught by a test.
 
-## Decided, not yet done
+## The pronunciation guide is American, on purpose
 
-**Switch the English pronunciation guide to American.** Asked for on
-2026-08-03 and approved knowingly, after being told the risk: his wife is
-moving to New Zealand, where the rhotic R this introduces is not pronounced —
-"first" is *fêst* there, not *fârst*. He owns the decision; it is recorded
-here so nobody undoes it as a mistake, and so the trade-off is not
-rediscovered.
+Asked for on 2026-08-03, done on 2026-08-04, in one pass. It was approved
+knowingly, after being told the cost: his wife is moving to New Zealand, where
+the rhotic R this introduces is not pronounced — "first" is *fêst* there, not
+*fêrst*. He owns the decision. It is recorded here so nobody undoes it as a
+mistake, and so the trade-off is not rediscovered.
 
-It is a session's work, not an edit. The scope, measured:
+What the pass covered:
 
-- 581 entries in `src/content/authored/phonetics.ts` to rewrite.
-- Two tests in `src/content/phonetics.test.ts` that actively enforce the
-  current accent and would have to be inverted: "is non-rhotic: every r is
-  followed by a vowel", and "encodes the NZ short-front-vowel shift: bad is é,
-  bed is ê".
-- `PHONETICS-CONVENTION.md`, whose §5 is titled "r no fim: não existe (NZ é
-  não-rótico)" and whose stated target is "o inglês da Nova Zelândia".
-- `defaultAccent` on the English course, and probably the accent list.
+- All 581 entries in `src/content/authored/phonetics.ts`.
+- `PHONETICS-CONVENTION.md`, rewritten around a rhotic system: `êr` for NURSE
+  (*work* `uêrk`), `er` for the unstressed lettER (*water* `uóter`), `ár`/`ór`
+  for START/NORTH, `ír`/`ér` for NEAR/SQUARE, and `é` for BATH (*ask* `ésk`,
+  *can't* `ként`) instead of the British long `áa`.
+- `src/content/phonetics.test.ts`: the non-rhotic rule was replaced by a rhotic
+  one, and the NZ short-front-vowel test became a plain bad/bed contrast, which
+  is the same two letters for a different reason.
+- `defaultAccent` on the English course is now `en-US`, with `en-US` first in
+  the accent list. A profile created before the switch keeps its saved voice.
 
-Do it in one pass or not at all. Half-converted is worse than either accent:
-a learner cannot tell which entries she is meant to trust.
+Three things stayed Kiwi, deliberately:
+
+- **Ear Training** (`authored/minimalPairs.ts`) still teaches the NZ vowels,
+  and its screen now asks for the `en-NZ` voice regardless of her accent
+  setting. That is *hearing*, not *speaking* — it is the accent she will
+  actually meet, and reading a Kiwi lesson in an American voice would pull the
+  two words apart exactly where the lesson is that they are close.
+- **The vocabulary** (*flat white*, *EFTPOS*, *dairy*, *jandals*, *kia ora*),
+  now transcribed with American phonics.
+- The course name, `Inglês → Nova Zelândia`. She is still going there.
 
 ## Known debt
 

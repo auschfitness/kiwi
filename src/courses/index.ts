@@ -22,8 +22,13 @@ const EN_NZ: Course = {
   // today is saved under it. Renaming this would look to her like the app had
   // forgotten her streak.
   storageKey: 'english-nz',
-  defaultAccent: 'en-NZ',
-  accents: ['en-NZ', 'en-AU', 'en-GB', 'en-US'],
+  // American, to match the written pronunciation guide — she reads `fêrst` and
+  // has to hear `fêrst`. The guide was switched on purpose; the reasoning and
+  // its cost are in `authored/PHONETICS-CONVENTION.md` and `docs/STATE.md`.
+  // A profile created before the switch keeps its saved choice; the NZ voice
+  // is still one tap away in Settings, and Ear Training is still Kiwi.
+  defaultAccent: 'en-US',
+  accents: ['en-US', 'en-NZ', 'en-AU', 'en-GB'],
   modalities: ['recognize', 'listen', 'type', 'build', 'dictate', 'speak'],
   speakDirection: 'repeat',
   gated: true,

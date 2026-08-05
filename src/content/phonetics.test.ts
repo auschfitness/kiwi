@@ -8,15 +8,12 @@ const A1_A2 = DECKS.filter(d => d.level <= 2).flatMap(d => d.cards)
 /** Levels 3 and 4: the B1 decks plus the six authored B2 decks. */
 const B1_B2 = DECKS.filter(d => d.level >= 3).flatMap(d => d.cards)
 
-/** Vowels a Brazilian reads as a vowel, accents included. */
-const VOWELS = 'aáàâãeéêẽiíîoóôõuúûy'
-
 describe('phonetics merge', () => {
   it('reaches the cards through DECKS, ALL_CARDS and CARD_INDEX alike', () => {
     expect(DECKS.find(d => d.id === 'survival')?.cards[0]?.phonetic).toBe('halôu')
     expect(ALL_CARDS.find(c => c.id === 'survival_0')?.phonetic).toBe('halôu')
     expect(CARD_INDEX.survival_0?.phonetic).toBe('halôu')
-    expect(cardById('numbers_3')?.phonetic).toBe('fó')
+    expect(cardById('numbers_3')?.phonetic).toBe('fór')
   })
 
   it('keeps the owner’s own examples', () => {
@@ -65,9 +62,30 @@ describe('phonetics coverage', () => {
 describe('phonetics convention (PHONETICS-CONVENTION.md)', () => {
   const entries = Object.entries(PHONETICS)
 
-  it('is non-rhotic: every r is followed by a vowel', () => {
-    const bad = entries.filter(([, p]) => new RegExp(`r(?![${VOWELS}])`, 'i').test(p))
+  it('is rhotic: the r English spells at the end of a syllable is written', () => {
+    expect(cardById('food_0')?.phonetic).toBe('uóter') // water
+    expect(cardById('transport_5')?.phonetic).toBe('cár') // car
+    expect(cardById('numbers_8')?.phonetic).toBe('fêrst') // first
+    expect(cardById('town_2')?.phonetic).toBe('córner') // corner
+    expect(cardById('numbers_3')?.phonetic).toBe('fór') // four
+  })
+
+  it('spells NEAR and SQUARE with an r, not with the non-rhotic ía/éa', () => {
+    // Two entries where ía is genuinely two vowels in a row and not a NEAR
+    // vowel: `kia ora` is te reo Māori, and *idea* really is [aɪˈdiə].
+    const twoVowels = new Set(['kiwi_0', 'power_13'])
+    const bad = entries
+      .filter(([id]) => !twoVowels.has(id))
+      .filter(([, p]) => /ía|éa/.test(p))
+      .map(([id]) => id)
     expect(bad).toEqual([])
+  })
+
+  it('gives the BATH words the short American a, not the long British one', () => {
+    expect(cardById('verbs2_6')?.phonetic).toBe('ta ésk') // to ask
+    expect(cardById('numbers_14')?.phonetic).toBe('íts héf pést tú') // half past two
+    expect(cardById('grammar_16')?.phonetic).toBe('kén / ként') // can / can't
+    expect(cardById('phrasal_2')?.phonetic).toBe('lúk éfter') // look after
   })
 
   it('avoids spellings that trigger Portuguese-only sounds', () => {
@@ -87,9 +105,14 @@ describe('phonetics convention (PHONETICS-CONVENTION.md)', () => {
     expect(bad).toEqual([])
   })
 
-  it('encodes the NZ short-front-vowel shift: bad is é, bed is ê', () => {
+  it('keeps bad and bed apart: bad is é, bed is ê', () => {
     expect(cardById('basics_12')?.phonetic).toBe('béd') // bad
     expect(cardById('house_4')?.phonetic).toBe('bêd') // bed
+  })
+
+  it('keeps her and hair apart, now that both carry an r', () => {
+    expect(cardById('grammar_7')?.phonetic).toContain('hêr') // her
+    expect(cardById('body_13')?.phonetic).toBe('hér') // hair
   })
 
   it('stays short enough to sit under a word on a phone', () => {

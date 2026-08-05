@@ -124,8 +124,9 @@ describe('Settings — additional behaviour (still unconfigured)', () => {
 
   it('accent selector marks the active accent and switches on click', async () => {
     render(<Settings onBack={vi.fn()} syncStatus="unconfigured" onCreate={vi.fn()} onSignIn={vi.fn()} />)
-    const nz = screen.getByRole('radio', { name: /nz/i })
-    expect(nz).toHaveAttribute('aria-checked', 'true')
+    // US is the course default now that the pronunciation guide is American.
+    const us = screen.getByRole('radio', { name: /us/i })
+    expect(us).toHaveAttribute('aria-checked', 'true')
 
     const au = screen.getByRole('radio', { name: /au/i })
     await userEvent.click(au)

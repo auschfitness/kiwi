@@ -31,7 +31,7 @@ describe('SpeakerButton', () => {
   it('plays at her chosen speed from the speaker', async () => {
     render(<SpeakerButton text="went" />)
     await userEvent.click(screen.getByRole('button', { name: 'Play audio' }))
-    expect(speak).toHaveBeenCalledWith('went', 'en-NZ', { rate: undefined })
+    expect(speak).toHaveBeenCalledWith('went', 'en-US', { rate: undefined })
   })
 
   it('plays slower from the turtle', async () => {

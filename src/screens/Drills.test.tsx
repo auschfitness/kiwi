@@ -72,7 +72,7 @@ describe('Drills without speech synthesis', () => {
 describe('Drills runner', () => {
   it('speaks the item on arrival and offers a replay and a slow replay', async () => {
     await startPrices()
-    expect(speak).toHaveBeenCalledWith('one dollar', 'en-NZ')
+    expect(speak).toHaveBeenCalledWith('one dollar', 'en-US')
     // Exact names: the slow control is "Play audio slowly", so a /play audio/
     // substring match now finds both buttons rather than the one meant.
     expect(screen.getByRole('button', { name: 'Play audio' })).toBeInTheDocument()

@@ -78,7 +78,7 @@ describe('Role-play, one scene through to the end', () => {
     await openCafe()
 
     // The other person opens, out loud.
-    expect(spoke).toHaveBeenCalledWith(CAFE.turns[0].en, 'en-NZ')
+    expect(spoke).toHaveBeenCalledWith(CAFE.turns[0].en, 'en-US')
     expect(screen.getByText(CAFE.turns[0].en)).toBeInTheDocument()
 
     // Her line is hidden — the hint is Portuguese until she asks for it.
@@ -89,7 +89,7 @@ describe('Role-play, one scene through to the end', () => {
 
     // What she said is in the chat, and the next line has played.
     await waitFor(() => expect(screen.getByText(CAFE.turns[2].en)).toBeInTheDocument())
-    expect(spoke).toHaveBeenCalledWith(CAFE.turns[2].en, 'en-NZ')
+    expect(spoke).toHaveBeenCalledWith(CAFE.turns[2].en, 'en-US')
   })
 
   it('reveals the English only when she asks for it', async () => {
@@ -143,7 +143,7 @@ describe('Role-play when she gets it wrong', () => {
     expect(screen.queryByTestId('roleplay-say')).not.toBeInTheDocument()
 
     await userEvent.click(screen.getByTestId('roleplay-hear-it'))
-    expect(spoke).toHaveBeenCalledWith(CAFE.turns[1].en, 'en-NZ', expect.anything())
+    expect(spoke).toHaveBeenCalledWith(CAFE.turns[1].en, 'en-US', expect.anything())
 
     // One miss recorded for the line, not two — and she is not stuck.
     expect(speaking()).toEqual({ correct: 0, total: 1 })

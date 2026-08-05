@@ -295,7 +295,13 @@ const TITLES: Record<Mode, string> = {
  * Compare-only, so nothing here grades her on a difference that is not there.
  */
 export function EarTraining({ onBack }: EarTrainingProps) {
-  const accent = useStore(s => s.accent)
+  // Not her accent setting. Every pair on this screen is a New Zealand vowel,
+  // and the course now speaks American everywhere else — reading a Kiwi lesson
+  // in an American voice would pull the two words apart exactly where the
+  // lesson is that they are close. So this screen always asks for the Kiwi
+  // voice; `pickVoice` still falls back if the phone has not got one, and
+  // `VoiceNote` still says out loud which voice she actually got.
+  const accent: Accent = 'en-NZ'
   const [mode, setMode] = useState<Mode>('menu')
   const [round, setRound] = useState(0)
 
