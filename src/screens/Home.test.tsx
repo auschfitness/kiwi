@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { Home } from './Home'
 import { useStore, cardIdsByLevel } from '../store/useStore'
 import { createInitialState } from '../store/defaults'
+import { dayKey } from '../core/time'
 
 beforeEach(() => {
   useStore.setState({
@@ -22,6 +23,19 @@ describe('Home', () => {
   it('greets her by name', () => {
     render(<Home onNavigate={vi.fn()} onStudy={vi.fn()} syncStatus="unconfigured" />)
     expect(screen.getByText(/kia ora, ana/i)).toBeInTheDocument()
+  })
+
+  it("puts today's minutes next to today's goal once there are any", () => {
+    useStore.setState({ studyLog: { [dayKey(Date.now())]: 18 * 60_000 } })
+    render(<Home onNavigate={vi.fn()} onStudy={vi.fn()} syncStatus="unconfigured" />)
+    expect(screen.getByTestId('today-time')).toHaveTextContent('18 min studied')
+  })
+
+  it('says nothing about minutes on a day she has not started', () => {
+    // "0 min studied" under the goal ring is a reproach, and she opened the
+    // app — which is the behaviour worth encouraging.
+    render(<Home onNavigate={vi.fn()} onStudy={vi.fn()} syncStatus="unconfigured" />)
+    expect(screen.queryByTestId('today-time')).not.toBeInTheDocument()
   })
 
   it('offers exactly one study action and no mode buttons', () => {

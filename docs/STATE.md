@@ -1,6 +1,6 @@
 # Where this project stands
 
-Last updated: 2026-07-31, commit `2159430`.
+Last updated: 2026-08-04.
 
 Read this first if you are picking the project up fresh. The spec and plan in
 `docs/superpowers/` describe what was *intended*; this file describes what is
@@ -31,7 +31,7 @@ before large changes.
 - **Backend:** Supabase project ref `qtjfquuaeslxsiuqfoig`, organisation `kiwi`
 - **Stack:** Vite · React 19 · TypeScript strict · Tailwind · Zustand + persist ·
   vite-plugin-pwa · @supabase/supabase-js
-- **State:** 800 unit tests, 4 Playwright E2E, `tsc --noEmit` clean, build clean
+- **State:** 839 unit tests, 4 Playwright E2E, `tsc --noEmit` clean, build clean
 - **Corpus:** 581 English cards, 561 Spanish
 
 ## The product decisions that must not be quietly undone
@@ -120,6 +120,32 @@ Three things stayed Kiwi, deliberately:
   now transcribed with American phonics.
 - The course name, `Inglês → Nova Zelândia`. She is still going there.
 
+## The study clock
+
+Added 2026-08-04. `studyLog` in `AppState` is milliseconds per local calendar
+day, keyed by the same `dayKey` the streak uses. Everything shown — today, the
+week, the average, the all-time total, the seven-day strip on Progress — is
+derived from it in `src/core/studyTime.ts`, so there is one number to be wrong
+rather than five.
+
+Three decisions worth not relitigating:
+
+- **It counts screens, not answers.** `useStudyClock` runs off `STUDY_SCREENS`
+  in `App.tsx` and ticks every 15s. A clock hung off `gradeItem` would miss the
+  dialogue she listened to twice and the minimal pair she played back and
+  forth, which is real practice that grades nothing.
+- **It stops when the tab is hidden.** A session left open on a locked phone is
+  not four hours of study, and a number she knows is inflated is a number she
+  stops reading.
+- **The sync merge takes the larger of two versions of a day, not the sum.**
+  Summing is not idempotent: two devices pulling from each other twice in a day
+  would double it, then double it again.
+
+`sessionMs` is the current sitting and is deliberately transient — it never
+reaches localStorage or the sync snapshot, and it is what the Done screen
+reports. The persist version went to 4; profiles from before this start with an
+empty log rather than a fabricated history.
+
 ## Known debt
 
 `Card.en` means "the word in the course's language" and is no longer English
@@ -142,7 +168,7 @@ course change so that neither could be reviewed. Worth doing on its own.
 - `src/core/merge.ts` has a standing invariant: `scalarKey` must cover exactly
   the fields `preferred()` decides, and the returned object must cover every
   `AppState` field. Adding a field to `AppState` means touching it.
-- Persist version is 3. Changing `AppState` means bumping it and writing a
+- Persist version is 4. Changing `AppState` means bumping it and writing a
   preserving migration, with a test that loads a realistic old profile.
 - Device-scoped state stays out of `AppState`. `freeAccess` lives on the store
   next to `unlocked` and in its own localStorage key, and `persistedFields()`

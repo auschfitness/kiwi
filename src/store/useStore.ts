@@ -6,6 +6,7 @@ import { schedule } from '../core/srs'
 import { skillForModality } from '../core/modality'
 import { recordSkill } from '../core/stats'
 import { applyStudyTick } from '../core/streak'
+import { addStudyMs } from '../core/studyTime'
 import { shouldUnlockNext } from '../core/leveling'
 import { createInitialState } from './defaults'
 import { readFreeAccess, writeFreeAccess } from './freeAccess'
@@ -43,6 +44,22 @@ interface Actions {
    */
   recordSpeakingPractice: (correct: boolean) => void
   recordListeningPractice: (correct: boolean) => void
+  /**
+   * Time on task, in milliseconds, added to today's entry in `studyLog` and to
+   * the running total for this sitting. Driven by `useStudyClock`, which is
+   * the only thing that should call it: it is the clock, not a counter of
+   * answers, so that reading a card and listening to a dialogue count as the
+   * study they are.
+   */
+  addStudyTime: (ms: number, now: number) => void
+  /**
+   * Milliseconds in the sitting she is in right now. Transient on purpose —
+   * it is what the "well done" screen reports, and it means nothing tomorrow,
+   * so it never reaches localStorage or the sync snapshot.
+   */
+  sessionMs: number
+  /** Start a fresh sitting. Called when the study clock starts running. */
+  startStudySession: () => void
   clearUnlockToast: () => void
   setPref: <K extends keyof AppState>(key: K, value: AppState[K]) => void
   setSyncCode: (code: string | null) => void
@@ -54,14 +71,15 @@ export type Store = AppState & Actions
 
 /**
  * 2 when the daily reminder shipped (`reminderEnabled`, `reminderTime`);
- * 3 when the placement test was removed (`placed`, `cefrLevel`). Bump this
+ * 3 when the placement test was removed (`placed`, `cefrLevel`);
+ * 4 when the study clock shipped (`studyLog`). Bump this
  * every time `AppState` gains, loses or changes a field and teach `migrate`
  * below how to handle it — do not lean on zustand's shallow merge to paper
  * over the gap, the way `speechRate` once did. She has real progress in
  * localStorage; a migration that drops a key looks to her like the app forgot
  * her streak.
  */
-export const PERSIST_VERSION = 3
+export const PERSIST_VERSION = 4
 
 /** Fields that used to live in `AppState` and no longer do. */
 type RetiredFields = { placed?: boolean; cefrLevel?: number }
@@ -103,6 +121,11 @@ export function migrate(persisted: unknown, version: number): Store {
     // already here — she opts in from Settings, she is not opted in for her.
     reminderEnabled: kept.reminderEnabled ?? defaults.reminderEnabled,
     reminderTime: kept.reminderTime ?? defaults.reminderTime,
+    // v3 -> v4: the study clock. Everyone who was already here starts the log
+    // empty, because nothing measured her hours before now. Her streak and her
+    // card counts are untouched — the hours simply begin today, and the
+    // Progress screen says so rather than implying she has never studied.
+    studyLog: kept.studyLog ?? defaults.studyLog,
   } as Store
 }
 
@@ -113,7 +136,13 @@ export function migrate(persisted: unknown, version: number): Store {
  * leaves this device is only as good as something checking it.
  */
 export function persistedFields(state: Store): AppState {
-  const { unlocked: _unlocked, freeAccess: _freeAccess, setFreeAccess: _setFreeAccess, ...rest } = state
+  const {
+    unlocked: _unlocked, freeAccess: _freeAccess, setFreeAccess: _setFreeAccess,
+    // This sitting's stopwatch. The day's total is in `studyLog` and is
+    // persisted; this one is meaningless the moment she closes the app.
+    sessionMs: _sessionMs,
+    ...rest
+  } = state
   return rest as AppState
 }
 
@@ -128,6 +157,7 @@ export const useStore = create<Store>()(
       syncCode: syncCodeFor(ACTIVE_COURSE.id, readIdentity().code),
       unlocked: null,
       freeAccess: readFreeAccess(),
+      sessionMs: 0,
 
       setFreeAccess: on => {
         writeFreeAccess(on)
@@ -166,6 +196,17 @@ export const useStore = create<Store>()(
 
       recordListeningPractice: correct =>
         set({ skills: recordSkill(get().skills, 'listening', correct), updatedAt: Date.now() }),
+
+      addStudyTime: (ms, now) => {
+        const s = get()
+        const studyLog = addStudyMs(s.studyLog, now, ms)
+        // Nothing changed (a zero or negative tick) — don't bump `updatedAt`
+        // and hand this device a sync merge it did not earn.
+        if (studyLog === s.studyLog) return
+        set({ studyLog, sessionMs: s.sessionMs + ms, updatedAt: now })
+      },
+
+      startStudySession: () => set({ sessionMs: 0 }),
 
       clearUnlockToast: () => set({ unlocked: null }),
 

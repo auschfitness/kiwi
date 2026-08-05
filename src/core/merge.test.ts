@@ -16,6 +16,7 @@ function snap(over: Partial<AppState> = {}): AppState {
     showPortuguese: true, autoPlayAudio: true, speechRate: 0.95,
     reminderEnabled: false, reminderTime: '19:00',
     streak: 0, lastStudyDay: null, doneToday: 0, doneDate: null, bestDay: 0,
+    studyLog: {},
     startedAt: T, updatedAt: T, ...over,
   }
 }
@@ -215,9 +216,41 @@ describe('mergeSnapshots', () => {
  * for anything the app itself wrote they are.
  */
 function preToday(over: Partial<AppState> = {}): AppState {
-  const { speechRate: _rate, reminderEnabled: _on, reminderTime: _at, ...older } = snap(over)
+  const {
+    speechRate: _rate, reminderEnabled: _on, reminderTime: _at, studyLog: _log, ...older
+  } = snap(over)
   return older as AppState
 }
+
+describe('mergeSnapshots and the study log', () => {
+  it('keeps every day either device knows about', () => {
+    const local = snap({ studyLog: { '2026-8-1': 20 * 60_000 } })
+    const remote = snap({ studyLog: { '2026-8-2': 30 * 60_000 } })
+    expect(mergeSnapshots(local, remote).studyLog).toEqual({
+      '2026-8-1': 20 * 60_000, '2026-8-2': 30 * 60_000,
+    })
+  })
+
+  it('takes the longer version of a day both devices saw', () => {
+    const local = snap({ studyLog: { '2026-8-1': 5 * 60_000 } })
+    const remote = snap({ studyLog: { '2026-8-1': 25 * 60_000 } })
+    expect(mergeSnapshots(local, remote).studyLog['2026-8-1']).toBe(25 * 60_000)
+  })
+
+  it('is not a field the more recent snapshot simply overwrites', () => {
+    // The failure this rules out: an hour studied on her phone erased by a
+    // laptop that happened to save a preference change one second later.
+    const phone = snap({ updatedAt: T, studyLog: { '2026-8-1': 60 * 60_000 } })
+    const laptop = snap({ updatedAt: T + 1000, studyLog: {} })
+    expect(mergeSnapshots(phone, laptop).studyLog['2026-8-1']).toBe(60 * 60_000)
+  })
+
+  it('reads a snapshot written before the clock existed as no hours, not a crash', () => {
+    const old = preToday({ updatedAt: T + 1000 })
+    const mine = snap({ studyLog: { '2026-8-1': 60_000 } })
+    expect(mergeSnapshots(mine, old).studyLog).toEqual({ '2026-8-1': 60_000 })
+  })
+})
 
 describe('mergeSnapshots with a snapshot from an older build', () => {
   it('never hands back an undefined speech rate, reminder flag or reminder time', () => {

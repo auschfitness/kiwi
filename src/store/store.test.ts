@@ -241,9 +241,9 @@ describe('persisted-state migration (v1/v2 -> v3, the placement test removed)', 
    *
    * This is her, near enough. Every assertion below is about it surviving.
    */
-  function v1Profile(): Omit<AppState, 'reminderEnabled' | 'reminderTime'> & Retired {
+  function v1Profile(): Omit<AppState, 'reminderEnabled' | 'reminderTime' | 'studyLog'> & Retired {
     const {
-      reminderEnabled: _off, reminderTime: _at, ...oldShape
+      reminderEnabled: _off, reminderTime: _at, studyLog: _log, ...oldShape
     } = createInitialState(NOW)
     return {
       ...oldShape,
@@ -264,13 +264,19 @@ describe('persisted-state migration (v1/v2 -> v3, the placement test removed)', 
   }
 
   /** The same profile as it stood at v2: the reminder fields had arrived. */
-  function v2Profile(): AppState & Retired {
+  function v2Profile(): Omit<AppState, 'studyLog'> & Retired {
     return { ...v1Profile(), reminderEnabled: true, reminderTime: '07:30' }
   }
 
-  it('is on version 3 — removing a field is a real bump too, not a shallow-merge accident', () => {
-    expect(PERSIST_VERSION).toBe(3)
-    expect(useStore.persist.getOptions().version).toBe(3)
+  /** v3: the placement fields were gone, and the study clock had not shipped. */
+  function v3Profile(): Omit<AppState, 'studyLog'> {
+    const { placed: _placed, cefrLevel: _cefrLevel, ...rest } = v2Profile()
+    return rest
+  }
+
+  it('is on version 4 — removing a field is a real bump too, not a shallow-merge accident', () => {
+    expect(PERSIST_VERSION).toBe(4)
+    expect(useStore.persist.getOptions().version).toBe(4)
   })
 
   it('rehydrates a v1 profile with the reminder defaults and every scrap of progress intact', async () => {
@@ -341,7 +347,31 @@ describe('persisted-state migration (v1/v2 -> v3, the placement test removed)', 
     expect(out.unlockedLevel).toBe(3)
   })
 
-  it('leaves a v3 profile exactly as saved, reminder settings included', async () => {
+  it('gives a v3 profile an empty study log without disturbing anything it earned', async () => {
+    // Nobody's hours were measured before the clock existed. The honest
+    // migration starts the log at zero and leaves every other number alone —
+    // it must not look like the app forgot her streak to make room for a
+    // feature she never asked for.
+    const old = v3Profile()
+    localStorage.setItem('english-nz', JSON.stringify({ state: old, version: 3 }))
+
+    await useStore.persist.rehydrate()
+    const s = useStore.getState()
+
+    expect(s.studyLog).toEqual({})
+    expect(s.streak).toBe(12)
+    expect(s.bestDay).toBe(44)
+    expect(s.unlockedLevel).toBe(3)
+    expect(s.cards).toEqual(old.cards)
+    expect(s.reminderTime).toBe('07:30')
+  })
+
+  it('keeps a study log a saved profile already has', () => {
+    const withHours = { ...v3Profile(), studyLog: { '2026-7-29': 1_800_000 } }
+    expect(migrate(withHours, 3).studyLog).toEqual({ '2026-7-29': 1_800_000 })
+  })
+
+  it('leaves a v4 profile exactly as saved, reminder settings included', async () => {
     const current = { ...createInitialState(NOW), profileName: 'Ana', reminderEnabled: true, reminderTime: '07:30', streak: 4 }
     localStorage.setItem('english-nz', JSON.stringify({ state: current, version: PERSIST_VERSION }))
 

@@ -1,3 +1,5 @@
+import type { StudyLog } from './core/studyTime'
+
 export type PartOfSpeech =
   | 'word' | 'noun' | 'verb' | 'adj' | 'number'
   | 'greeting' | 'slang' | 'phrase' | 'grammar'
@@ -86,6 +88,12 @@ export interface AppState {
   doneToday: number
   doneDate: string | null
   bestDay: number
+  /**
+   * Milliseconds studied per local calendar day. Written by the study clock
+   * (`src/store/useStudyClock.ts`), read by everything that shows hours.
+   * See `src/core/studyTime.ts` for why it is a log and not a total.
+   */
+  studyLog: StudyLog
   startedAt: number
   updatedAt: number
 }

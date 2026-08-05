@@ -8,6 +8,8 @@ import { levelProgress, effectiveLevel, LEVEL_NAMES, LEVEL_EMOJI, LEVEL_TITLES }
 import { ACTIVE_COURSE, ALL_COURSES, writeActiveCourseId } from '../courses'
 import { skillSummary } from '../core/stats'
 import { greeting, studyButtonLabel } from '../core/home'
+import { formatDuration } from '../core/studyTime'
+import { dayKey } from '../core/time'
 import type { SyncStatus } from '../sync/client'
 import { STATUS_LABEL, STATUS_TONE, syncLineState } from '../sync/status'
 import { Button, Card, Ring, Meter, Chip } from '../components/ui'
@@ -116,6 +118,10 @@ export function Home({ onNavigate, onStudy, syncStatus }: HomeProps) {
   const cards = useStore(s => s.cards)
   const dailyGoal = useStore(s => s.dailyGoal)
   const doneToday = useStore(s => s.doneToday)
+  // `?.` for the blob the app did not write — see studySummary's own guard.
+  // The selector must return a number, not a fallback object: a fresh `{}` per
+  // render would never compare equal and would re-render on every store touch.
+  const todayMs = useStore(s => s.studyLog?.[dayKey(Date.now())] ?? 0)
   const skills = useStore(s => s.skills)
   const unlockedLevel = useStore(s => s.unlockedLevel)
   const freeAccess = useStore(s => s.freeAccess)
@@ -203,6 +209,13 @@ export function Home({ onNavigate, onStudy, syncStatus }: HomeProps) {
         <div>
           <p className="font-bold text-ink">Today's goal</p>
           <p className="text-sm text-muted">{doneToday} of {dailyGoal} cards done</p>
+          {/* Only once there is time to report. On a day she has not started,
+            * "0 min studied" is a reproach; silence is not. */}
+          {todayMs > 0 && (
+            <p className="text-sm text-muted" data-testid="today-time">
+              {formatDuration(todayMs)} studied
+            </p>
+          )}
         </div>
       </Card>
 

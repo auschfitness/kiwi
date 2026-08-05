@@ -1,4 +1,5 @@
 import type { AppState, CardState, Skill, Skills } from '../types'
+import { mergeStudyLogs } from './studyTime'
 
 /** Deterministic and symmetric: prefers the more-progressed state on every tie. */
 function pickCard(a: CardState | undefined, b: CardState | undefined): CardState {
@@ -158,6 +159,10 @@ export function mergeSnapshots(local: AppState, remote: AppState): AppState {
     doneToday: dayOwner.doneToday,
     doneDate: dayOwner.doneDate,
     bestDay: Math.max(local.bestDay, remote.bestDay),
+    // Day by day, like `cards` — not a field the winner decides, and so not in
+    // `scalarKey`. `?? {}` covers a snapshot written before the study clock
+    // existed, the same problem `scalar()` solves for the three fields above.
+    studyLog: mergeStudyLogs(local.studyLog ?? {}, remote.studyLog ?? {}),
     startedAt: Math.min(local.startedAt, remote.startedAt),
     updatedAt: Math.max(local.updatedAt, remote.updatedAt),
   }

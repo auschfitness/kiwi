@@ -29,6 +29,7 @@ export function createInitialState(now: number): AppState {
     doneToday: 0,
     doneDate: null,
     bestDay: 0,
+    studyLog: {},
     startedAt: now,
     updatedAt: now,
   }

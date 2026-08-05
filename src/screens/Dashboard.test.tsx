@@ -1,8 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { Dashboard } from './Dashboard'
 import { useStore } from '../store/useStore'
 import { createInitialState } from '../store/defaults'
+import { dayKey, DAY, MIN, HOUR } from '../core/time'
 
 beforeEach(() => {
   useStore.setState({ ...createInitialState(Date.now()), unlocked: null, unlockedLevel: 2 })
@@ -55,3 +56,56 @@ describe('Dashboard', () => {
     expect(screen.getByTestId('level-breakdown-1')).toBeInTheDocument()
   })
 })
+
+describe('Dashboard — time studied', () => {
+  const NOW = new Date(2026, 7, 4, 20, 0, 0).getTime()
+  const day = (back: number) => dayKey(NOW - back * DAY)
+
+  beforeEach(() => {
+    vi.useFakeTimers()
+    vi.setSystemTime(NOW)
+    useStore.setState({ ...createInitialState(NOW), unlocked: null, unlockedLevel: 2 })
+  })
+
+  afterEach(() => vi.useRealTimers())
+
+  it('invites her in rather than reporting three zeros on day one', () => {
+    render(<Dashboard onBack={vi.fn()} />)
+    expect(screen.getByText('Time studied')).toBeInTheDocument()
+    expect(screen.getByText(/nothing yet today/i)).toBeInTheDocument()
+    expect(screen.getByText(/the clock starts the moment/i)).toBeInTheDocument()
+  })
+
+  it('reports today, the week, the average and the whole history', () => {
+    useStore.setState({
+      studyLog: {
+        [day(0)]: 25 * MIN,
+        [day(2)]: 35 * MIN,
+        [day(40)]: HOUR, // outside the week, inside all-time
+      },
+    })
+    render(<Dashboard onBack={vi.fn()} />)
+
+    expect(screen.getByText('25 min today')).toBeInTheDocument()
+    expect(screen.getByText('1h')).toBeInTheDocument() // 25 + 35 this week
+    expect(screen.getByText('40m')).toBeInTheDocument() // average over 3 days
+    expect(screen.getByText('2h')).toBeInTheDocument() // all time
+    expect(screen.getByText(/3 days/)).toBeInTheDocument()
+  })
+
+  it('draws seven days, and marks the ones she missed', () => {
+    useStore.setState({ studyLog: { [day(0)]: 30 * MIN, [day(3)]: 10 * MIN } })
+    render(<Dashboard onBack={vi.fn()} />)
+
+    expect(screen.getByTestId('week-strip').children).toHaveLength(7)
+    // The empty days are labelled too, so the gap is legible rather than blank.
+    expect(screen.getByLabelText(new RegExp(`${WEEKDAY_OF(day(1))}: 0 min`))).toBeInTheDocument()
+    expect(screen.getByLabelText(new RegExp(`${WEEKDAY_OF(day(0))}: 30 min`))).toBeInTheDocument()
+  })
+})
+
+/** Same mapping the strip uses, so the test names the day it means. */
+function WEEKDAY_OF(key: string): string {
+  const [y, m, d] = key.split('-').map(Number)
+  return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][new Date(y, m - 1, d).getDay()]
+}

@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { setDefaultRate, warmUp } from './audio/speak'
 import { useStore } from './store/useStore'
+import { useStudyClock } from './store/useStudyClock'
+import { formatDuration } from './core/studyTime'
 import { useSync } from './sync/useSync'
 import { isSyncConfigured } from './sync/client'
 import { LEVEL_NAMES } from './core/leveling'
@@ -31,11 +33,36 @@ export type Screen =
   | 'plan' | 'practice' | 'dialogues' | 'shadowing' | 'roleplay' | 'drills' | 'earTraining'
   | 'settings' | 'done' | 'conjugation'
 
+/**
+ * The screens whose time counts as study — the ones where she is working at
+ * the language rather than reading about her progress. Home, Progress, Plan,
+ * Settings and the sync screens are deliberately not here: time spent
+ * admiring the streak is not time spent earning it.
+ *
+ * `practice` is the hub, not a practice: it is a list of buttons, so it counts
+ * for nothing until she picks one.
+ */
+const STUDY_SCREENS: ReadonlySet<Screen> = new Set<Screen>([
+  'session', 'dialogues', 'shadowing', 'roleplay', 'drills', 'earTraining',
+])
+
 function Done({ onBack }: { onBack: () => void }) {
+  // The sitting she has just finished. The clock stopped when she left the
+  // session; it is not reset until the next one starts, which is what lets
+  // this screen still report it.
+  const sessionMs = useStore(s => s.sessionMs)
+  const todayMs = useStore(s => s.studyLog?.[dayKey(Date.now())] ?? 0)
+
   return (
     <div className="flex flex-col items-center gap-6 pt-16 text-center">
       <p className="text-3xl">🥝</p>
       <p className="text-lg font-bold text-ink">Nice work — see you next time!</p>
+      {sessionMs > 0 && (
+        <p className="text-sm text-muted" data-testid="session-time">
+          <span className="font-bold text-ink">{formatDuration(sessionMs)}</span> this session
+          {todayMs > sessionMs && <> · {formatDuration(todayMs)} today</>}
+        </p>
+      )}
       <Button variant="primary" onClick={onBack}>Back home</Button>
     </div>
   )
@@ -77,6 +104,11 @@ export default function App() {
   const [askingForCode, setAskingForCode] = useState(
     () => isSyncConfigured() && useStore.getState().syncCode === null,
   )
+
+  // One clock for the whole app, driven by which screen is up. Putting it here
+  // rather than inside each study screen means there is a single list of what
+  // counts (STUDY_SCREENS) instead of six screens each remembering to start it.
+  useStudyClock(STUDY_SCREENS.has(screen))
 
   const profileName = useStore(s => s.profileName)
   const syncCode = useStore(s => s.syncCode)

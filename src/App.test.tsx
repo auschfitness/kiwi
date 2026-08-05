@@ -6,6 +6,7 @@ import { useStore } from './store/useStore'
 import { createInitialState } from './store/defaults'
 import { DIALOGUES } from './content'
 
+
 vi.mock('./audio/speak', () => ({
   speak: vi.fn(),
   cancelSpeech: vi.fn(),
@@ -134,6 +135,38 @@ describe('App', () => {
 
     await userEvent.click(screen.getByRole('button', { name: /back home/i }))
     expect(screen.getByTestId('study-now')).toBeInTheDocument()
+  })
+
+  /**
+   * How long the clock counted is `useStudyClock`'s own test. What belongs
+   * here is the wiring either side of it: opening a session starts a fresh
+   * sitting, and the screen at the end of one reports it.
+   */
+  it('starts a fresh sitting on entering a session and reports it on Done', async () => {
+    useStore.setState({ profileName: 'Ana', unlockedLevel: 1, sessionMs: 999_999 })
+    render(<App />)
+
+    await userEvent.click(screen.getByTestId('study-now'))
+    // Last week's sitting is not this one.
+    expect(useStore.getState().sessionMs).toBe(0)
+
+    // Stand in for the clock having run: it is driven by an interval this test
+    // deliberately does not wait on.
+    act(() => { useStore.setState({ sessionMs: 12 * 60_000 }) })
+
+    await userEvent.click(screen.getByRole('button', { name: /finish session/i }))
+    expect(screen.getByTestId('session-time')).toHaveTextContent('12 min this session')
+  })
+
+  it('says nothing about time on Done when the sitting was too short to measure', async () => {
+    // A session opened and abandoned in seconds gets no line at all, rather
+    // than "0 min", which reads as a scolding for having shown up.
+    useStore.setState({ profileName: 'Ana', unlockedLevel: 1 })
+    render(<App />)
+
+    await userEvent.click(screen.getByTestId('study-now'))
+    await userEvent.click(screen.getByRole('button', { name: /finish session/i }))
+    expect(screen.queryByTestId('session-time')).not.toBeInTheDocument()
   })
 
   /**

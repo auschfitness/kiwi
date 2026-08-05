@@ -3,6 +3,7 @@ import { useStore, cardIdsByLevel } from '../store/useStore'
 import { totalKnown, totalDue } from '../core/srs'
 import { levelProgress, LEVEL_NAMES, LEVEL_EMOJI, LEVEL_TITLES } from '../core/leveling'
 import { skillSummary, weakestSkill, levelBreakdown } from '../core/stats'
+import { studySummary, formatDuration, formatCompact, type StudyDay } from '../core/studyTime'
 import { Card, Chip, Meter, ScreenHeader } from '../components/ui'
 
 export interface DashboardProps {
@@ -38,6 +39,52 @@ function SkillRow({ skill, total, accuracy }: {
   )
 }
 
+const WEEKDAY = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+
+/** `2026-8-4` → `Tue`. The key format is `dayKey`'s, and it is local already. */
+function weekdayOf(key: string): string {
+  const [y, m, d] = key.split('-').map(Number)
+  return WEEKDAY[new Date(y, m - 1, d).getDay()] ?? ''
+}
+
+/**
+ * Seven days of practice, tallest bar first among equals.
+ *
+ * Heights are relative to her own best day in the window, not to some target:
+ * a week of twenty-minute evenings should look like a solid week, not like a
+ * failure to do an hour. A day with no study is a visible empty column rather
+ * than a gap, because seeing the gap is the point.
+ */
+function WeekStrip({ week }: { week: StudyDay[] }) {
+  const peak = week.reduce((max, d) => Math.max(max, d.ms), 0)
+
+  return (
+    <div className="flex items-end justify-between gap-1" data-testid="week-strip">
+      {week.map((day, i) => {
+        const height = peak === 0 ? 0 : Math.round((day.ms / peak) * 100)
+        const label = `${weekdayOf(day.key)}: ${formatDuration(day.ms)}`
+        return (
+          <div key={day.key} className="flex flex-1 flex-col items-center gap-1">
+            <div className="flex h-16 w-full items-end rounded bg-card2" title={label} aria-label={label}>
+              {day.ms > 0 && (
+                <div
+                  className="w-full rounded bg-brand"
+                  // Floor at 8% so a short but real day is still a mark on the
+                  // page — a one-pixel bar reads as "nothing", which is a lie.
+                  style={{ height: `${Math.max(8, height)}%` }}
+                />
+              )}
+            </div>
+            <span className={`text-[10px] ${i === week.length - 1 ? 'font-bold text-ink' : 'text-muted'}`}>
+              {weekdayOf(day.key).slice(0, 1)}
+            </span>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 /** Progress and skills, told kindly — encouraging, not a data dump. */
 export function Dashboard({ onBack }: DashboardProps) {
   const cards = useStore(s => s.cards)
@@ -45,8 +92,10 @@ export function Dashboard({ onBack }: DashboardProps) {
   const unlockedLevel = useStore(s => s.unlockedLevel)
   const streak = useStore(s => s.streak)
   const bestDay = useStore(s => s.bestDay)
+  const studyLog = useStore(s => s.studyLog)
 
   const now = Date.now()
+  const time = studySummary(studyLog, now)
   const known = totalKnown(cards)
   const due = totalDue(cards, now)
   const rows = skillSummary(skills)
@@ -88,6 +137,44 @@ export function Dashboard({ onBack }: DashboardProps) {
           </p>
         </Card>
       )}
+
+      <Card className="flex flex-col gap-4">
+        <div className="flex items-baseline justify-between">
+          <p className="font-bold text-ink">Time studied</p>
+          <span className="text-sm text-muted">
+            {time.todayMs > 0 ? `${formatDuration(time.todayMs)} today` : 'nothing yet today'}
+          </span>
+        </div>
+
+        <WeekStrip week={time.week} />
+
+        {time.daysStudied === 0 ? (
+          // Day one, and after the update that added the clock. Saying "0 h"
+          // three times over would read as a scolding for something she has
+          // not had the chance to do yet.
+          <p className="text-sm text-muted">
+            The clock starts the moment you open a session — come back after one and this
+            fills in.
+          </p>
+        ) : (
+          <div className="flex justify-between gap-2 text-center">
+            <div className="flex-1">
+              <p className="text-base font-extrabold text-ink">{formatCompact(time.weekMs)}</p>
+              <p className="text-xs text-muted">this week</p>
+            </div>
+            <div className="flex-1">
+              <p className="text-base font-extrabold text-ink">{formatCompact(time.averageMs)}</p>
+              <p className="text-xs text-muted">per study day</p>
+            </div>
+            <div className="flex-1">
+              <p className="text-base font-extrabold text-ink">{formatCompact(time.totalMs)}</p>
+              <p className="text-xs text-muted">
+                all time · {time.daysStudied} {time.daysStudied === 1 ? 'day' : 'days'}
+              </p>
+            </div>
+          </div>
+        )}
+      </Card>
 
       <Card className="flex flex-col gap-4">
         <p className="font-bold text-ink">Skills</p>
