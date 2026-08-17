@@ -14,7 +14,7 @@ export const PLAN: PlanWeek[] = [
   {
     title: 'Out and about',
     detail: "Café & restaurant, Shopping, Around town. Practise ordering and asking 'How much is it?'",
-    tip: 'When a card plays audio, listen twice before you answer — the Kiwi accent takes a while to tune into.',
+    tip: 'When a card plays audio, listen twice before you answer — it helps the accent stick.',
   },
   {
     title: 'Grammar glue',
@@ -33,7 +33,7 @@ export const PLAN: PlanWeek[] = [
   },
   {
     title: 'Sound like a local',
-    detail: "Kiwi slang, Small talk & social, Power phrases. Chit-chat, 'no worries', 'sweet as', 'how's it going?'",
+    detail: "American slang, Small talk & social, Power phrases. Chit-chat, 'no worries', 'awesome', 'how's it going?'",
     tip: 'Chat to yourself in the mirror for 2 minutes a day.',
   },
   {

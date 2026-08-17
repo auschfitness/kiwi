@@ -71,9 +71,9 @@ describe('phonetics convention (PHONETICS-CONVENTION.md)', () => {
   })
 
   it('spells NEAR and SQUARE with an r, not with the non-rhotic ía/éa', () => {
-    // Two entries where ía is genuinely two vowels in a row and not a NEAR
-    // vowel: `kia ora` is te reo Māori, and *idea* really is [aɪˈdiə].
-    const twoVowels = new Set(['kiwi_0', 'power_13'])
+    // One entry where ía is genuinely two vowels in a row and not a NEAR
+    // vowel: *idea* really is [aɪˈdiə].
+    const twoVowels = new Set(['power_13'])
     const bad = entries
       .filter(([id]) => !twoVowels.has(id))
       .filter(([, p]) => /ía|éa/.test(p))

@@ -397,25 +397,25 @@ export const PHOTO_CREDITS: Record<string, PhotoCredit> = {
     "photographer": "alpha innotec",
     "url": "https://www.pexels.com/photo/air-conditioner-on-outside-wall-20046692/"
   },
+  "kiwi_10": {
+    "photographer": "Alican Helik",
+    "url": "https://www.pexels.com/photo/convertible-silver-car-is-driving-fast-18059861/"
+  },
   "kiwi_11": {
-    "photographer": "Jędrzej Koralewski",
-    "url": "https://www.pexels.com/photo/journey-through-the-vastness-of-laugavegur-mountain-27611774/"
+    "photographer": "Wendy Wei",
+    "url": "https://www.pexels.com/photo/gathering-on-car-park-9578109/"
   },
   "kiwi_15": {
-    "photographer": "Elizaveta Vinogradova",
-    "url": "https://www.pexels.com/photo/view-of-a-valley-and-snowcapped-mountains-in-a-park-in-new-zealand-14788649/"
-  },
-  "kiwi_7": {
-    "photographer": "RDNE Stock project",
-    "url": "https://www.pexels.com/photo/pink-and-blue-flip-flops-on-brown-sand-8455822/"
+    "photographer": "Linda Rusinko",
+    "url": "https://www.pexels.com/photo/us-a-flag-on-pole-under-blue-sky-7483195/"
   },
   "kiwi_8": {
-    "photographer": "Anna Shvets",
-    "url": "https://www.pexels.com/photo/a-woman-in-a-pool-5952816/"
+    "photographer": "Harvey Ashwin",
+    "url": "https://www.pexels.com/photo/person-grilling-sausages-and-patties-at-a-backyard-4824157/"
   },
   "kiwi_9": {
-    "photographer": "ANIA LEMKA",
-    "url": "https://www.pexels.com/photo/charming-coastal-cottage-with-red-accents-32849255/"
+    "photographer": "Cedric Fauntleroy",
+    "url": "https://www.pexels.com/photo/a-group-of-friends-eating-together-7220804/"
   },
   "money_11": {
     "photographer": "Jan van der Wolf",

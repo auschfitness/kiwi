@@ -161,7 +161,6 @@ describe('looseMatch', () => {
     expect(looseMatch("Call 111 it's an emergency", `Call 111 ${EM} it${RSQ}s an emergency.`)).toBe(true)
     // smalltalk_6
     expect(looseMatch('"Thanks!" - "No worries."', `${LDQ}Thanks!${RDQ} ${EM} ${LDQ}No worries.${RDQ}`)).toBe(true)
-    // kiwi_12
     expect(looseMatch("It's a party - bring a plate.", `It${RSQ}s a party ${EM} bring a plate.`)).toBe(true)
   })
 

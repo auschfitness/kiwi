@@ -197,19 +197,17 @@ const SELECTION_EN = {
   // "Job", "Shift", "Experience", "Available" are abstractions. "Break" and
   // "Boss" would both just be office people.
 
-  // ── kiwi · Kiwi slang & NZ words (L3) ──────────────────────────────────
-  // Every one of these is a NZ-only word: search the thing, never the word.
-  kiwi_7: 'flip flops sandals on the beach', // jandals
-  kiwi_8: 'swimsuit swimwear poolside',      // togs
-  kiwi_9: 'small beach house holiday cottage', // bach — the word alone is the composer
-  // "Chilly bin" (the NZ esky/cooler) was tried as cooler, ice chest, esky
-  // and cooler-on-the-beach. Every result was the picnic around it — crates
-  // of soft drinks, friends on the sand, a man ice fishing — and never the
-  // box itself. Dropped.
-  kiwi_11: 'hiking trail backpack mountains', // tramping — the word alone is trampling
-  kiwi_15: 'new zealand landscape mountains', // Aotearoa
-  // "Sweet as", "Chur", "Heaps", "Keen", "Ta", "Wee", "Good on ya" are all
-  // tone, not things.
+  // ── kiwi · American slang & customs (L3) ───────────────────────────────
+  // Every one of these is a custom or scene, not a tone-word: search the
+  // thing, never the word. "Y'all" is dropped — a photo can't show a pronoun.
+  kiwi_8: 'backyard barbecue cookout friends', // cookout
+  kiwi_9: 'potluck dinner table shared dishes', // potluck
+  kiwi_10: 'car driving on open highway', // road trip
+  kiwi_11: 'tailgate party parking lot before game', // tailgate
+  kiwi_15: 'american flag waving', // the States
+  // "What's up", "Awesome", "My bad", "For sure", "No biggie", "Down",
+  // "Buddy", "Split the bill", "Chill" and "Way to go" are all tone or
+  // phrases, not things.
 
   // ── emergency · Emergencies & help (L1) ────────────────────────────────
   emergency_3: 'ambulance emergency vehicle',

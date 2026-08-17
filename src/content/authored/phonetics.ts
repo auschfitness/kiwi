@@ -473,25 +473,23 @@ export const PHONETICS: Record<string, string> = {
   smalltalk_12: 'uót dáz dis míin',
   smalltalk_13: 'cangratchulêichanz',
 
-  // ── kiwi · Kiwi slang & NZ words (nível 3) ───────────────────────────────
-  // Palavras neozelandesas ditas com a fonética americana desta tabela — é o
-  // som que ela vai produzir; o que os kiwis fazem com elas está no Ear Training.
-  kiwi_0: 'kía óra',
-  kiwi_1: 'suíit éz',
-  kiwi_2: 'tchêr',
-  kiwi_3: 'híips',
-  kiwi_4: 'kíin',
-  kiwi_5: 'mêit',
-  kiwi_6: 'táa',
-  kiwi_7: 'djéndalz',
-  kiwi_8: 'tógz',
-  kiwi_9: 'bétch',
-  kiwi_10: 'tchíli bín',
-  kiwi_11: 'trémping',
-  kiwi_12: 'bríng a plêit',
-  kiwi_13: 'uíi',
-  kiwi_14: 'gúd ón ia',
-  kiwi_15: 'aotearóa',
+  // ── kiwi · American slang & customs (nível 3) ────────────────────────────
+  kiwi_0: 'uáts áp',
+  kiwi_1: 'ósam',
+  kiwi_2: 'mái béd',
+  kiwi_3: 'fór chúr',
+  kiwi_4: 'nôu bígui',
+  kiwi_5: 'dáun',
+  kiwi_6: 'bádi',
+  kiwi_7: 'iól',
+  kiwi_8: 'kúkaut',
+  kiwi_9: 'pótlak',
+  kiwi_10: 'rôud tríp',
+  kiwi_11: 'têilgueit',
+  kiwi_12: 'splít da bíl',
+  kiwi_13: 'tchíl',
+  kiwi_14: 'uêi ta gôu',
+  kiwi_15: 'da stêits',
 
   // ── arrival · Airport & immigration (nível 3) ────────────────────────────
   arrival_0: 'pésport',
