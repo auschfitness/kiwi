@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { applyStudyTick, type Tick } from './streak'
+import { applyStudyTick, visibleStreak, visibleDoneToday, type Tick } from './streak'
 import { dayKey, DAY } from './time'
 
 const NOW = new Date('2026-07-30T10:00:00').getTime()
@@ -56,5 +56,37 @@ describe('applyStudyTick', () => {
     const prev = { ...blank }
     applyStudyTick(prev, NOW)
     expect(prev).toEqual(blank)
+  })
+})
+
+describe('visibleStreak', () => {
+  it('shows the streak when she already studied today', () => {
+    expect(visibleStreak({ streak: 5, lastStudyDay: dayKey(NOW) }, NOW)).toBe(5)
+  })
+
+  it('shows the streak when yesterday was the last study day (not broken yet)', () => {
+    expect(visibleStreak({ streak: 5, lastStudyDay: dayKey(YESTERDAY) }, NOW)).toBe(5)
+  })
+
+  it('shows 0 once a day has been missed, even before she studies again', () => {
+    expect(visibleStreak({ streak: 5, lastStudyDay: dayKey(TWO_DAYS_AGO) }, NOW)).toBe(0)
+  })
+
+  it('shows 0 for a profile that has never studied', () => {
+    expect(visibleStreak({ streak: 0, lastStudyDay: null }, NOW)).toBe(0)
+  })
+})
+
+describe('visibleDoneToday', () => {
+  it('shows the count when it was set today', () => {
+    expect(visibleDoneToday({ doneToday: 3, doneDate: dayKey(NOW) }, NOW)).toBe(3)
+  })
+
+  it('shows 0 once the day has rolled over, even before she studies again', () => {
+    expect(visibleDoneToday({ doneToday: 103, doneDate: dayKey(YESTERDAY) }, NOW)).toBe(0)
+  })
+
+  it('shows 0 for a profile that has never studied', () => {
+    expect(visibleDoneToday({ doneToday: 0, doneDate: null }, NOW)).toBe(0)
   })
 })

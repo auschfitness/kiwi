@@ -10,6 +10,7 @@ import { skillSummary } from '../core/stats'
 import { greeting, studyButtonLabel } from '../core/home'
 import { formatDuration } from '../core/studyTime'
 import { dayKey } from '../core/time'
+import { visibleStreak, visibleDoneToday } from '../core/streak'
 import type { SyncStatus } from '../sync/client'
 import { STATUS_LABEL, STATUS_TONE, syncLineState } from '../sync/status'
 import { Button, Card, Ring, Meter, Chip } from '../components/ui'
@@ -114,10 +115,10 @@ const SKILL_LABELS: Record<string, string> = {
 /** Home is her daily front door — one study action, no mode buttons. */
 export function Home({ onNavigate, onStudy, syncStatus }: HomeProps) {
   const profileName = useStore(s => s.profileName)
-  const streak = useStore(s => s.streak)
+  const streak = useStore(s => visibleStreak(s, Date.now()))
   const cards = useStore(s => s.cards)
   const dailyGoal = useStore(s => s.dailyGoal)
-  const doneToday = useStore(s => s.doneToday)
+  const doneToday = useStore(s => visibleDoneToday(s, Date.now()))
   // `?.` for the blob the app did not write — see studySummary's own guard.
   // The selector must return a number, not a fallback object: a fresh `{}` per
   // render would never compare equal and would re-render on every store touch.

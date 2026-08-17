@@ -4,6 +4,7 @@ import { totalKnown, totalDue } from '../core/srs'
 import { levelProgress, LEVEL_NAMES, LEVEL_EMOJI, LEVEL_TITLES } from '../core/leveling'
 import { skillSummary, weakestSkill, levelBreakdown } from '../core/stats'
 import { studySummary, formatDuration, formatCompact, type StudyDay } from '../core/studyTime'
+import { visibleStreak } from '../core/streak'
 import { Card, Chip, Meter, ScreenHeader } from '../components/ui'
 
 export interface DashboardProps {
@@ -90,7 +91,7 @@ export function Dashboard({ onBack }: DashboardProps) {
   const cards = useStore(s => s.cards)
   const skills = useStore(s => s.skills)
   const unlockedLevel = useStore(s => s.unlockedLevel)
-  const streak = useStore(s => s.streak)
+  const streak = useStore(s => visibleStreak(s, Date.now()))
   const bestDay = useStore(s => s.bestDay)
   const studyLog = useStore(s => s.studyLog)
 
