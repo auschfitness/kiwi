@@ -88,7 +88,7 @@ describe('first run with a Supabase project in the build', () => {
     expect(saveProgress).toHaveBeenCalledWith('kiwi2026', expect.objectContaining({ syncCode: 'kiwi2026' }))
 
     await userEvent.click(screen.getByRole('button', { name: /let's go/i }))
-    expect(screen.getByText(/kia ora, ana/i)).toBeInTheDocument()
+    expect(screen.getByText(/hey, ana/i)).toBeInTheDocument()
     expect(useStore.getState().syncCode).toBe('kiwi2026')
   })
 
@@ -188,7 +188,7 @@ describe('first run with a Supabase project in the build', () => {
     await userEvent.click(screen.getByRole('button', { name: /carry on for now/i }))
 
     // A working app, and no code claimed.
-    expect(screen.getByText(/kia ora, ana/i)).toBeInTheDocument()
+    expect(screen.getByText(/hey, ana/i)).toBeInTheDocument()
     expect(screen.getByTestId('study-now')).toBeInTheDocument()
     expect(useStore.getState().syncCode).toBeNull()
     expect(saveProgress).not.toHaveBeenCalled()

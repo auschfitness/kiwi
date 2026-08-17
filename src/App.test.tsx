@@ -35,7 +35,7 @@ describe('App', () => {
   it('sends a named profile straight to Home', () => {
     useStore.setState({ profileName: 'Ana', unlockedLevel: 1 })
     render(<App />)
-    expect(screen.getByText(/kia ora, ana/i)).toBeInTheDocument()
+    expect(screen.getByText(/hey, ana/i)).toBeInTheDocument()
     expect(screen.getByTestId('study-now')).toBeInTheDocument()
   })
 
@@ -196,7 +196,7 @@ describe('App', () => {
     await userEvent.type(screen.getByRole('textbox'), 'Ana')
     await userEvent.click(screen.getByRole('button', { name: /continue/i }))
 
-    expect(screen.getByText(/kia ora, ana/i)).toBeInTheDocument()
+    expect(screen.getByText(/hey, ana/i)).toBeInTheDocument()
     expect(screen.getByTestId('study-now')).toBeInTheDocument()
     // No sync step, and no nagging status line about a feature this build
     // cannot perform.

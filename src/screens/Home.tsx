@@ -161,7 +161,7 @@ export function Home({ onNavigate, onStudy, syncStatus }: HomeProps) {
     <div className="flex flex-col gap-5 pt-6">
       <header className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-extrabold text-ink">Kia ora, {profileName} 👋</h1>
+          <h1 className="text-xl font-extrabold text-ink">Hey, {profileName} 👋</h1>
           <p className="text-sm text-muted">{greeting(now)}</p>
         </div>
         <div className="flex shrink-0 items-center gap-2">

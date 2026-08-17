@@ -22,7 +22,7 @@ beforeEach(() => {
 describe('Home', () => {
   it('greets her by name', () => {
     render(<Home onNavigate={vi.fn()} onStudy={vi.fn()} syncStatus="unconfigured" />)
-    expect(screen.getByText(/kia ora, ana/i)).toBeInTheDocument()
+    expect(screen.getByText(/hey, ana/i)).toBeInTheDocument()
   })
 
   it("puts today's minutes next to today's goal once there are any", () => {

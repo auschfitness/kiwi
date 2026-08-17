@@ -1,6 +1,6 @@
 export function greeting(now: number): string {
   const h = new Date(now).getHours()
-  if (h < 5) return 'Studying late? Ka pai 🌙'
+  if (h < 5) return 'Studying late? Nice work 🌙'
   if (h < 12) return 'Good morning — a few cards with your coffee ☕'
   if (h < 18) return 'Good afternoon — perfect time for a quick session'
   return 'Good evening — ten minutes still counts 🌙'

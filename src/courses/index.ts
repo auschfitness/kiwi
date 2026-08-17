@@ -14,10 +14,10 @@ export { readActiveCourseId, writeActiveCourseId, ACTIVE_COURSE_KEY, DEFAULT_COU
 
 const EN_NZ: Course = {
   id: 'en-nz',
-  name: 'Inglês → Nova Zelândia',
+  name: 'Inglês → EUA',
   shortName: 'Inglês',
   emoji: '🥝',
-  flag: '🇳🇿',
+  flag: '🇺🇸',
   // The original key, unchanged and unchangeable: every profile that exists
   // today is saved under it. Renaming this would look to her like the app had
   // forgotten her streak.
