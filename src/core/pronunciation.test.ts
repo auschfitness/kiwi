@@ -28,7 +28,7 @@ describe('judgePronunciation', () => {
   it('passes an exact match warmly', () => {
     const r = judgePronunciation('water', 'water')
     expect(r.ok).toBe(true)
-    expect(r.message).toMatch(/ka pai/i)
+    expect(r.message).toMatch(/nice one/i)
   })
 
   it('passes when the phrase is embedded in a longer transcript', () => {

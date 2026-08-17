@@ -2,7 +2,7 @@ import type { Accent } from '../types'
 import { speechSynthesisAvailable } from './capabilities'
 import { speakable, clampRate, DEFAULT_RATE } from '../core/speech'
 
-const FALLBACKS: Accent[] = ['en-NZ', 'en-AU', 'en-GB', 'en-US']
+const FALLBACKS: Accent[] = ['en-US', 'en-NZ', 'en-AU', 'en-GB']
 
 // Module-level default so this file never has to import the Zustand store
 // (the store imports content and core; importing it back from here would be
@@ -20,7 +20,7 @@ function byLang(voices: SpeechSynthesisVoice[], lang: string): SpeechSynthesisVo
   return voices.find(v => v.lang.toLowerCase() === lang.toLowerCase())
 }
 
-/** Exact accent, then NZ → AU → GB → US, then any English voice, then null. */
+/** Exact accent, then US → NZ → AU → GB, then any English voice, then null. */
 export function pickVoice(voices: SpeechSynthesisVoice[], accent: Accent): SpeechSynthesisVoice | null {
   const exact = byLang(voices, accent)
   if (exact) return exact

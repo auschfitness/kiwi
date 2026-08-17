@@ -17,7 +17,7 @@ export function createInitialState(now: number): AppState {
     dailyGoal: 20,
     newPerSession: 8,
     // The course's own voice, not English's — a Spanish profile that opened
-    // speaking with a New Zealand accent would be a bug you could hear.
+    // speaking with an American accent would be a bug you could hear.
     accent: ACTIVE_COURSE.defaultAccent,
     showPortuguese: true,
     autoPlayAudio: true,

@@ -14,8 +14,8 @@ export const DIALOGUES: Dialogue[] = [
    },
    {
     "who": "You",
-    "en": "Hi, can I have a flat white, please?",
-    "pt": "Oi, pode me ver um flat white, por favor?"
+    "en": "Hi, can I have a coffee, please?",
+    "pt": "Oi, pode me ver um café, por favor?"
    },
    {
     "who": "Barista",
@@ -51,12 +51,12 @@ export const DIALOGUES: Dialogue[] = [
  },
  {
   "id": "dlg_1",
-  "title": "Viewing a flat",
+  "title": "Viewing an apartment",
   "emoji": "🏠",
   "lines": [
    {
     "who": "Agent",
-    "en": "Hi, are you here for the viewing?",
+    "en": "Hi, are you here for the showing?",
     "pt": "Oi, você veio pra visita?"
    },
    {
@@ -71,23 +71,23 @@ export const DIALOGUES: Dialogue[] = [
    },
    {
     "who": "You",
-    "en": "How much is the rent per week?",
-    "pt": "Quanto é o aluguel por semana?"
+    "en": "How much is the rent per month?",
+    "pt": "Quanto é o aluguel por mês?"
    },
    {
     "who": "Agent",
-    "en": "It's five hundred and twenty a week.",
-    "pt": "São quinhentos e vinte por semana."
+    "en": "It's two thousand a month.",
+    "pt": "São dois mil por mês."
    },
    {
     "who": "You",
-    "en": "And how much is the bond?",
-    "pt": "E quanto é a caução?"
+    "en": "And how much is the security deposit?",
+    "pt": "E quanto é o depósito de segurança?"
    },
    {
     "who": "Agent",
-    "en": "Four weeks' rent, paid upfront.",
-    "pt": "Quatro semanas de aluguel, adiantado."
+    "en": "One month's rent, paid upfront.",
+    "pt": "Um mês de aluguel, adiantado."
    },
    {
     "who": "You",
@@ -98,13 +98,13 @@ export const DIALOGUES: Dialogue[] = [
  },
  {
   "id": "dlg_2",
-  "title": "At the GP (doctor)",
+  "title": "At the doctor",
   "emoji": "🩺",
   "lines": [
    {
     "who": "Reception",
-    "en": "Kia ora, do you have an appointment?",
-    "pt": "Kia ora, você tem hora marcada?"
+    "en": "Hi there, do you have an appointment?",
+    "pt": "Oi, você tem hora marcada?"
    },
    {
     "who": "You",
@@ -133,7 +133,7 @@ export const DIALOGUES: Dialogue[] = [
    },
    {
     "who": "Nurse",
-    "en": "I'll give you a prescription for the chemist.",
+    "en": "I'll give you a prescription for the pharmacy.",
     "pt": "Vou te dar uma receita pra farmácia."
    },
    {
@@ -160,13 +160,13 @@ export const DIALOGUES: Dialogue[] = [
    },
    {
     "who": "You",
-    "en": "Thanks. Are these apples on special?",
+    "en": "Thanks. Are these apples on sale?",
     "pt": "Obrigada. Essas maçãs estão em promoção?"
    },
    {
     "who": "Staff",
-    "en": "Yeah, two dollars a kilo.",
-    "pt": "Sim, dois dólares o quilo."
+    "en": "Yeah, two dollars a pound.",
+    "pt": "Sim, dois dólares a libra."
    },
    {
     "who": "Checkout",
@@ -175,8 +175,8 @@ export const DIALOGUES: Dialogue[] = [
    },
    {
     "who": "You",
-    "en": "Yes, please. Can I pay by EFTPOS?",
-    "pt": "Sim, por favor. Posso pagar no cartão?"
+    "en": "Yes, please. Can I tap to pay?",
+    "pt": "Sim, por favor. Posso pagar por aproximação?"
    },
    {
     "who": "Checkout",
@@ -185,18 +185,18 @@ export const DIALOGUES: Dialogue[] = [
    },
    {
     "who": "You",
-    "en": "Ta!",
+    "en": "Thanks!",
     "pt": "Obrigada!"
    }
   ]
  },
  {
   "id": "dlg_4",
-  "title": "Meeting a neighbour",
+  "title": "Meeting a neighbor",
   "emoji": "👋",
   "lines": [
    {
-    "who": "Neighbour",
+    "who": "Neighbor",
     "en": "Hey, are you new here?",
     "pt": "Oi, você é nova por aqui?"
    },
@@ -206,7 +206,7 @@ export const DIALOGUES: Dialogue[] = [
     "pt": "Sim, acabamos de mudar do Brasil."
    },
    {
-    "who": "Neighbour",
+    "who": "Neighbor",
     "en": "Oh, lovely! Welcome. How's it going?",
     "pt": "Ah, que ótimo! Bem-vinda. Como vão as coisas?"
    },
@@ -216,7 +216,7 @@ export const DIALOGUES: Dialogue[] = [
     "pt": "Bem, obrigada. Ainda estou aprendendo inglês."
    },
    {
-    "who": "Neighbour",
+    "who": "Neighbor",
     "en": "You're doing great. I'm Sam, by the way.",
     "pt": "Você está indo muito bem. Aliás, sou o Sam."
    },
@@ -226,7 +226,7 @@ export const DIALOGUES: Dialogue[] = [
     "pt": "Prazer, Sam. Sou a Ana."
    },
    {
-    "who": "Neighbour",
+    "who": "Neighbor",
     "en": "If you need anything, just knock.",
     "pt": "Se precisar de algo, é só bater na porta."
    },
@@ -274,8 +274,8 @@ export const DIALOGUES: Dialogue[] = [
    },
    {
     "who": "Officer",
-    "en": "Great. Welcome to New Zealand.",
-    "pt": "Ótimo. Bem-vinda à Nova Zelândia."
+    "en": "Great. Welcome to the United States.",
+    "pt": "Ótimo. Bem-vinda aos Estados Unidos."
    },
    {
     "who": "You",

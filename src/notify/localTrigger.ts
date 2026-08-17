@@ -45,7 +45,7 @@ export const REMINDER_TAG = 'english-nz-daily-reminder'
  * which layer reached her — and if she compares two days, they should not
  * read as two different features.
  */
-const TITLE = 'English → NZ'
+const TITLE = 'English → USA'
 const OPTIONS: NotificationOptions = {
   body: 'Time for your daily English 🥝',
   icon: '/icon-192.png',

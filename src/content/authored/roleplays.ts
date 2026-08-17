@@ -15,12 +15,11 @@ import type { Level } from '../../types'
  *    *different* phrasings, not spelling.
  *  - **`pt` on a `you` line is the hint, not a translation.** The English is
  *    hidden by default: the point is production, not reading. So the
- *    Portuguese says what to convey ("peça um flat white"), never the exact
+ *    Portuguese says what to convey ("peça um café"), never the exact
  *    words.
- *  - **It sounds like New Zealand.** "Kia ora", "sweet as", "no worries",
- *    "have here or takeaway", rent per week, bond of four weeks, chemist not
- *    pharmacy, Onecard at the checkout. A textbook would get her through a
- *    textbook.
+ *  - **It sounds like America.** "Hey there", "awesome", "no worries", "for
+ *    here or to go", rent per month, a security deposit, tap to pay. A
+ *    textbook would get her through a textbook.
  *  - **No line asks her for her own name or details.** She is playing a part,
  *    and a turn she can only fail (because the script expects "Ana Silva" and
  *    she is not Ana) is a wall, not practice.
@@ -54,35 +53,35 @@ export const ROLEPLAYS: Roleplay[] = [
     level: 1,
     context: 'You are at a café. The barista looks up and smiles.',
     turns: [
-      { speaker: 'them', en: "Kia ora! How's it going?", pt: 'Olá! Tudo bem?' },
+      { speaker: 'them', en: "Hey there! How's it going?", pt: 'Oi! Tudo bem?' },
       {
         speaker: 'you',
         en: 'Good thanks, and you?',
         pt: 'Diga que está bem e devolva a pergunta.',
         accept: ['good thanks', 'yeah good thanks and you', 'not bad thanks', "I'm good thanks"],
       },
-      { speaker: 'them', en: 'Sweet as. What can I get you?', pt: 'Que bom. O que você vai querer?' },
+      { speaker: 'them', en: 'Awesome. What can I get you?', pt: 'Que bom. O que você vai querer?' },
       {
         speaker: 'you',
-        en: 'Can I have a flat white, please?',
-        pt: 'Peça um flat white.',
-        accept: ['a flat white please', "I'd like a flat white", 'flat white thanks'],
+        en: 'Can I have a coffee, please?',
+        pt: 'Peça um café.',
+        accept: ['a coffee please', "I'd like a coffee", 'coffee thanks'],
       },
-      { speaker: 'them', en: 'No worries. Have here or takeaway?', pt: 'Sem problema. Vai tomar aqui ou levar?' },
+      { speaker: 'them', en: 'No worries. For here or to go?', pt: 'Sem problema. Vai tomar aqui ou levar?' },
       {
         speaker: 'you',
-        en: 'Takeaway, please.',
+        en: 'To go, please.',
         pt: 'Diga que é para levar.',
-        accept: ['takeaway', 'take away please', 'takeaway thanks'],
+        accept: ['to go', 'to go please', 'to go thanks'],
       },
       { speaker: 'them', en: "That's five fifty. Card or cash?", pt: 'São cinco e cinquenta. Cartão ou dinheiro?' },
       {
         speaker: 'you',
         en: 'Card, please.',
         pt: 'Diga que vai pagar no cartão.',
-        accept: ['card', 'card thanks', 'by card please', 'eftpos please'],
+        accept: ['card', 'card thanks', 'by card please', 'tap to pay please'],
       },
-      { speaker: 'them', en: 'Sweet as. Just tap there. Have a good one!', pt: 'Beleza. É só aproximar aí. Tenha um bom dia!' },
+      { speaker: 'them', en: 'Awesome. Just tap here. Have a good one!', pt: 'Beleza. É só aproximar aí. Tenha um bom dia!' },
       {
         speaker: 'you',
         en: 'Thanks, you too!',
@@ -93,27 +92,27 @@ export const ROLEPLAYS: Roleplay[] = [
   },
 
   {
-    id: 'flat',
-    title: 'Viewing a flat',
+    id: 'apartment',
+    title: 'Viewing an apartment',
     emoji: '🏠',
     level: 3,
-    context: 'You are looking at a flat to rent. The landlord shows you the lounge.',
+    context: 'You are looking at an apartment to rent. The landlord shows you the living room.',
     turns: [
-      { speaker: 'them', en: 'Kia ora, come on in. This is the lounge.', pt: 'Olá, pode entrar. Esta é a sala.' },
+      { speaker: 'them', en: 'Hey, come on in. This is the living room.', pt: 'Oi, pode entrar. Esta é a sala.' },
       {
         speaker: 'you',
         en: 'How much is the rent?',
-        pt: 'Pergunte quanto é o aluguel. (Na Nova Zelândia se fala por semana.)',
-        accept: ["what's the rent", 'how much is it per week', 'how much is the rent a week'],
+        pt: 'Pergunte quanto é o aluguel. (Nos EUA se fala por mês.)',
+        accept: ["what's the rent", 'how much is it per month', 'how much is the rent a month'],
       },
-      { speaker: 'them', en: "It's five hundred and eighty a week.", pt: 'São quinhentos e oitenta por semana.' },
+      { speaker: 'them', en: "It's two thousand a month.", pt: 'São dois mil por mês.' },
       {
         speaker: 'you',
-        en: 'How much is the bond?',
-        pt: 'Pergunte o valor do depósito — o "bond".',
-        accept: ["what's the bond", 'is there a bond', 'is the bond four weeks'],
+        en: 'How much is the security deposit?',
+        pt: 'Pergunte o valor do depósito de segurança.',
+        accept: ["what's the deposit", 'is there a deposit', 'is the deposit one month'],
       },
-      { speaker: 'them', en: 'Bond is four weeks, plus two weeks in advance.', pt: 'O bond é quatro semanas, mais duas semanas adiantadas.' },
+      { speaker: 'them', en: "The deposit is one month's rent, plus first month upfront.", pt: 'O depósito é um mês de aluguel, mais o primeiro mês adiantado.' },
       {
         speaker: 'you',
         en: 'When can I move in?',
@@ -127,7 +126,7 @@ export const ROLEPLAYS: Roleplay[] = [
         pt: 'Diga que essa data serve para você.',
         accept: ['that works', "that's perfect", 'that suits me', 'yeah that works for me'],
       },
-      { speaker: 'them', en: "Choice. I'll email you the application form.", pt: 'Ótimo. Vou te mandar o formulário por e-mail.' },
+      { speaker: 'them', en: "Great. I'll email you the application form.", pt: 'Ótimo. Vou te mandar o formulário por e-mail.' },
       {
         speaker: 'you',
         en: "Thanks, I'll fill it in tonight.",
@@ -138,13 +137,13 @@ export const ROLEPLAYS: Roleplay[] = [
   },
 
   {
-    id: 'gp',
-    title: 'At the GP',
+    id: 'doctor',
+    title: 'At the doctor',
     emoji: '🩺',
     level: 3,
-    context: 'You are at the doctor — the GP. She calls you in.',
+    context: "You are at the doctor's office. She calls you in.",
     turns: [
-      { speaker: 'them', en: "Kia ora, take a seat. What's brought you in today?", pt: 'Olá, pode sentar. O que te traz aqui hoje?' },
+      { speaker: 'them', en: "Hi there, take a seat. What's brought you in today?", pt: 'Oi, pode sentar. O que te traz aqui hoje?' },
       {
         speaker: 'you',
         en: "I've had a sore throat for three days.",
@@ -158,19 +157,19 @@ export const ROLEPLAYS: Roleplay[] = [
         pt: 'Diga que tem um pouco de febre, mas não tem tosse.',
         accept: ['a little fever no cough', 'yes a bit of fever', 'no cough just a fever'],
       },
-      { speaker: 'them', en: "Righto, let's have a look. Yep, that's a throat infection.", pt: 'Certo, deixa eu ver. Sim, é uma infecção de garganta.' },
+      { speaker: 'them', en: "Alright, let's have a look. Yep, that's a throat infection.", pt: 'Certo, deixa eu ver. Sim, é uma infecção de garganta.' },
       {
         speaker: 'you',
         en: 'Do I need antibiotics?',
         pt: 'Pergunte se precisa de antibiótico.',
         accept: ['do I need medicine', 'will I need antibiotics', 'do I need a prescription'],
       },
-      { speaker: 'them', en: "Yep. I'll send a prescription to the chemist.", pt: 'Sim. Vou mandar a receita para a farmácia.' },
+      { speaker: 'them', en: "Yep. I'll send a prescription to the pharmacy.", pt: 'Sim. Vou mandar a receita para a farmácia.' },
       {
         speaker: 'you',
-        en: 'Which chemist is it?',
+        en: 'Which pharmacy is it?',
         pt: 'Pergunte qual é a farmácia.',
-        accept: ['which pharmacy', 'where is the chemist', 'what chemist is it'],
+        accept: ['which pharmacy', 'where is the pharmacy', 'what pharmacy is it'],
       },
       { speaker: 'them', en: "The one on the corner. It'll be ready in an hour.", pt: 'A da esquina. Fica pronta em uma hora.' },
       {
@@ -189,7 +188,7 @@ export const ROLEPLAYS: Roleplay[] = [
     level: 2,
     context: "You are at the supermarket and you can't find the milk.",
     turns: [
-      { speaker: 'them', en: 'You right there? Need a hand?', pt: 'Tudo bem aí? Precisa de ajuda?' },
+      { speaker: 'them', en: 'Need help finding something?', pt: 'Precisa de ajuda pra achar algo?' },
       {
         speaker: 'you',
         en: 'Where is the milk, please?',
@@ -199,11 +198,11 @@ export const ROLEPLAYS: Roleplay[] = [
       { speaker: 'them', en: "Milk's down the back, aisle nine. Oat milk's on the top shelf.", pt: 'O leite fica lá no fundo, corredor nove. O de aveia é na prateleira de cima.' },
       {
         speaker: 'you',
-        en: 'Sweet, thanks.',
-        pt: 'Agradeça de um jeito bem kiwi.',
-        accept: ['sweet as thanks', 'thanks', 'cheers thanks', 'thank you'],
+        en: 'Cool, thanks.',
+        pt: 'Agradeça de um jeito bem casual.',
+        accept: ['cool thanks', 'thanks', 'awesome thanks', 'thank you'],
       },
-      { speaker: 'them', en: 'No worries. Gidday! Do you have a Onecard?', pt: 'De nada. (No caixa) Oi! Você tem um Onecard?' },
+      { speaker: 'them', en: 'No worries. Hi there! Do you have a rewards card?', pt: 'De nada. (No caixa) Oi! Você tem um cartão fidelidade?' },
       {
         speaker: 'you',
         en: "No, I don't.",
@@ -221,20 +220,20 @@ export const ROLEPLAYS: Roleplay[] = [
   },
 
   {
-    id: 'neighbour',
-    title: 'Meeting a neighbour',
+    id: 'neighbor',
+    title: 'Meeting a neighbor',
     emoji: '👋',
     level: 2,
-    context: 'You are putting the bins out. Your neighbour calls over the fence.',
+    context: 'You are putting the trash out. Your neighbor calls over the fence.',
     turns: [
-      { speaker: 'them', en: "Gidday! You've just moved in, eh?", pt: 'Oi! Você acabou de se mudar, né?' },
+      { speaker: 'them', en: 'Hey there! You just moved in, right?', pt: 'Oi! Você acabou de se mudar, né?' },
       {
         speaker: 'you',
         en: 'Yes, last week.',
         pt: 'Confirme: você chegou semana passada.',
         accept: ['yes last week', 'yeah we moved in last week', "that's right last week"],
       },
-      { speaker: 'them', en: 'Choice. Where are you from?', pt: 'Legal. De onde você é?' },
+      { speaker: 'them', en: 'Cool. Where are you from?', pt: 'Legal. De onde você é?' },
       {
         speaker: 'you',
         en: "I'm from Brazil.",
@@ -248,7 +247,7 @@ export const ROLEPLAYS: Roleplay[] = [
         pt: 'Diga que é um pouco frio, mas você gosta.',
         accept: ["it's a bit cold", 'a bit cold but nice', 'cold but I like it'],
       },
-      { speaker: 'them', en: "Ha! Four seasons in one day here. I'm Dave, by the way.", pt: 'Ha! Aqui tem quatro estações num dia só. Aliás, eu sou o Dave.' },
+      { speaker: 'them', en: "Ha! If you don't like the weather here, just wait five minutes. I'm Dave, by the way.", pt: 'Ha! Se você não gosta do clima aqui, é só esperar cinco minutos. Aliás, eu sou o Dave.' },
       {
         speaker: 'you',
         en: 'Nice to meet you, Dave.',
@@ -286,14 +285,14 @@ export const ROLEPLAYS: Roleplay[] = [
         pt: 'Explique que precisa renovar uma receita.',
         accept: ['I need a prescription', "it's for a prescription", 'I need to renew my prescription'],
       },
-      { speaker: 'them', en: "Ta. We've got Thursday at ten, or Friday at two.", pt: 'Obrigada. Temos quinta às dez, ou sexta às duas.' },
+      { speaker: 'them', en: "Great. We've got Thursday at ten, or Friday at two.", pt: 'Ótimo. Temos quinta às dez, ou sexta às duas.' },
       {
         speaker: 'you',
         en: 'Thursday at ten, please.',
         pt: 'Escolha a quinta-feira às dez.',
         accept: ['thursday at ten', 'thursday please', 'ten on thursday', 'thursday thanks'],
       },
-      { speaker: 'them', en: "Beaut. You're booked in. Bring your passport, eh.", pt: 'Ótimo. Está agendado. Traga seu passaporte, tá?' },
+      { speaker: 'them', en: "Perfect. You're booked in. Bring your ID, okay?", pt: 'Ótimo. Está agendado. Traga seu documento, tá?' },
       {
         speaker: 'you',
         en: 'Will do. Thanks, Kate.',

@@ -109,7 +109,7 @@ describe('Role-play, one scene through to the end', () => {
     }
 
     expect(await screen.findByTestId('roleplay-score')).toHaveTextContent(`You nailed ${mine} of ${mine} lines`)
-    expect(screen.getByText(/ka pai/i)).toBeInTheDocument()
+    expect(screen.getByText(/nice one/i)).toBeInTheDocument()
     expect(speaking()).toEqual({ correct: mine, total: mine })
   })
 

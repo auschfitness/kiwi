@@ -425,7 +425,7 @@ function EndCard({
   return (
     <Card className="flex flex-col items-center gap-3 text-center">
       <p className="text-3xl" aria-hidden="true">🥝</p>
-      <p className="text-lg font-extrabold text-ink">Ka pai! You held a whole conversation 🥝</p>
+      <p className="text-lg font-extrabold text-ink">Nice one! You held a whole conversation 🥝</p>
       {graded ? (
         <p data-testid="roleplay-score" className="text-ink">
           {`You nailed ${nailed} of ${total} lines.`}

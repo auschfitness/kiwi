@@ -89,7 +89,7 @@ describe('Drills runner', () => {
     await userEvent.type(screen.getByLabelText(/type what you heard/i), '1,00')
     await userEvent.click(screen.getByRole('button', { name: 'Check' }))
 
-    expect(screen.getByText(/ka pai/i)).toBeInTheDocument()
+    expect(screen.getByText(/nice one/i)).toBeInTheDocument()
     expect(screen.getByText('1 right')).toBeInTheDocument()
     expect(listening()).toEqual({ correct: 1, total: 1 })
   })

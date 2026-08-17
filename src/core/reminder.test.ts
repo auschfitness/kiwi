@@ -5,7 +5,7 @@ import { dayKey } from './time'
 /**
  * Built with the local-time `Date` constructor on purpose: `reminderTime` is
  * a wall-clock time in *her* timezone, so these cases must mean the same
- * thing whether the suite runs in Auckland, São Paulo or CI's UTC.
+ * thing whether the suite runs in Chicago, São Paulo or CI's UTC.
  */
 function at(hour: number, minute: number, day = 30): number {
   return new Date(2026, 6, day, hour, minute, 0, 0).getTime()

@@ -347,7 +347,7 @@ export function generateDrill(kind: GeneratedKind, rand: () => number): DrillIte
 
 /**
  * Places she will have to spell down a phone in her first week — major
- * cities, plus a few neighbourhoods she's likely to hear by name.
+ * cities, plus a few neighborhoods she's likely to hear by name.
  */
 export const US_PLACE_NAMES: readonly string[] = [
   'Chicago', 'Seattle', 'Boston', 'Austin', 'Denver', 'Portland',

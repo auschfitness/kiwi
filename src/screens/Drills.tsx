@@ -187,7 +187,7 @@ function DrillRunner({ mode, title, onQuit, onAgain }: RunnerProps) {
         <>
           <Card className={result === 'right' ? 'text-center font-bold text-good' : 'text-center font-bold text-ink'}>
             {result === 'right' ? (
-              <p>✅ Ka pai!</p>
+              <p>✅ Nice one!</p>
             ) : (
               <p>
                 Not quite. It was <span className="text-brand">{answerLabel(item)}</span>

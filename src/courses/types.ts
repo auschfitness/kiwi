@@ -64,7 +64,7 @@ export interface Course {
    * Which Practice features this course has material for.
    *
    * A list rather than a flag because the answer is per feature, not per
-   * course. Ear training is Kiwi vowel pairs and the drills speak English
+   * course. Ear training is American vowel/consonant pairs and the drills speak English
    * numbers, times and dates — neither has a Spanish equivalent yet, and
    * offering an empty screen would be worse than offering nothing. The hub
    * itself disappears when this is empty.

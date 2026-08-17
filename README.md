@@ -1,11 +1,11 @@
-# English → NZ
+# English → USA
 
-English → NZ is an offline-first app that teaches the English a Brazilian
-Portuguese speaker needs to move to New Zealand — greetings, money, housing,
-the GP, the airport, Kiwi slang, and more — through short daily practice
-sessions. It's built for one learner getting ready for a move in a couple of
-months, but it works for anyone learning English with Portuguese as their
-first language.
+English → USA (app name: Kiwi) is an offline-first app that teaches the
+English a Brazilian Portuguese speaker needs to move to the United States —
+greetings, money, housing, the doctor, the airport, American slang, and more —
+through short daily practice sessions. It's built for one learner getting
+ready for a move in a couple of months, but it works for anyone learning
+English with Portuguese as their first language.
 
 It installs like an app on a phone, keeps working with no internet
 connection, and (optionally) can sync one person's progress across two or
@@ -93,7 +93,7 @@ cost anything at this scale. Here's exactly what to click.
 1. **Create a Supabase project.** Go to
    [supabase.com](https://supabase.com), sign up or log in, and click
    **New project**. Give it any name, pick a password (you won't need it
-   again for this), choose a region close to New Zealand, and click
+   again for this), choose a region close to the United States, and click
    **Create new project**. Wait a minute or two while it sets itself up.
 
 2. **Open the SQL editor.** In the left sidebar of your new project, click
@@ -333,9 +333,9 @@ photo URL is recorded in `src/content/authored/photoCredits.ts`.
   listen to spoken answers. On those devices the app simply hides the
   speaking and shadowing (repeat-after-me) exercises rather than showing a
   broken feature or an error — everything else works normally.
-- **The New Zealand accent voice isn't on every device.** The app asks for
-  an `en-NZ` text-to-speech voice first. If a device doesn't have one
-  installed, it automatically falls back to Australian English, then
-  British English, then American English — whichever the device actually
+- **The American accent voice isn't on every device.** The app asks for
+  an `en-US` text-to-speech voice first. If a device doesn't have one
+  installed, it automatically falls back to New Zealand English, then
+  Australian English, then British English — whichever the device actually
   has. Speech still works everywhere; the accent just may not be the exact
-  Kiwi one on devices Apple, Google, or the manufacturer didn't ship it on.
+  American one on devices Apple, Google, or the manufacturer didn't ship it on.

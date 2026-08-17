@@ -90,7 +90,7 @@ function urlBase64ToUint8Array(base64UrlKey: string): Uint8Array<ArrayBuffer> {
   return bytes
 }
 
-/** The device's own IANA zone, e.g. `Pacific/Auckland`. UTC if it refuses. */
+/** The device's own IANA zone, e.g. `America/Chicago`. UTC if it refuses. */
 function deviceTimeZone(): string {
   try {
     return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'

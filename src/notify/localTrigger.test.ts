@@ -89,7 +89,7 @@ describe('scheduleLocalReminder where it is supported', () => {
 
     expect(registration.showNotification).toHaveBeenCalledTimes(1)
     const [title, options] = registration.showNotification.mock.calls[0] as [string, Record<string, unknown>]
-    expect(title).toBe('English → NZ')
+    expect(title).toBe('English → USA')
     expect(options.body).toBe('Time for your daily English 🥝')
     expect(options.tag).toBe(REMINDER_TAG)
     expect(options.data).toEqual({ url: '/' })

@@ -15,13 +15,18 @@ describe('pickVoice', () => {
     expect(pickVoice([voice('en-nz')], 'en-NZ')?.lang).toBe('en-nz')
   })
 
-  it('falls back to Australian when New Zealand is missing', () => {
-    const voices = [voice('en-US'), voice('en-AU'), voice('en-GB')]
-    expect(pickVoice(voices, 'en-NZ')?.lang).toBe('en-AU')
+  it('falls back to American when the exact accent is missing', () => {
+    const voices = [voice('en-AU'), voice('en-GB'), voice('en-US')]
+    expect(pickVoice(voices, 'en-NZ')?.lang).toBe('en-US')
   })
 
-  it('falls back to British before American', () => {
-    expect(pickVoice([voice('en-US'), voice('en-GB')], 'en-NZ')?.lang).toBe('en-GB')
+  it('falls back to New Zealand before Australian or British', () => {
+    const voices = [voice('en-AU'), voice('en-GB'), voice('en-NZ')]
+    expect(pickVoice(voices, 'en-US')?.lang).toBe('en-NZ')
+  })
+
+  it('falls back to Australian before British', () => {
+    expect(pickVoice([voice('en-GB'), voice('en-AU')], 'en-US')?.lang).toBe('en-AU')
   })
 
   it('accepts any English voice as a last resort', () => {

@@ -40,7 +40,7 @@
 /* eslint-env serviceworker */
 /* global self, clients */
 
-var NOTIFICATION_TITLE = 'English → NZ'
+var NOTIFICATION_TITLE = 'English → USA'
 
 var NOTIFICATION_OPTIONS = {
   body: 'Time for your daily English 🥝',

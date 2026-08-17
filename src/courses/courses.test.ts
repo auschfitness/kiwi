@@ -124,7 +124,8 @@ describe('course registry', () => {
   /**
    * Per feature, not per course. Spanish has its own scenes and conversations
    * but no drills (they speak English numbers and dates) and no ear training
-   * (Kiwi vowel pairs), so it offers three of the five rather than all or none.
+   * (American vowel/consonant pairs), so it offers three of the five rather
+   * than all or none.
    */
   it('offers only the Practice features it has material for', () => {
     expect(courseById('en-nz').practice).toHaveLength(5)

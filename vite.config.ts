@@ -14,9 +14,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['apple-touch-icon.png'],
       manifest: {
-        name: 'English → NZ',
-        short_name: 'English NZ',
-        description: 'Learn the English you need for New Zealand',
+        name: 'English → USA',
+        short_name: 'English USA',
+        description: 'Learn the English you need for the United States',
         theme_color: '#0f172a',
         background_color: '#0f172a',
         display: 'standalone',

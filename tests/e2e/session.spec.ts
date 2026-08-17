@@ -197,7 +197,7 @@ test('switching to Spanish keeps the two courses entirely separate', async ({ pa
   await expect(page.getByTestId('deck-es_subj')).toBeDisabled()
 
   // Practice is offered, but only the three features with Spanish material:
-  // no Drills (they speak English numbers) and no Ear training (Kiwi vowels).
+  // no Drills (they speak English numbers) and no Ear training (American vowels).
   await page.getByRole('button', { name: /practice/i }).click()
   await expect(page.getByRole('button', { name: /role-play/i })).toBeVisible()
   await expect(page.getByRole('button', { name: /dialogues/i })).toBeVisible()

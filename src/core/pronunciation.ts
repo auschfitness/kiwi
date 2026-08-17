@@ -46,7 +46,7 @@ export function judgePronunciation(
   return {
     ok,
     score,
-    message: ok ? 'Ka pai! That sounded great 👏' : 'Close — listen once more and try again',
+    message: ok ? 'Nice one! That sounded great 👏' : 'Close — listen once more and try again',
   }
 }
 

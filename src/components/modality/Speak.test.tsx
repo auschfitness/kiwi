@@ -38,7 +38,7 @@ describe('Speak', () => {
     const onAnswer = vi.fn()
     render(<Speak card={card} onAnswer={onAnswer} />)
     await userEvent.click(screen.getByRole('button', { name: /record your voice/i }))
-    expect(await screen.findByText(/ka pai/i)).toBeInTheDocument()
+    expect(await screen.findByText(/nice one/i)).toBeInTheDocument()
     expect(rating(/^Good/)).toHaveAttribute('data-suggested', 'true')
     await userEvent.click(rating(/^Good/))
     // Was `true`; Continue is now the four ratings.

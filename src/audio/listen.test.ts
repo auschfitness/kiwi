@@ -10,12 +10,12 @@ afterEach(() => {
 
 describe('recognizeOnce', () => {
   it('resolves empty when the API is absent', async () => {
-    await expect(recognizeOnce('en-NZ')).resolves.toBe('')
+    await expect(recognizeOnce('en-US')).resolves.toBe('')
   })
 
   it('resolves empty instead of rejecting when construction throws', async () => {
     w.SpeechRecognition = function () { throw new Error('insecure context') }
-    await expect(recognizeOnce('en-NZ')).resolves.toBe('')
+    await expect(recognizeOnce('en-US')).resolves.toBe('')
   })
 
   it('resolves empty instead of rejecting when start throws', async () => {
@@ -23,7 +23,7 @@ describe('recognizeOnce', () => {
       this.start = () => { throw new Error('no microphone') }
       this.abort = () => {}
     }
-    await expect(recognizeOnce('en-NZ')).resolves.toBe('')
+    await expect(recognizeOnce('en-US')).resolves.toBe('')
   })
 
   it('resolves the transcript when recognition succeeds', async () => {
@@ -31,10 +31,10 @@ describe('recognizeOnce', () => {
       this.abort = () => {}
       this.start = () => {
         const self = this as { onresult?: (e: unknown) => void }
-        self.onresult?.({ results: [[{ transcript: 'flat white' }]] })
+        self.onresult?.({ results: [[{ transcript: 'coffee' }]] })
       }
     }
-    await expect(recognizeOnce('en-NZ')).resolves.toBe('flat white')
+    await expect(recognizeOnce('en-US')).resolves.toBe('coffee')
   })
 
   it('runs its cleanup once even when onend follows onresult', async () => {
@@ -43,12 +43,12 @@ describe('recognizeOnce', () => {
       this.abort = () => { abortCalls += 1 }
       this.start = () => {
         const self = this as { onresult?: (e: unknown) => void; onend?: () => void }
-        self.onresult?.({ results: [[{ transcript: 'kia ora' }]] })
+        self.onresult?.({ results: [[{ transcript: 'hello there' }]] })
         // onend always follows; without the settled guard this would run cleanup twice
         self.onend?.()
       }
     }
-    await expect(recognizeOnce('en-NZ')).resolves.toBe('kia ora')
+    await expect(recognizeOnce('en-US')).resolves.toBe('hello there')
     expect(abortCalls).toBe(1)
   })
 })

@@ -696,9 +696,9 @@ export const GENERATED_DECKS: Deck[] = [
    {
     "id": "people_7",
     "deckId": "people",
-    "en": "Neighbour",
+    "en": "Neighbor",
     "pt": "Vizinho(a)",
-    "exampleHtml": "Our <b>neighbour</b> is kind.",
+    "exampleHtml": "Our <b>neighbor</b> is kind.",
     "examplePt": "Nosso vizinho é gentil.",
     "pos": "noun"
    },

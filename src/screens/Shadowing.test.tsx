@@ -18,7 +18,7 @@ describe('Shadowing', () => {
   it('praises a good repetition', async () => {
     render(<Shadowing dialogueId="dlg_0" onBack={vi.fn()} />)
     await userEvent.click(screen.getByRole('button', { name: /record your voice/i }))
-    expect(await screen.findByText(/ka pai/i)).toBeInTheDocument()
+    expect(await screen.findByText(/nice one/i)).toBeInTheDocument()
   })
 
   it('moves to the next line', async () => {

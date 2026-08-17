@@ -1,4 +1,4 @@
-// English → NZ — the daily reminder sender (Layer 2's server half).
+// English → USA — the daily reminder sender (Layer 2's server half).
 //
 // A Supabase Edge Function, Deno, meant to run on a schedule of roughly every
 // fifteen minutes. Each run it asks one question of every stored push
@@ -160,7 +160,7 @@ Deno.serve(async () => {
   }
 
   const payload = JSON.stringify({
-    title: 'English → NZ',
+    title: 'English → USA',
     body: 'Time for your daily English 🥝',
     url: '/',
   })

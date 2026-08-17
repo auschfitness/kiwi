@@ -1,4 +1,4 @@
--- English → NZ progress sync.
+-- English → USA progress sync.
 -- Run this once in the Supabase SQL editor for your project.
 
 create table if not exists public.progress (
@@ -56,7 +56,7 @@ create table if not exists public.push_subscriptions (
   keys jsonb not null,
   -- `"HH:MM"`, 24-hour, in her own local time.
   reminder_time text not null,
-  -- IANA zone from the device, e.g. `Pacific/Auckland`. `reminder_time` means
+  -- IANA zone from the device, e.g. `America/Chicago`. `reminder_time` means
   -- nothing without it.
   tz text not null,
   -- The last local date we pushed to this device. What stops a 15-minute
