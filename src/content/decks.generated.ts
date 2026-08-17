@@ -527,8 +527,8 @@ export const GENERATED_DECKS: Deck[] = [
     "deckId": "verbs",
     "en": "to live",
     "pt": "morar / viver",
-    "exampleHtml": "I <b>live</b> in Auckland.",
-    "examplePt": "Eu moro em Auckland.",
+    "exampleHtml": "I <b>live</b> in Chicago.",
+    "examplePt": "Eu moro em Chicago.",
     "pos": "verb"
    },
    {
@@ -770,8 +770,8 @@ export const GENERATED_DECKS: Deck[] = [
     "deckId": "people",
     "en": "We",
     "pt": "Nós",
-    "exampleHtml": "<b>We</b> live in New Zealand.",
-    "examplePt": "Nós moramos na Nova Zelândia.",
+    "exampleHtml": "<b>We</b> live in the United States.",
+    "examplePt": "Nós moramos nos Estados Unidos.",
     "pos": "word"
    }
   ]
@@ -797,17 +797,17 @@ export const GENERATED_DECKS: Deck[] = [
     "deckId": "food",
     "en": "Coffee",
     "pt": "Café",
-    "exampleHtml": "A flat white is a NZ <b>coffee</b>.",
-    "examplePt": "Flat white é um café típico da NZ.",
+    "exampleHtml": "I need my morning <b>coffee</b>.",
+    "examplePt": "Preciso do meu café da manhã.",
     "pos": "noun"
    },
    {
     "id": "food_2",
     "deckId": "food",
-    "en": "Flat white",
-    "pt": "Café com leite cremoso (típico NZ)",
-    "exampleHtml": "I'll have a <b>flat white</b>, thanks.",
-    "examplePt": "Vou querer um flat white, obrigada.",
+    "en": "Drip coffee",
+    "pt": "Café coado (feito na cafeteira, comum nos EUA)",
+    "exampleHtml": "I'll have a <b>drip coffee</b>, thanks.",
+    "examplePt": "Vou querer um café coado, obrigado.",
     "pos": "noun"
    },
    {
@@ -975,9 +975,9 @@ export const GENERATED_DECKS: Deck[] = [
    {
     "id": "shopping_3",
     "deckId": "shopping",
-    "en": "On special",
-    "pt": "Em promoção (NZ)",
-    "exampleHtml": "The apples are <b>on special</b>.",
+    "en": "On sale",
+    "pt": "Em promoção",
+    "exampleHtml": "The apples are <b>on sale</b>.",
     "examplePt": "As maçãs estão em promoção.",
     "pos": "phrase"
    },
@@ -1011,9 +1011,9 @@ export const GENERATED_DECKS: Deck[] = [
    {
     "id": "shopping_7",
     "deckId": "shopping",
-    "en": "Trolley",
+    "en": "Cart",
     "pt": "Carrinho (de mercado)",
-    "exampleHtml": "Grab a <b>trolley</b>.",
+    "exampleHtml": "Grab a <b>cart</b>.",
     "examplePt": "Pega um carrinho.",
     "pos": "noun"
    },
@@ -1029,10 +1029,10 @@ export const GENERATED_DECKS: Deck[] = [
    {
     "id": "shopping_9",
     "deckId": "shopping",
-    "en": "EFTPOS",
-    "pt": "Máquina de cartão (NZ)",
-    "exampleHtml": "Can I pay by <b>EFTPOS</b>?",
-    "examplePt": "Posso pagar no cartão (EFTPOS)?",
+    "en": "Tap to pay",
+    "pt": "Pagar por aproximação",
+    "exampleHtml": "Can I <b>tap to pay</b>?",
+    "examplePt": "Posso pagar por aproximação?",
     "pos": "noun"
    },
    {
@@ -1065,28 +1065,28 @@ export const GENERATED_DECKS: Deck[] = [
    {
     "id": "shopping_13",
     "deckId": "shopping",
-    "en": "The Warehouse",
-    "pt": "Loja de tudo barato (NZ)",
-    "exampleHtml": "Let's go to <b>The Warehouse</b>.",
-    "examplePt": "Vamos à The Warehouse.",
+    "en": "Walmart",
+    "pt": "Rede de loja de departamentos (EUA)",
+    "exampleHtml": "Let's go to <b>Walmart</b>.",
+    "examplePt": "Vamos ao Walmart.",
     "pos": "noun"
    },
    {
     "id": "shopping_14",
     "deckId": "shopping",
-    "en": "Countdown / New World",
-    "pt": "Supermercados (NZ)",
-    "exampleHtml": "I shop at <b>Countdown</b>.",
-    "examplePt": "Faço compras no Countdown.",
+    "en": "Kroger / Safeway",
+    "pt": "Supermercados (EUA)",
+    "exampleHtml": "I shop at <b>Kroger</b>.",
+    "examplePt": "Faço compras no Kroger.",
     "pos": "noun"
    },
    {
     "id": "shopping_15",
     "deckId": "shopping",
-    "en": "Dairy",
-    "pt": "Mercadinho de esquina (NZ)",
-    "exampleHtml": "Get milk from the <b>dairy</b>.",
-    "examplePt": "Pega leite no mercadinho.",
+    "en": "Convenience store",
+    "pt": "Loja de conveniência",
+    "exampleHtml": "Get milk from the <b>convenience store</b>.",
+    "examplePt": "Pega leite na loja de conveniência.",
     "pos": "noun"
    }
   ]
@@ -1095,7 +1095,7 @@ export const GENERATED_DECKS: Deck[] = [
   "id": "money",
   "name": "Money & banking",
   "emoji": "🏦",
-  "desc": "IRD, accounts, paying bills",
+  "desc": "IRS, accounts, paying bills",
   "level": 3,
   "cards": [
    {
@@ -1110,10 +1110,10 @@ export const GENERATED_DECKS: Deck[] = [
    {
     "id": "money_1",
     "deckId": "money",
-    "en": "IRD number",
-    "pt": "Nº de contribuinte (NZ)",
-    "exampleHtml": "You need an <b>IRD number</b> to work.",
-    "examplePt": "Você precisa de um IRD number para trabalhar.",
+    "en": "Social Security number",
+    "pt": "Número de Seguro Social (EUA)",
+    "exampleHtml": "You need a <b>Social Security number</b> to work.",
+    "examplePt": "Você precisa de um número de Seguro Social para trabalhar.",
     "pos": "noun"
    },
    {
@@ -1146,10 +1146,10 @@ export const GENERATED_DECKS: Deck[] = [
    {
     "id": "money_5",
     "deckId": "money",
-    "en": "Fortnight",
-    "pt": "Quinzena (comum na NZ)",
-    "exampleHtml": "I'm paid every <b>fortnight</b>.",
-    "examplePt": "Recebo a cada quinzena.",
+    "en": "Biweekly",
+    "pt": "A cada duas semanas (quinzenal)",
+    "exampleHtml": "I'm paid <b>biweekly</b>.",
+    "examplePt": "Sou pago quinzenalmente.",
     "pos": "noun"
    },
    {
@@ -1228,27 +1228,27 @@ export const GENERATED_DECKS: Deck[] = [
  },
  {
   "id": "housing",
-  "name": "Housing & renting (NZ)",
+  "name": "Housing & renting",
   "emoji": "🏠",
-  "desc": "Flats, bond, letting agents",
+  "desc": "Apartments, deposit, leasing agents",
   "level": 3,
   "cards": [
    {
     "id": "housing_0",
     "deckId": "housing",
-    "en": "Flat",
-    "pt": "Apartamento / casa alugada (NZ)",
-    "exampleHtml": "We're renting a <b>flat</b>.",
-    "examplePt": "Estamos alugando um flat.",
+    "en": "Apartment",
+    "pt": "Apartamento",
+    "exampleHtml": "We're renting an <b>apartment</b>.",
+    "examplePt": "Estamos alugando um apartamento.",
     "pos": "noun"
    },
    {
     "id": "housing_1",
     "deckId": "housing",
-    "en": "Flatmate",
-    "pt": "Colega de moradia",
-    "exampleHtml": "We have two <b>flatmates</b>.",
-    "examplePt": "Temos dois flatmates.",
+    "en": "Roommate",
+    "pt": "Colega de apartamento",
+    "exampleHtml": "We have two <b>roommates</b>.",
+    "examplePt": "Temos dois colegas de apartamento.",
     "pos": "noun"
    },
    {
@@ -1263,36 +1263,36 @@ export const GENERATED_DECKS: Deck[] = [
    {
     "id": "housing_3",
     "deckId": "housing",
-    "en": "Letting agent",
+    "en": "Leasing agent",
     "pt": "Corretor de aluguel",
-    "exampleHtml": "Call the <b>letting agent</b>.",
+    "exampleHtml": "Call the <b>leasing agent</b>.",
     "examplePt": "Ligue para o corretor de aluguel.",
     "pos": "noun"
    },
    {
     "id": "housing_4",
     "deckId": "housing",
-    "en": "Bond",
-    "pt": "Caução / depósito de garantia",
-    "exampleHtml": "The <b>bond</b> is four weeks' rent.",
-    "examplePt": "A caução é quatro semanas de aluguel.",
+    "en": "Security deposit",
+    "pt": "Caução / depósito de segurança",
+    "exampleHtml": "The <b>security deposit</b> is one month's rent.",
+    "examplePt": "O depósito de segurança é um mês de aluguel.",
     "pos": "noun"
    },
    {
     "id": "housing_5",
     "deckId": "housing",
-    "en": "Lease / tenancy",
+    "en": "Lease",
     "pt": "Contrato de aluguel",
-    "exampleHtml": "We signed a one-year <b>tenancy</b>.",
+    "exampleHtml": "We signed a one-year <b>lease</b>.",
     "examplePt": "Assinamos um contrato de um ano.",
     "pos": "noun"
    },
    {
     "id": "housing_6",
     "deckId": "housing",
-    "en": "Viewing",
+    "en": "Showing",
     "pt": "Visita ao imóvel",
-    "exampleHtml": "We have a <b>viewing</b> at 3pm.",
+    "exampleHtml": "We have a <b>showing</b> at 3pm.",
     "examplePt": "Temos uma visita às 15h.",
     "pos": "noun"
    },
@@ -1301,7 +1301,7 @@ export const GENERATED_DECKS: Deck[] = [
     "deckId": "housing",
     "en": "Furnished",
     "pt": "Mobiliado",
-    "exampleHtml": "Is the flat <b>furnished</b>?",
+    "exampleHtml": "Is the apartment <b>furnished</b>?",
     "examplePt": "O apê é mobiliado?",
     "pos": "adj"
    },
@@ -1318,7 +1318,7 @@ export const GENERATED_DECKS: Deck[] = [
     "id": "housing_9",
     "deckId": "housing",
     "en": "Heat pump",
-    "pt": "Ar-condicionado/aquecedor (NZ)",
+    "pt": "Ar-condicionado/aquecedor",
     "exampleHtml": "The <b>heat pump</b> keeps us warm.",
     "examplePt": "O heat pump nos aquece.",
     "pos": "noun"
@@ -1326,9 +1326,9 @@ export const GENERATED_DECKS: Deck[] = [
    {
     "id": "housing_10",
     "deckId": "housing",
-    "en": "Rubbish / bin",
+    "en": "Trash / garbage",
     "pt": "Lixo / lixeira",
-    "exampleHtml": "Put it in the <b>rubbish bin</b>.",
+    "exampleHtml": "Put it in the <b>trash can</b>.",
     "examplePt": "Coloca no lixo.",
     "pos": "noun"
    },
@@ -1354,7 +1354,7 @@ export const GENERATED_DECKS: Deck[] = [
     "id": "housing_13",
     "deckId": "housing",
     "en": "Damp",
-    "pt": "Úmido (comum em casas NZ)",
+    "pt": "Úmido",
     "exampleHtml": "The room is a bit <b>damp</b>.",
     "examplePt": "O quarto é meio úmido.",
     "pos": "adj"
@@ -1381,17 +1381,17 @@ export const GENERATED_DECKS: Deck[] = [
  },
  {
   "id": "health",
-  "name": "Health, GP & pharmacy (NZ)",
+  "name": "Health, doctor & pharmacy",
   "emoji": "🩺",
-  "desc": "Doctors, chemist, feeling unwell",
+  "desc": "Doctors, pharmacy, feeling unwell",
   "level": 3,
   "cards": [
    {
     "id": "health_0",
     "deckId": "health",
-    "en": "GP",
+    "en": "Primary doctor",
     "pt": "Clínico geral / médico de família",
-    "exampleHtml": "I need to see a <b>GP</b>.",
+    "exampleHtml": "I need to see a <b>primary doctor</b>.",
     "examplePt": "Preciso consultar um clínico geral.",
     "pos": "noun"
    },
@@ -1407,9 +1407,9 @@ export const GENERATED_DECKS: Deck[] = [
    {
     "id": "health_2",
     "deckId": "health",
-    "en": "Chemist / pharmacy",
-    "pt": "Farmácia (NZ)",
-    "exampleHtml": "Get it from the <b>chemist</b>.",
+    "en": "Pharmacy",
+    "pt": "Farmácia",
+    "exampleHtml": "Get it from the <b>pharmacy</b>.",
     "examplePt": "Pega na farmácia.",
     "pos": "noun"
    },
@@ -1515,10 +1515,10 @@ export const GENERATED_DECKS: Deck[] = [
    {
     "id": "health_14",
     "deckId": "health",
-    "en": "Healthline",
-    "pt": "Telessaúde grátis (NZ)",
-    "exampleHtml": "You can call <b>Healthline</b> for advice.",
-    "examplePt": "Você pode ligar para a Healthline.",
+    "en": "Urgent care",
+    "pt": "Pronto atendimento (sem ser emergência)",
+    "exampleHtml": "You can go to <b>urgent care</b> for that.",
+    "examplePt": "Você pode ir ao pronto atendimento pra isso.",
     "pos": "noun"
    },
    {
@@ -1534,7 +1534,7 @@ export const GENERATED_DECKS: Deck[] = [
  },
  {
   "id": "transport",
-  "name": "Getting around (NZ)",
+  "name": "Getting around",
   "emoji": "🚌",
   "desc": "Buses, driving, directions",
   "level": 3,
@@ -1560,9 +1560,9 @@ export const GENERATED_DECKS: Deck[] = [
    {
     "id": "transport_2",
     "deckId": "transport",
-    "en": "AT HOP / Bee Card",
-    "pt": "Cartão de transporte (NZ)",
-    "exampleHtml": "Tag on with your <b>AT HOP card</b>.",
+    "en": "Transit card",
+    "pt": "Cartão de transporte (EUA)",
+    "exampleHtml": "Tap on with your <b>transit card</b>.",
     "examplePt": "Passe o cartão de transporte.",
     "pos": "noun"
    },
@@ -1596,9 +1596,9 @@ export const GENERATED_DECKS: Deck[] = [
    {
     "id": "transport_6",
     "deckId": "transport",
-    "en": "Petrol",
-    "pt": "Gasolina (NZ)",
-    "exampleHtml": "I need to get <b>petrol</b>.",
+    "en": "Gas",
+    "pt": "Gasolina",
+    "exampleHtml": "I need to get <b>gas</b>.",
     "examplePt": "Preciso abastecer.",
     "pos": "noun"
    },
@@ -1614,10 +1614,10 @@ export const GENERATED_DECKS: Deck[] = [
    {
     "id": "transport_8",
     "deckId": "transport",
-    "en": "Left side",
-    "pt": "Lado esquerdo (dirige-se à esquerda!)",
-    "exampleHtml": "In NZ you drive on the <b>left side</b>.",
-    "examplePt": "Na NZ se dirige do lado esquerdo.",
+    "en": "Right on red",
+    "pt": "Pode virar à direita no sinal vermelho (regra dos EUA)",
+    "exampleHtml": "You can turn <b>right on red</b> here.",
+    "examplePt": "Aqui você pode virar à direita no sinal vermelho.",
     "pos": "phrase"
    },
    {
@@ -1677,9 +1677,9 @@ export const GENERATED_DECKS: Deck[] = [
    {
     "id": "transport_15",
     "deckId": "transport",
-    "en": "Footpath",
-    "pt": "Calçada (NZ)",
-    "exampleHtml": "Walk on the <b>footpath</b>.",
+    "en": "Sidewalk",
+    "pt": "Calçada",
+    "exampleHtml": "Walk on the <b>sidewalk</b>.",
     "examplePt": "Ande na calçada.",
     "pos": "noun"
    }
@@ -1912,7 +1912,7 @@ export const GENERATED_DECKS: Deck[] = [
     "id": "smalltalk_9",
     "deckId": "smalltalk",
     "en": "Have a good one",
-    "pt": "Tenha um bom dia (informal NZ)",
+    "pt": "Tenha um bom dia (informal)",
     "exampleHtml": "<b>Have a good one!</b>",
     "examplePt": "Tenha um bom dia!",
     "pos": "phrase"
@@ -2127,10 +2127,10 @@ export const GENERATED_DECKS: Deck[] = [
    {
     "id": "emergency_1",
     "deckId": "emergency",
-    "en": "Call 111",
-    "pt": "Ligue 111 (emergência NZ)",
-    "exampleHtml": "<b>Call 111</b> — it's an emergency.",
-    "examplePt": "Ligue 111 — é uma emergência.",
+    "en": "Call 911",
+    "pt": "Ligue 911 (emergência EUA)",
+    "exampleHtml": "<b>Call 911</b> — it's an emergency.",
+    "examplePt": "Ligue 911 — é uma emergência.",
     "pos": "phrase"
    },
    {
@@ -2589,7 +2589,7 @@ export const GENERATED_DECKS: Deck[] = [
   "id": "clothes",
   "name": "Clothes & weather",
   "emoji": "🧥",
-  "desc": "Dress for the Kiwi weather",
+  "desc": "Dress for the weather",
   "level": 2,
   "cards": [
    {
@@ -2687,8 +2687,8 @@ export const GENERATED_DECKS: Deck[] = [
     "deckId": "clothes",
     "en": "Raincoat",
     "pt": "Capa de chuva",
-    "exampleHtml": "A <b>raincoat</b> is useful in NZ.",
-    "examplePt": "Capa de chuva é útil na NZ.",
+    "exampleHtml": "A <b>raincoat</b> is useful in Seattle.",
+    "examplePt": "Capa de chuva é útil em Seattle.",
     "pos": "noun"
    },
    {
@@ -2714,8 +2714,8 @@ export const GENERATED_DECKS: Deck[] = [
     "deckId": "clothes",
     "en": "Wind",
     "pt": "Vento",
-    "exampleHtml": "Wellington has a lot of <b>wind</b>.",
-    "examplePt": "Wellington tem muito vento.",
+    "exampleHtml": "Chicago has a lot of <b>wind</b>.",
+    "examplePt": "Chicago tem muito vento.",
     "pos": "noun"
    },
    {
@@ -3048,7 +3048,7 @@ export const GENERATED_DECKS: Deck[] = [
   "id": "arrival",
   "name": "Airport & immigration",
   "emoji": "🛂",
-  "desc": "Arriving in NZ — the exact words you'll hear",
+  "desc": "Arriving in the US — the exact words you'll hear",
   "level": 3,
   "cards": [
    {
@@ -3136,9 +3136,9 @@ export const GENERATED_DECKS: Deck[] = [
     "id": "arrival_9",
     "deckId": "arrival",
     "en": "Biosecurity",
-    "pt": "Biossegurança (importante na NZ!)",
-    "exampleHtml": "NZ has strict <b>biosecurity</b> rules.",
-    "examplePt": "A NZ tem regras rígidas de biossegurança.",
+    "pt": "Biossegurança (declarar comida/plantas na alfândega)",
+    "exampleHtml": "The US has strict <b>biosecurity</b> rules.",
+    "examplePt": "Os EUA têm regras rígidas de biossegurança.",
     "pos": "noun"
    },
    {
@@ -3288,9 +3288,9 @@ export const GENERATED_DECKS: Deck[] = [
    {
     "id": "town_9",
     "deckId": "town",
-    "en": "Petrol station",
+    "en": "Gas station",
     "pt": "Posto de gasolina",
-    "exampleHtml": "Stop at the <b>petrol station</b>.",
+    "exampleHtml": "Stop at the <b>gas station</b>.",
     "examplePt": "Pare no posto.",
     "pos": "noun"
    },
@@ -3434,7 +3434,7 @@ export const GENERATED_DECKS: Deck[] = [
     "deckId": "basics",
     "en": "Small",
     "pt": "Pequeno",
-    "exampleHtml": "A <b>small</b> flat.",
+    "exampleHtml": "A <b>small</b> apartment.",
     "examplePt": "Um apê pequeno.",
     "pos": "adj"
    },
@@ -3992,8 +3992,8 @@ export const GENERATED_DECKS: Deck[] = [
     "deckId": "grammar",
     "en": "Future: going to",
     "pt": "Plano/intenção: am/is/are + going to + verbo",
-    "exampleHtml": "We <b>are going to</b> move to NZ.",
-    "examplePt": "Nós vamos nos mudar pra NZ.",
+    "exampleHtml": "We <b>are going to</b> move to the US.",
+    "examplePt": "Nós vamos nos mudar pros EUA.",
     "pos": "grammar"
    },
    {

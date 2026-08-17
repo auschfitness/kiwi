@@ -26,9 +26,9 @@ export { ENGLISH_DECKS, ENGLISH_CARDS } from './english'
  * lie.
  *
  * Note what stays English above: DIALOGUES, ROLEPLAYS, MINIMAL_PAIRS and
- * PHONETICS are all New Zealand material. The Practice screens built on them
- * are hidden in the Spanish course rather than shown full of Auckland cafés —
- * see `Course.hasPractice`.
+ * PHONETICS are all American material specific to this course. The Practice
+ * screens built on them are hidden in the Spanish course rather than shown
+ * full of Chicago diners — see `Course.hasPractice`.
  */
 export const DECKS: Deck[] = ACTIVE_COURSE.decks
 

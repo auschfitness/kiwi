@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import {
   GENERATED_KINDS,
-  NZ_PLACE_NAMES,
+  US_PLACE_NAMES,
   SESSION_LENGTH,
   answerForms,
   buildDrillSession,
@@ -25,7 +25,7 @@ function many(kind: GeneratedKind, n = 200): DrillItem[] {
   return Array.from({ length: n }, () => generateDrill(kind, rand))
 }
 
-const WORDS = ['bread', 'milk', 'butter', 'chemist', 'jandals']
+const WORDS = ['bread', 'milk', 'butter', 'pharmacy', 'sidewalk']
 
 describe('numberToWords', () => {
   it('says small numbers plainly', () => {
@@ -39,7 +39,7 @@ describe('numberToWords', () => {
     expect(numberToWords(90)).toBe('ninety')
   })
 
-  it('keeps the NZ "and" in the hundreds', () => {
+  it('keeps the "and" in the hundreds', () => {
     expect(numberToWords(120)).toBe('one hundred and twenty')
     expect(numberToWords(300)).toBe('three hundred')
   })
@@ -120,7 +120,7 @@ describe('price drill', () => {
 
   it('accepts every way she might type $3.50', () => {
     const item: DrillItem = { kind: 'price', spoken: 'three fifty', display: '$____', accept: ['3.50', '350'] }
-    for (const typed of ['3.50', '$3.50', '350', '3,50', ' $3.50 ', 'NZD 3.50']) {
+    for (const typed of ['3.50', '$3.50', '350', '3,50', ' $3.50 ', 'USD 3.50']) {
       expect(checkDrillAnswer(typed, item)).toBe(true)
     }
   })
@@ -163,7 +163,7 @@ describe('time drill', () => {
   })
 
   it('says midnight as "twelve", never "zero"', () => {
-    // 00:05 read out as "zero oh five" is a sentence no Kiwi will ever say.
+    // 00:05 read out as "zero oh five" is a sentence no American will ever say.
     const items = many('time', 400)
     for (const item of items) expect(item.spoken).not.toMatch(/\bzero\b/)
 
@@ -183,19 +183,19 @@ describe('date drill', () => {
     }
   })
 
-  it('reads day-first, the way NZ writes it', () => {
-    const item: DrillItem = { kind: 'date', spoken: 'the fifth of March', display: '__/__', accept: ['5/3', '5 March'] }
-    for (const typed of ['5/3', '05/03', '5 march', '5 March', '05/3']) {
+  it('reads month-first, the way America writes it', () => {
+    const item: DrillItem = { kind: 'date', spoken: 'the fifth of March', display: '__/__', accept: ['3/5', '5 March'] }
+    for (const typed of ['3/5', '03/05', '5 march', '5 March', '03/5']) {
       expect(checkDrillAnswer(typed, item)).toBe(true)
     }
-    // The American reading of the same slashes is a different day — refuse it.
-    expect(checkDrillAnswer('3/5', item)).toBe(false)
+    // The day-first reading of the same slashes is a different day — refuse it.
+    expect(checkDrillAnswer('5/3', item)).toBe(false)
     expect(checkDrillAnswer('5 May', item)).toBe(false)
   })
 
   it('never generates a day the month does not have', () => {
     for (const item of many('date')) {
-      const [day, month] = item.accept[0].split('/').map(Number)
+      const [month, day] = item.accept[0].split('/').map(Number)
       const lengths = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
       expect(day).toBeGreaterThanOrEqual(1)
       expect(day).toBeLessThanOrEqual(lengths[month - 1])
@@ -204,22 +204,22 @@ describe('date drill', () => {
 })
 
 describe('phone drill', () => {
-  it('says NZ-grouped digits with "oh" for zero', () => {
+  it('says US-grouped digits with "oh" for zero', () => {
     const items = many('phone')
     for (const item of items) {
       expect(item.spoken).not.toMatch(/\d/)
       expect(item.spoken.split('. ').length).toBe(3)
       expect(item.accept[0]).toMatch(/^\d{2,3} \d{3} \d{4}$/)
     }
-    expect(items.some(i => i.spoken.startsWith('oh two'))).toBe(true)
+    expect(items.some(i => i.spoken.includes('oh'))).toBe(true)
   })
 
   it('accepts the number with spaces, dashes or neither', () => {
-    const item: DrillItem = { kind: 'phone', spoken: 'oh two one. five five five. one two three four.', accept: ['021 555 1234'] }
-    for (const typed of ['021 555 1234', '0215551234', '021-555-1234', '021 5551234']) {
+    const item: DrillItem = { kind: 'phone', spoken: 'two one two. five five five. one two three four.', accept: ['212 555 1234'] }
+    for (const typed of ['212 555 1234', '2125551234', '212-555-1234', '212 5551234']) {
       expect(checkDrillAnswer(typed, item)).toBe(true)
     }
-    expect(checkDrillAnswer('021 555 1235', item)).toBe(false)
+    expect(checkDrillAnswer('212 555 1235', item)).toBe(false)
   })
 })
 
@@ -231,16 +231,16 @@ describe('quantity drill', () => {
     }
   })
 
-  it('teaches fortnight, dozen and grams', () => {
+  it('teaches ounces, dozen and gallons', () => {
     const spokens = new Set(many('quantity').map(i => i.spoken))
-    expect(spokens.has('a fortnight')).toBe(true)
+    expect(spokens.has('a pound')).toBe(true)
     expect(spokens.has('a dozen eggs')).toBe(true)
-    expect(spokens.has('two hundred grams')).toBe(true)
+    expect(spokens.has('a gallon of milk')).toBe(true)
   })
 
-  it('takes either the number or the word for a fortnight', () => {
-    const item: DrillItem = { kind: 'quantity', spoken: 'a fortnight', accept: ['14', 'fortnight', 'two weeks', '14 days'] }
-    for (const typed of ['14', 'fortnight', 'Fortnight', 'two weeks', '14 days']) {
+  it('takes either the number or the words for two weeks', () => {
+    const item: DrillItem = { kind: 'quantity', spoken: 'two weeks', accept: ['14', 'two weeks', '14 days'] }
+    for (const typed of ['14', 'two weeks', 'Two Weeks', '14 days']) {
       expect(checkDrillAnswer(typed, item)).toBe(true)
     }
     expect(checkDrillAnswer('7', item)).toBe(false)
@@ -257,10 +257,10 @@ describe('quantity drill', () => {
 
 describe('writing down exactly what she heard', () => {
   /**
-   * The bug this covers, in full: she hears "a fortnight", types "a fortnight",
+   * The bug this covers, in full: she hears "two weeks", types "two weeks",
    * and is told `Not quite. It was 14` — with `recordListeningPractice(false)`
-   * fired against a rep she heard perfectly. Nine of the eleven amounts did
-   * this, and so did every other generated kind.
+   * fired against a rep she heard perfectly. Several of the eleven amounts
+   * did this, and so did every other generated kind.
    *
    * 400 items per kind with a pinned seed walks the whole space several times
    * over; the count assertion below proves the quantity table is covered
@@ -303,11 +303,11 @@ describe('writing down exactly what she heard', () => {
 
 describe('spellOut', () => {
   it('puts a full stop after every letter so TTS pauses', () => {
-    expect(spellOut('Auckland')).toBe('A. U. C. K. L. A. N. D.')
+    expect(spellOut('Chicago')).toBe('C. H. I. C. A. G. O.')
   })
 
   it('closes up a two-word place name', () => {
-    expect(spellOut('Grey Lynn')).toBe('G. R. E. Y. L. Y. N. N.')
+    expect(spellOut('Las Vegas')).toBe('L. A. S. V. E. G. A. S.')
   })
 })
 
@@ -331,16 +331,16 @@ describe('generateSpellingItem', () => {
     }
   })
 
-  it('draws on both the caller words and the NZ place names', () => {
+  it('draws on both the caller words and the US place names', () => {
     const rand = seeded(11)
     const picked = new Set(Array.from({ length: 300 }, () => generateSpellingItem(WORDS, rand).accept[0]))
     expect([...picked].some(w => WORDS.includes(w))).toBe(true)
-    expect([...picked].some(w => NZ_PLACE_NAMES.includes(w))).toBe(true)
+    expect([...picked].some(w => US_PLACE_NAMES.includes(w))).toBe(true)
   })
 
   it('falls back to a place name when the caller has nothing usable', () => {
     const item = generateSpellingItem([], seeded(1))
-    expect(NZ_PLACE_NAMES).toContain(item.accept[0])
+    expect(US_PLACE_NAMES).toContain(item.accept[0])
   })
 
   it('skips words that are not plain short letters', () => {

@@ -81,8 +81,8 @@ export const IRREGULAR_DECK: Deck = {
     {
       id: 'irregular_7', deckId: 'irregular',
       en: 'come → came', pt: 'vir (passado: came)',
-      exampleHtml: 'They <b>came</b> to New Zealand in June.',
-      examplePt: 'Eles vieram para a Nova Zelândia em junho.',
+      exampleHtml: 'They <b>came</b> to the United States in June.',
+      examplePt: 'Eles vieram para os Estados Unidos em junho.',
       pos: 'grammar',
     },
     {

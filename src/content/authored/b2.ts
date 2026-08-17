@@ -301,8 +301,8 @@ const connectors: Deck = {
     {
       id: 'connectors_12', deckId: 'connectors',
       en: 'for instance', pt: 'por exemplo',
-      exampleHtml: 'Some Kiwis, <b>for instance</b>, love rugby.',
-      examplePt: 'Alguns neozelandeses, por exemplo, amam rúgbi.',
+      exampleHtml: 'Some Americans, <b>for instance</b>, love football.',
+      examplePt: 'Alguns americanos, por exemplo, amam futebol americano.',
       pos: 'phrase',
     },
     {
@@ -534,7 +534,7 @@ const opinions: Deck = {
 
 const workplace: Deck = {
   id: 'workplace', name: 'Work & professional', emoji: '🗂️',
-  desc: 'Payslips, contracts and Kiwi office life', level: 4,
+  desc: 'Pay stubs, contracts and American office life', level: 4,
   cards: [
     {
       id: 'workplace_0', deckId: 'workplace',
@@ -545,8 +545,8 @@ const workplace: Deck = {
     },
     {
       id: 'workplace_1', deckId: 'workplace',
-      en: 'roster', pt: 'escala de trabalho',
-      exampleHtml: 'Check the <b>roster</b> for your shifts.',
+      en: 'schedule', pt: 'escala de trabalho',
+      exampleHtml: 'Check the <b>schedule</b> for your shifts.',
       examplePt: 'Confira a escala para ver seus turnos.',
       pos: 'noun',
     },
@@ -567,7 +567,7 @@ const workplace: Deck = {
     {
       id: 'workplace_4', deckId: 'workplace',
       en: 'in charge of', pt: 'responsável por',
-      exampleHtml: "She's <b>in charge of</b> the roster.",
+      exampleHtml: "She's <b>in charge of</b> the schedule.",
       examplePt: 'Ela é responsável pela escala.',
       pos: 'phrase',
     },
@@ -580,16 +580,16 @@ const workplace: Deck = {
     },
     {
       id: 'workplace_6', deckId: 'workplace',
-      en: 'annual leave', pt: 'férias anuais',
-      exampleHtml: "I've booked two weeks' <b>annual leave</b>.",
+      en: 'vacation', pt: 'férias',
+      exampleHtml: "I've booked two weeks of <b>vacation</b>.",
       examplePt: 'Reservei duas semanas de férias.',
       pos: 'phrase',
     },
     {
       id: 'workplace_7', deckId: 'workplace',
-      en: 'KiwiSaver', pt: 'KiwiSaver (fundo de previdência da NZ)',
-      exampleHtml: 'We both contribute to <b>KiwiSaver</b>.',
-      examplePt: 'Nós dois contribuímos para o KiwiSaver.',
+      en: '401(k)', pt: '401(k) (fundo de previdência dos EUA)',
+      exampleHtml: 'We both contribute to our <b>401(k)</b>.',
+      examplePt: 'Nós dois contribuímos para o nosso 401(k).',
       pos: 'noun',
     },
     {
@@ -615,16 +615,16 @@ const workplace: Deck = {
     },
     {
       id: 'workplace_11', deckId: 'workplace',
-      en: 'payslip', pt: 'holerite',
-      exampleHtml: 'Check your <b>payslip</b> for the overtime.',
+      en: 'pay stub', pt: 'holerite',
+      exampleHtml: 'Check your <b>pay stub</b> for the overtime.',
       examplePt: 'Confira seu holerite para ver a hora extra.',
       pos: 'noun',
     },
     {
       id: 'workplace_12', deckId: 'workplace',
-      en: 'PAYE', pt: 'imposto retido na fonte (NZ)',
-      exampleHtml: '<b>PAYE</b> is deducted from every payslip.',
-      examplePt: 'O PAYE é descontado de cada holerite.',
+      en: 'withholding', pt: 'imposto retido na fonte (retido do salário)',
+      exampleHtml: '<b>Withholding</b> is deducted from every paycheck.',
+      examplePt: 'A retenção é descontada de cada contracheque.',
       pos: 'noun',
     },
     {
@@ -722,63 +722,63 @@ const workplace: Deck = {
 }
 
 const idioms: Deck = {
-  id: 'idioms', name: 'Idioms & Kiwi collocations', emoji: '🎣',
+  id: 'idioms', name: 'Idioms & American collocations', emoji: '🎣',
   desc: 'The slang that makes you sound local', level: 4,
   cards: [
     {
       id: 'idioms_0', deckId: 'idioms',
-      en: 'heaps of', pt: 'muito(s) / uma porção de',
-      exampleHtml: "There's <b>heaps of</b> parking today.",
+      en: 'a ton of', pt: 'muito(s) / uma tonelada de',
+      exampleHtml: "There's <b>a ton of</b> parking today.",
       examplePt: 'Tem muita vaga de estacionamento hoje.',
       pos: 'phrase',
     },
     {
       id: 'idioms_1', deckId: 'idioms',
-      en: 'keen as', pt: 'super animado / muito a fim',
-      exampleHtml: "I'm <b>keen as</b> for the weekend.",
+      en: 'stoked', pt: 'super animado / muito empolgado',
+      exampleHtml: "I'm <b>stoked</b> for the weekend.",
       examplePt: 'Estou super animado para o fim de semana.',
       pos: 'phrase',
     },
     {
       id: 'idioms_2', deckId: 'idioms',
-      en: 'chock-a-block', pt: 'cheio até não poder mais',
-      exampleHtml: 'The car park was <b>chock-a-block</b>.',
-      examplePt: 'O estacionamento estava cheio até não poder mais.',
+      en: 'jam-packed', pt: 'cheio até não poder mais / lotado',
+      exampleHtml: 'The parking lot was <b>jam-packed</b>.',
+      examplePt: 'O estacionamento estava lotado.',
       pos: 'adj',
     },
     {
       id: 'idioms_3', deckId: 'idioms',
       en: 'give it a go', pt: 'tentar / dar uma chance',
-      exampleHtml: '<b>Give it a go</b>, mate.',
-      examplePt: 'Só tenta, mano.',
+      exampleHtml: '<b>Give it a go</b>, man.',
+      examplePt: 'Só tenta, cara.',
       pos: 'phrase',
     },
     {
       id: 'idioms_4', deckId: 'idioms',
-      en: 'no dramas', pt: 'sem problema / de boa',
-      exampleHtml: "<b>No dramas</b>, I'll sort it out.",
+      en: 'not a big deal', pt: 'sem problema / de boa',
+      exampleHtml: "<b>Not a big deal</b>, I'll sort it out.",
       examplePt: 'Sem problema, eu resolvo isso.',
       pos: 'phrase',
     },
     {
       id: 'idioms_5', deckId: 'idioms',
-      en: 'flat out', pt: 'numa correria / a toda',
-      exampleHtml: "We've been <b>flat out</b> at work.",
-      examplePt: 'Estamos numa correria no trabalho.',
+      en: 'swamped', pt: 'atolado de trabalho / numa correria',
+      exampleHtml: "We've been <b>swamped</b> at work.",
+      examplePt: 'Estamos atolados de trabalho.',
       pos: 'phrase',
     },
     {
       id: 'idioms_6', deckId: 'idioms',
-      en: 'hard yakka', pt: 'trabalho pesado / batalha',
-      exampleHtml: 'Picking fruit is <b>hard yakka</b>.',
+      en: 'backbreaking work', pt: 'trabalho pesado / batalha',
+      exampleHtml: 'Picking fruit is <b>backbreaking work</b>.',
       examplePt: 'Colher frutas é um trabalho pesado.',
       pos: 'phrase',
     },
     {
       id: 'idioms_7', deckId: 'idioms',
-      en: "she'll be right", pt: 'vai ficar tudo bem',
-      exampleHtml: "Don't worry, <b>she'll be right</b>.",
-      examplePt: 'Não se preocupa, vai ficar tudo bem.',
+      en: "it'll all work out", pt: 'vai dar tudo certo',
+      exampleHtml: "Don't worry, <b>it'll all work out</b>.",
+      examplePt: 'Não se preocupa, vai dar tudo certo.',
       pos: 'phrase',
     },
     {

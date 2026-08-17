@@ -22,14 +22,14 @@ export const PLAN: PlanWeek[] = [
     tip: "Don't aim for perfect — aim for understood.",
   },
   {
-    title: 'Life admin in NZ',
-    detail: 'Money & banking (IRD), Housing & renting (bond, flat), Work & job. The vocabulary for settling in.',
+    title: 'Life admin in the US',
+    detail: 'Money & banking (IRS), Housing & renting (deposit, apartment), Work & job. The vocabulary for settling in.',
     tip: 'Typing answers is worth the extra seconds — spelling sticks better when you write it out.',
   },
   {
     title: 'Health & getting around',
-    detail: 'Health/GP/pharmacy, Transport, Airport & immigration. Words for the doctor, the bus, and arrival day.',
-    tip: "Read the 'At the GP' and 'At immigration' dialogues out loud.",
+    detail: 'Health/doctor/pharmacy, Transport, Airport & immigration. Words for the doctor, the bus, and arrival day.',
+    tip: "Read the 'At the doctor' and 'At immigration' dialogues out loud.",
   },
   {
     title: 'Sound like a local',

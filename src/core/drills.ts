@@ -44,9 +44,10 @@ const ONES = [
 const TENS = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety']
 
 /**
- * 0–9999 said the way a person says it, not digit by digit. Keeps the British
- * / NZ "and": "one hundred and twenty", "one thousand and five" — that little
- * word is half of why a spoken number goes past her too fast.
+ * 0–9999 said the way a person says it, not digit by digit. Keeps the "and":
+ * "one hundred and twenty", "one thousand and five" — Americans say it too in
+ * speech, and that little word is half of why a spoken number goes past her
+ * too fast.
  */
 export function numberToWords(n: number): string {
   if (n < 20) return ONES[n]
@@ -88,7 +89,7 @@ const MONTH_DAYS = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 // ---------------------------------------------------------------------------
 
 /** Currency marks she may or may not type. The amount is the answer, not the sign. */
-const CURRENCY = /[$£€¥]|\bnzd\b/gi
+const CURRENCY = /[$£€¥]|\busd\b/gi
 
 /** 1,200 / 1.200 — a group of exactly three digits after the mark is a thousands separator. */
 const THOUSANDS_COMMA = /^\d{1,3}(,\d{3})+$/
@@ -193,7 +194,7 @@ function priceDrill(rand: () => number): DrillItem {
 }
 
 const MINUTES_ANALOGUE = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]
-/** The 24-hour style needs a minute to say: "fourteen hundred" is army, not Auckland. */
+/** The 24-hour style needs a minute to say: "fourteen hundred" is army, not everyday. */
 const MINUTES_24 = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]
 
 function analogueTime(hour12: number, minute: number): string {
@@ -214,7 +215,7 @@ function timeDrill(rand: () => number): DrillItem {
   const hour24 = pm ? (hour12 % 12) + 12 : hour12 % 12
 
   // Midnight is said "twelve oh five", never "zero oh five" — nobody says that,
-  // and hearing it would teach her a sentence no Kiwi will ever say to her.
+  // and hearing it would teach her a sentence no American will ever say to her.
   // Both readings are accepted below, so 12:05 and 00:05 are still both right.
   const spokenHour = hour24 === 0 ? 12 : hour24
   const spoken = twentyFour
@@ -239,16 +240,15 @@ function dateDrill(rand: () => number): DrillItem {
     kind: 'date',
     spoken: `the ${ORDINALS[day]} of ${name}`,
     display: '__/__',
-    // NZ writes the day first, so 5/3 is the fifth of March. The American
-    // reading (3/5) is deliberately not accepted — getting that wrong is how
-    // you turn up to an appointment two months early.
-    accept: [`${day}/${month}`, `${day} ${name}`],
+    // American writes the month first, so 3/5 is the fifth of March. The
+    // day-first reading (5/3) is deliberately not accepted — getting that
+    // wrong is how you turn up to an appointment two months early.
+    accept: [`${month}/${day}`, `${day} ${name}`],
   }
 }
 
-const MOBILE_PREFIXES = ['021', '022', '027']
-/** Auckland, Wellington, Christchurch/Dunedin landline codes. */
-const LANDLINE_PREFIXES = ['09', '04', '03']
+/** Real US area codes (NYC, Chicago, SF, Miami, Las Vegas) — recognisable, and none starts with 0 or 1, which the NANP forbids. */
+const AREA_CODES = ['212', '312', '415', '305', '702']
 
 const DIGIT_WORDS = ['oh', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine']
 
@@ -263,11 +263,10 @@ function randomDigits(n: number, rand: () => number): string {
 }
 
 function phoneDrill(rand: () => number): DrillItem {
-  const mobile = rand() < 0.6
-  const prefix = pick(mobile ? MOBILE_PREFIXES : LANDLINE_PREFIXES, rand)
-  // Both shapes group the same way once the code is out of the way:
-  // "021 555 1234", "09 358 1234".
-  const groups = [prefix, randomDigits(3, rand), randomDigits(4, rand)]
+  const areaCode = pick(AREA_CODES, rand)
+  // US phone numbers all group the same way: area code, exchange, line —
+  // "212 555 1234".
+  const groups = [areaCode, randomDigits(3, rand), randomDigits(4, rand)]
 
   // The full stops are load-bearing: without them TTS reads the whole thing as
   // one long number and she has no chance of catching the groups.
@@ -281,21 +280,22 @@ function phoneDrill(rand: () => number): DrillItem {
 }
 
 /**
- * Amounts said as words. *Fortnight* earns its place: NZ rent and pay are
- * quoted fortnightly and nobody explains it to you.
+ * Amounts said as words. She grew up metric, and American groceries are
+ * quoted in pounds, ounces and gallons instead — a real gap, not a voice
+ * quirk, since a Brazilian ear has no built-in sense of what an ounce is.
  */
 const QUANTITIES: ReadonlyArray<{ spoken: string; accept: string[] }> = [
-  { spoken: 'two hundred grams', accept: ['200', '200 g', '200 grams'] },
-  { spoken: 'five hundred grams', accept: ['500', '500 g', '500 grams'] },
-  { spoken: 'a kilo', accept: ['1', '1 kg', 'kilo'] },
-  { spoken: 'half a kilo', accept: ['500', '500 g', 'half a kilo'] },
+  { spoken: 'half a pound', accept: ['8', '8 oz', 'half a pound'] },
+  { spoken: 'a pound', accept: ['16', '16 oz', 'a pound', 'pound'] },
+  { spoken: 'a quarter pound', accept: ['4', '4 oz', 'a quarter pound', 'quarter pound'] },
   { spoken: 'a dozen eggs', accept: ['12', 'dozen', 'a dozen'] },
   { spoken: 'half a dozen', accept: ['6', 'half a dozen'] },
-  { spoken: 'a fortnight', accept: ['14', 'fortnight', 'two weeks', '14 days'] },
+  { spoken: 'two weeks', accept: ['14', 'two weeks', '14 days'] },
   { spoken: 'a couple of days', accept: ['2', 'couple'] },
-  { spoken: 'two litres of milk', accept: ['2', '2 l', 'two litres'] },
-  { spoken: 'a quarter of a kilo', accept: ['250', '250 g'] },
+  { spoken: 'a gallon of milk', accept: ['1', '1 gallon', 'a gallon'] },
+  { spoken: 'a quart of milk', accept: ['1', '1 quart', 'a quart'] },
   { spoken: 'three quarters of an hour', accept: ['45', '45 minutes'] },
+  { spoken: 'a six-pack', accept: ['6', 'six-pack', 'a six-pack'] },
 ]
 
 function quantityDrill(rand: () => number): DrillItem {
@@ -346,13 +346,13 @@ export function generateDrill(kind: GeneratedKind, rand: () => number): DrillIte
 // ---------------------------------------------------------------------------
 
 /**
- * Places she will have to spell down a phone in her first week — the main
- * centres, plus a few Auckland suburbs.
+ * Places she will have to spell down a phone in her first week — major
+ * cities, plus a few neighbourhoods she's likely to hear by name.
  */
-export const NZ_PLACE_NAMES: readonly string[] = [
-  'Auckland', 'Wellington', 'Christchurch', 'Dunedin', 'Hamilton', 'Tauranga',
-  'Rotorua', 'Queenstown', 'Whangarei', 'Napier',
-  'Ponsonby', 'Takapuna', 'Newmarket', 'Devonport', 'Onehunga', 'Grey Lynn',
+export const US_PLACE_NAMES: readonly string[] = [
+  'Chicago', 'Seattle', 'Boston', 'Austin', 'Denver', 'Portland',
+  'Nashville', 'Phoenix', 'Orlando', 'Memphis',
+  'Brooklyn', 'Manhattan', 'Hollywood', 'Sacramento', 'Baltimore', 'Pittsburgh',
 ]
 
 const MIN_SPELLING_LETTERS = 3
@@ -386,14 +386,14 @@ export function spellOut(word: string): string {
 export function generateSpellingItem(words: string[], rand: () => number): DrillItem {
   const seen = new Set<string>()
   const pool: string[] = []
-  for (const word of [...words, ...NZ_PLACE_NAMES]) {
+  for (const word of [...words, ...US_PLACE_NAMES]) {
     const trimmed = word.trim()
     const key = trimmed.toLowerCase()
     if (!spellable(trimmed) || seen.has(key)) continue
     seen.add(key)
     pool.push(trimmed)
   }
-  const word = pool.length > 0 ? pick(pool, rand) : 'Auckland'
+  const word = pool.length > 0 ? pick(pool, rand) : 'Chicago'
   const letters = word.replace(/\s+/g, '')
   return acceptItsOwnWords({
     kind: 'spelling',

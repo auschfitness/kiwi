@@ -93,10 +93,7 @@ const SELECTION_EN = {
   // ── food · Café & restaurant (L2) ──────────────────────────────────────
   food_0: 'pouring water into a clear drinking glass',
   food_1: 'cup of coffee',
-  // "Flat white" alone is fine on Pexels — it is a coffee term everywhere —
-  // but "flat" on its own would return flat-lay compositions, so the noun
-  // is always kept with "coffee".
-  food_2: 'flat white coffee cup latte art',
+  food_2: 'drip coffee carafe pot',
   food_3: 'cup of tea with teapot',
   food_4: 'loaf of bread bakery',
   food_5: 'breakfast plate eggs toast',
@@ -104,27 +101,24 @@ const SELECTION_EN = {
   food_7: 'dinner table plate evening meal',
   food_8: 'person holding a restaurant menu',
   food_12: 'disposable takeaway coffee cup and paper bag',
-  // "Cheers" is skipped on purpose: in NZ it usually means "thanks", and the
-  // only photo you get is clinking glasses — which would teach the drinking
-  // sense she is less likely to need.
+  // "Cheers" is skipped on purpose: casually it means "thanks", and the only
+  // photo you get is clinking glasses — which would teach the drinking sense
+  // she is less likely to need.
 
   // ── shopping · Shopping & supermarket (L2) ─────────────────────────────
   shopping_6: 'paper shopping receipt',
-  // NZ "trolley" is a supermarket cart; unqualified it returns hospital and
-  // hotel trolleys.
+  // Bare "cart" unqualified returns hospital and golf carts too.
   shopping_7: 'supermarket shopping trolley cart aisle',
   shopping_8: 'supermarket checkout counter cashier',
-  // EFTPOS is a New Zealand word with no stock photography behind it. Query
-  // the object instead of the word.
+  // "Tap to pay" alone returns app UI mockups, not the physical reader.
   shopping_9: 'card payment terminal machine',
   shopping_10: 'cash banknotes money in hand',
   // Bare "card" is playing cards, birthday cards, memory cards.
   shopping_11: 'credit card debit card in hand',
   // Bare "bag" is a handbag.
   shopping_12: 'reusable shopping bag with groceries',
-  // The Warehouse / Countdown / New World / Dairy are NZ shopfronts that
-  // Pexels does not have. "Dairy" would return milk and cows — exactly the
-  // wrong association for a corner shop.
+  // Walmart / Kroger / Safeway / a generic convenience store don't have
+  // reliable branded stock photography on Pexels — these three go without.
 
   // ── money · Money & banking (L3) ───────────────────────────────────────
   // "Bill" is a duck's beak, a banknote, and a man's name before it is an
@@ -137,28 +131,22 @@ const SELECTION_EN = {
   money_9: 'pile of coins small change',
   money_11: 'atm cash machine bank',
 
-  // ── housing · Housing & renting (L3) ───────────────────────────────────
-  // "Flat" is the single most dangerous query in the corpus: flat lay,
-  // flat design, flat tyre, flat surface. Only "apartment building" gets a
-  // NZ flat.
+  // ── housing · Housing & renting (L3) ────────────────────────────────────
   housing_0: 'apartment building exterior flats',
   housing_8: 'electricity power lines',
   housing_9: 'heat pump air conditioning unit on wall',
   housing_10: 'trash can garbage waste container',
   housing_11: 'recycling bin bottles sorting',
   housing_12: 'row of suburban family houses',
-  // "Damp" alone returns dew and wet grass, which reads as pleasant. The
-  // card means the thing that ruins NZ rentals.
   // "Damp" defeated four queries. British "mould" collides with
   // architectural moulding; American "mold" and "mildew" return abandoned
   // buildings and decorative decay. None of them is the cold wet corner of a
-  // NZ rental, so the card goes without.
+  // rental unit, so the card goes without.
   housing_14: 'house keys door key',
-  // "Bond" is skipped: it is money held by a government agency. James Bond
-  // and chemical bonds are what a photo library has, and neither is a bond.
+  // "Security deposit" is skipped: it's money, not a thing a camera can show
+  // without just repeating money_11's ATM shot.
 
-  // ── health · Health, GP & pharmacy (L3) ────────────────────────────────
-  // "GP" as an abbreviation is meaningless to a photo search.
+  // ── health · Health, doctor & pharmacy (L3) ─────────────────────────────
   health_0: 'doctor consulting patient in clinic',
   health_2: 'pharmacy shelves chemist shop',
   health_3: 'doctor writing a prescription',
@@ -170,7 +158,8 @@ const SELECTION_EN = {
   health_11: 'nurse in scrubs hospital',
   health_12: 'hospital building exterior',
   health_13: 'dentist treating patient dental chair',
-  // "Healthline" is a NZ phone service — nothing to photograph.
+  // "Urgent care" is a place, but every result is indistinguishable from
+  // health_0's clinic shot — skipped rather than repeated.
 
   // ── transport · Getting around (L3) ────────────────────────────────────
   transport_0: 'city bus on the street',
@@ -178,17 +167,16 @@ const SELECTION_EN = {
   transport_3: 'passenger train at railway station',
   transport_4: 'passenger ferry boat harbour',
   transport_5: 'car on the road',
-  // NZ "petrol" is fine as a word, but the pump makes it unmistakable and
-  // keeps it apart from town_9 (the whole station).
+  // "Gas" is fine as a word, but the pump makes it unmistakable and keeps it
+  // apart from town_9 (the whole station).
   transport_6: 'petrol pump nozzle filling car with fuel',
   transport_7: 'plastic id card driving licence in hand',
   transport_14: 'traffic lights red and green signal',
-  // NZ "footpath" is the pavement; unqualified it returns forest trails.
-  // "Footpath" (the NZ word for the pavement) came back as a bike lane, a
-  // road crossing and a dim street — every time the road won the frame, and
-  // the road is transport_5's neighbour, not this card. Dropped.
-  // AT HOP / Bee Card are NZ travel cards with no stock imagery, and a
-  // generic contactless card would just repeat shopping_11.
+  // "Sidewalk" unqualified came back as a bike lane, a road crossing and a
+  // dim street — every time the road won the frame, and the road is
+  // transport_5's neighbour, not this card. Dropped.
+  // "Transit card" would just return a generic contactless card and repeat
+  // shopping_11.
 
   // ── work · Work & job (L3) ─────────────────────────────────────────────
   work_1: 'cv resume document on desk',
@@ -264,7 +252,7 @@ const SELECTION_EN = {
   clothes_3: 'winter wool coat hanging',
   clothes_4: 'pair of shoes',
   clothes_5: 'pair of socks',
-  // NZ "pants" are trousers. The US sense would return underwear.
+  // Bare "pants" is unreliable on Pexels, so the query stays specific.
   clothes_6: 'trousers jeans folded clothing',
   // "Dress" is also a verb, and "dress up" is a costume party.
   clothes_7: 'summer dress on a hanger',
