@@ -54,11 +54,11 @@ async function startQuiz() {
 }
 
 describe('Ear training menu', () => {
-  it('offers Compare and the quiz, and explains the Kiwi vowel shift', () => {
+  it('offers Compare and the quiz, and explains the American flap-t', () => {
     render(<EarTraining onBack={vi.fn()} />)
     expect(screen.getByTestId('ear-compare')).toBeInTheDocument()
     expect(screen.getByTestId('ear-quiz')).toBeInTheDocument()
-    expect(screen.getByText(/kiwis move their short vowels/i)).toBeInTheDocument()
+    expect(screen.getByText(/americans flap their t's/i)).toBeInTheDocument()
   })
 
   it('goes back to Practice', async () => {
@@ -82,7 +82,7 @@ describe('Ear training without speech synthesis', () => {
 describe('the honest note about the voice', () => {
   it('warns her when the phone has no voice list at all', () => {
     render(<EarTraining onBack={vi.fn()} />)
-    expect(screen.getByText(/may not have a new zealand voice/i)).toBeInTheDocument()
+    expect(screen.getByText(/may not have an american voice/i)).toBeInTheDocument()
   })
 
   it('names the accent her phone is actually going to use', () => {
@@ -91,20 +91,20 @@ describe('the honest note about the voice', () => {
       addEventListener: vi.fn(),
       removeEventListener: vi.fn(),
     })
-    vi.mocked(pickVoice).mockReturnValue({ lang: 'en-US' } as SpeechSynthesisVoice)
+    vi.mocked(pickVoice).mockReturnValue({ lang: 'en-GB' } as SpeechSynthesisVoice)
     render(<EarTraining onBack={vi.fn()} />)
-    expect(screen.getByText(/an American voice, not a Kiwi one/i)).toBeInTheDocument()
+    expect(screen.getByText(/a British voice, not an American one/i)).toBeInTheDocument()
   })
 
-  it('says so when the phone really does have a Kiwi voice', () => {
+  it('says so when the phone really does have an American voice', () => {
     vi.stubGlobal('speechSynthesis', {
       getVoices: () => [],
       addEventListener: vi.fn(),
       removeEventListener: vi.fn(),
     })
-    vi.mocked(pickVoice).mockReturnValue({ lang: 'en-NZ' } as SpeechSynthesisVoice)
+    vi.mocked(pickVoice).mockReturnValue({ lang: 'en-US' } as SpeechSynthesisVoice)
     render(<EarTraining onBack={vi.fn()} />)
-    expect(screen.getByText(/has a new zealand voice/i)).toBeInTheDocument()
+    expect(screen.getByText(/has an american voice/i)).toBeInTheDocument()
   })
 })
 
@@ -113,10 +113,10 @@ describe('Compare mode', () => {
     render(<EarTraining onBack={vi.fn()} />)
     await userEvent.click(screen.getByTestId('ear-compare'))
 
-    await userEvent.click(screen.getByRole('button', { name: 'Play pen' }))
-    expect(speak).toHaveBeenCalledWith('pen', 'en-NZ')
-    await userEvent.click(screen.getByRole('button', { name: 'Play pin' }))
-    expect(speak).toHaveBeenCalledWith('pin', 'en-NZ')
+    await userEvent.click(screen.getByRole('button', { name: 'Play sheep' }))
+    expect(speak).toHaveBeenCalledWith('sheep', 'en-US')
+    await userEvent.click(screen.getByRole('button', { name: 'Play ship' }))
+    expect(speak).toHaveBeenCalledWith('ship', 'en-US')
 
     expect(listening()).toEqual({ correct: 0, total: 0 })
   })
@@ -128,10 +128,10 @@ describe('Compare mode', () => {
     for (const pair of MINIMAL_PAIRS) {
       expect(screen.getByText(pair.note), `${pair.a}/${pair.b}`).toBeInTheDocument()
     }
-    // The NEAR/SQUARE pairs live here and nowhere else — they are labelled
-    // rather than quietly dropped.
-    expect(screen.getAllByText(/kiwis say these the same/i).length).toBeGreaterThan(0)
-    expect(screen.getByRole('button', { name: 'Play beer' })).toBeInTheDocument()
+    // The flap-t pairs live here and nowhere else — they are labelled rather
+    // than quietly dropped.
+    expect(screen.getAllByText(/americans say these the same/i).length).toBeGreaterThan(0)
+    expect(screen.getByRole('button', { name: 'Play latter' })).toBeInTheDocument()
   })
 })
 
@@ -166,7 +166,7 @@ describe('Ear training quiz', () => {
     const said = lastSpoken()
     await userEvent.click(screen.getByRole('button', { name: said }))
 
-    expect(screen.getByText(/ka pai/i)).toBeInTheDocument()
+    expect(screen.getByText(/nice one/i)).toBeInTheDocument()
     expect(screen.getByText('1 right')).toBeInTheDocument()
     expect(listening()).toEqual({ correct: 1, total: 1 })
 
@@ -217,7 +217,7 @@ describe('Ear training quiz', () => {
     }
 
     expect(screen.getByText('You got 10 out of 10')).toBeInTheDocument()
-    expect(screen.getByText(/sweet as/i)).toBeInTheDocument()
+    expect(screen.getByText(/awesome/i)).toBeInTheDocument()
     expect(listening()).toEqual({ correct: 10, total: 10 })
 
     await userEvent.click(screen.getByRole('button', { name: /play again/i }))

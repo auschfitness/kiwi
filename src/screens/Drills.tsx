@@ -48,9 +48,9 @@ function answerLabel(item: DrillItem): string {
 
 function warmLine(correct: number, total: number): string {
   const ratio = total === 0 ? 0 : correct / total
-  if (ratio >= 0.9) return 'Sweet as — almost nothing got past you. 🥝'
+  if (ratio >= 0.9) return 'Awesome — almost nothing got past you. 🥝'
   if (ratio >= 0.6) return 'Good going. A few more rounds and these stop being fast.'
-  return 'These go by quickly, eh. This is exactly the practice that pays off at the till.'
+  return 'These go by quickly. This is exactly the practice that pays off at the register.'
 }
 
 type Result = 'pending' | 'right' | 'wrong'

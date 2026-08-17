@@ -3,7 +3,7 @@ import type { Accent } from '../types'
 import { Button, Card, Chip, Meter, ScreenHeader, SpeakerButton } from '../components/ui'
 import { useStore } from '../store/useStore'
 import { pickVoice, speak } from '../audio/speak'
-import { accentName, isKiwiVoice } from '../audio/accents'
+import { accentName, isAmericanVoice } from '../audio/accents'
 import { speechSynthesisAvailable } from '../audio/capabilities'
 import { MINIMAL_PAIRS, PAIR_GROUPS } from '../content'
 import type { MinimalPair } from '../content'
@@ -26,18 +26,19 @@ const QUIZZABLE = quizzablePairs(MINIMAL_PAIRS)
 /* ---------------------------------------------------------------------------
  * Being honest about the voice
  *
- * The whole point of half this table is "a Kiwi says these almost the same" —
- * and the browser reads them with whatever voice the phone happens to own.
- * `pickVoice` falls back NZ → AU → GB → US, so on plenty of devices she is
- * hearing an American read a New Zealand lesson, and the two words will sound
- * further apart than they ever will at the supermarket.
+ * The whole point of the flap-t group is "an American says these almost the
+ * same" — and the browser reads them with whatever voice the phone happens to
+ * own. `pickVoice` falls back US → GB → AU → NZ (or however the device is
+ * configured), so on plenty of devices she may not get an American voice at
+ * all, and the two words will sound further apart than they do in real
+ * General American speech.
  *
  * Rather than pretend, the screen looks up the voice it is actually about to
  * use and says so in one line. Three things follow from that line: the pairs
  * that are genuinely merged here are never graded (see `quizzablePairs`), the
  * quiz is honestly described as "which word did this voice say" rather than
- * "which word would a Kiwi have said", and the teaching that matters lives in
- * the note, which is text and sounds the same on every device.
+ * "which word would an American have said", and the teaching that matters
+ * lives in the note, which is text and sounds the same on every device.
  * ------------------------------------------------------------------------- */
 
 /** The language tag of the voice `speak()` will pick, once the list has loaded. */
@@ -63,16 +64,16 @@ function useVoiceLang(accent: Accent): string | null {
 
 function VoiceNote({ accent }: { accent: Accent }) {
   const lang = useVoiceLang(accent)
-  const kiwi = isKiwiVoice(lang)
+  const american = isAmericanVoice(lang)
   const name = accentName(lang)
 
   let line: string
-  if (kiwi) {
-    line = 'Your phone has a New Zealand voice, so these should sound close to the real thing. Real people still go faster.'
+  if (american) {
+    line = 'Your phone has an American voice, so these should sound close to the real thing. Real people still go faster.'
   } else if (name) {
-    line = `Your phone is reading these in ${name === 'American' ? 'an' : 'a'} ${name} voice, not a Kiwi one. So the two words may sound further apart here than they will at the shop — learn the pair, then listen to real people.`
+    line = `Your phone is reading these in ${name === 'American' ? 'an' : 'a'} ${name} voice, not an American one. So the two words may sound further apart here than they will from a real American speaker — learn the pair, then listen to real people.`
   } else {
-    line = 'Your phone may not have a New Zealand voice. If the two words sound very different here, they will still be much closer in real life — the note under each pair is the part that always holds.'
+    line = 'Your phone may not have an American voice. If the two words sound very different here, they will still be much closer in real American speech — the note under each pair is the part that always holds.'
   }
 
   return (
@@ -127,7 +128,7 @@ function Compare({ accent }: { accent: Accent }) {
                   <PairButton word={pair.a} onPlay={() => speak(pair.a, accent)} />
                   <PairButton word={pair.b} onPlay={() => speak(pair.b, accent)} />
                 </div>
-                {pair.merged && <Chip tone="gold">Kiwis say these the same</Chip>}
+                {pair.merged && <Chip tone="gold">Americans say these the same</Chip>}
                 <p className="text-sm text-muted">{pair.note}</p>
               </Card>
             ))}
@@ -142,7 +143,7 @@ function Compare({ accent }: { accent: Accent }) {
 
 function warmLine(correct: number, total: number): string {
   const ratio = total === 0 ? 0 : correct / total
-  if (ratio >= 0.9) return 'Sweet as — that ear is coming along nicely. 🥝'
+  if (ratio >= 0.9) return 'Awesome — that ear is coming along nicely. 🥝'
   if (ratio >= 0.6) return 'Good going. These two sounds are starting to separate for you.'
   return 'These are hard, and nobody hears them on day one. Go back to Compare for a bit — that is the part that builds it.'
 }
@@ -264,10 +265,10 @@ function Quiz({ accent, onQuit, onAgain }: { accent: Accent; onQuit: () => void;
         <>
           <Card className="flex flex-col gap-2 text-center">
             <p className={result === 'right' ? 'font-bold text-good' : 'font-bold text-ink'}>
-              {result === 'right' ? '✅ Ka pai!' : <>Not quite — it was <span className="text-brand">{said}</span></>}
+              {result === 'right' ? '✅ Nice one!' : <>Not quite — it was <span className="text-brand">{said}</span></>}
             </p>
             {/* Shown right or wrong: the moment she just missed one is exactly
-                when the line about the Kiwi mouth actually lands. */}
+                when the line about the American mouth actually lands. */}
             <p data-testid="ear-note" className="text-sm text-muted">{q.pair.note}</p>
           </Card>
           <Button variant="primary" onClick={next}>
@@ -290,18 +291,20 @@ const TITLES: Record<Mode, string> = {
 }
 
 /**
- * The New Zealand short front vowel shift, one pair at a time. Compare builds
- * the distinction; the quiz checks it. Everything Kiwis genuinely merge is
- * Compare-only, so nothing here grades her on a difference that is not there.
+ * The gaps between Portuguese and General American English, one pair at a
+ * time: sounds she has no equivalent for (th, the long/short i), and the
+ * American-specific ones (flap-t mergers, full rhoticity). Compare builds the
+ * distinction; the quiz checks it. Everything genuinely merged in fast
+ * American speech is Compare-only, so nothing here grades her on a
+ * difference that is not reliably there.
  */
 export function EarTraining({ onBack }: EarTrainingProps) {
-  // Not her accent setting. Every pair on this screen is a New Zealand vowel,
-  // and the course now speaks American everywhere else — reading a Kiwi lesson
-  // in an American voice would pull the two words apart exactly where the
-  // lesson is that they are close. So this screen always asks for the Kiwi
-  // voice; `pickVoice` still falls back if the phone has not got one, and
+  // Not her accent setting, though today it agrees with it. Every pair on
+  // this screen targets General American specifically, so this screen always
+  // asks for the American voice regardless of what she picked elsewhere;
+  // `pickVoice` still falls back if the phone has not got one, and
   // `VoiceNote` still says out loud which voice she actually got.
-  const accent: Accent = 'en-NZ'
+  const accent: Accent = 'en-US'
   const [mode, setMode] = useState<Mode>('menu')
   const [round, setRound] = useState(0)
 
@@ -350,10 +353,10 @@ export function EarTraining({ onBack }: EarTrainingProps) {
     <div className="flex flex-col gap-4">
       <ScreenHeader title={TITLES.menu} onBack={onBack} />
       <p className="px-1 text-sm text-muted">
-        Kiwis move their short vowels: <span className="font-bold text-ink">pen</span> sounds like
-        your <span className="font-bold text-ink">pin</span>, and{' '}
-        <span className="font-bold text-ink">bad</span> sounds like your{' '}
-        <span className="font-bold text-ink">bed</span>. Here are{' '}
+        Americans flap their t's: <span className="font-bold text-ink">latter</span> sounds like{' '}
+        <span className="font-bold text-ink">ladder</span>, and{' '}
+        <span className="font-bold text-ink">bitter</span> sounds like{' '}
+        <span className="font-bold text-ink">bidder</span>. Here are{' '}
         {MINIMAL_PAIRS.length} pairs to train your ear on.
       </p>
 
@@ -392,7 +395,7 @@ export function EarTraining({ onBack }: EarTrainingProps) {
       </div>
 
       <p className="px-1 text-xs text-muted">
-        {`The quiz uses ${QUIZZABLE.length} of the pairs. The other ${MINIMAL_PAIRS.length - QUIZZABLE.length} really are the same sound in New Zealand, so there is nothing to score — you will find them in Compare.`}
+        {`The quiz uses ${QUIZZABLE.length} of the pairs. The other ${MINIMAL_PAIRS.length - QUIZZABLE.length} really are the same sound in fast American speech, so there is nothing to score — you will find them in Compare.`}
       </p>
     </div>
   )

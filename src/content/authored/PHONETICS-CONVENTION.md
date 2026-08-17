@@ -16,18 +16,17 @@ não imitar sotaque nenhum.
 ### Por que americano, e o que isso custa
 
 Esta tabela era neozelandesa até 2026-08-03. O dono pediu a troca para o
-americano e **aprovou sabendo do custo**: a mulher dele vai morar na Nova
-Zelândia, onde o `r` de fim de sílaba que reintroduzimos aqui **não é
-pronunciado** — *first* lá é `fêst`, não `fêrst`.
+americano nessa data — na época, a mulher dele ia morar na Nova Zelândia, e a
+troca foi aprovada sabendo do custo de que o `r` de fim de sílaba que
+reintroduzimos aqui **não seria** o que ela ouviria por lá.
 
-A troca está registada em `docs/STATE.md`. Não é engano, não desfaça.
+Isso mudou em 2026-08-17: o destino agora são os EUA, não mais a Nova
+Zelândia. Com isso, a exceção do Ear Training abaixo caiu — não sobrou nenhum
+motivo pra manter conteúdo neozelandês de propósito em lugar nenhum do app. Só
+o nome/marca "Kiwi" continua, por escolha estética, não por causa do destino.
 
-Duas coisas continuam neozelandesas de propósito:
-
-- **Ear Training** (`src/content/authored/minimalPairs.ts`) treina os pares de
-  vogais kiwi. Isso é *ouvir*, não *falar*: é o sotaque que ela vai encontrar.
-- **O vocabulário** (`flét uáit`, `êftpos`, `déri`, `djéndalz`, `kía óra`).
-  São as palavras da Nova Zelândia, ditas com a fonética americana desta tabela.
+A troca de pronúncia (2026-08-03) e a virada completa NZ→EUA (2026-08-17)
+estão registadas em `docs/STATE.md`.
 
 ---
 

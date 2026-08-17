@@ -24,11 +24,11 @@ export interface EarPair {
   /** One line of teaching, shown in Compare and after every quiz answer. */
   note: string
   /**
-   * True when the two words genuinely are one sound in most Kiwi mouths — the
-   * NEAR/SQUARE merge (bear/beer, air/ear). Those pairs are teaching material
-   * and never quiz material: there is no right answer to grade, and asking her
-   * to hear a difference that does not exist would only teach her to distrust
-   * her own ear.
+   * True when the two words genuinely are one sound in the accent this table
+   * teaches (e.g. the American flap-t merges: latter/ladder). Those pairs are
+   * teaching material and never quiz material: there is no right answer to
+   * grade, and asking her to hear a difference that does not exist would only
+   * teach her to distrust her own ear.
    */
   merged?: boolean
 }
@@ -53,7 +53,7 @@ export function spokenWord<T extends EarPair>(q: EarQuestion<T>): string {
   return wordOf(q.pair, q.side)
 }
 
-/** Every pair a quiz is allowed to grade: everything not merged in NZ. */
+/** Every pair a quiz is allowed to grade: everything not genuinely merged. */
 export function quizzablePairs<T extends EarPair>(pairs: readonly T[]): T[] {
   return pairs.filter(p => p.merged !== true)
 }

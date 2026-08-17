@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { accentName, isKiwiVoice } from './accents'
+import { accentName, isAmericanVoice } from './accents'
 
 describe('accentName', () => {
   it('names the four accents a voice can plausibly be', () => {
@@ -24,15 +24,15 @@ describe('accentName', () => {
   })
 })
 
-describe('isKiwiVoice', () => {
-  it('is true only for an actual New Zealand voice', () => {
-    expect(isKiwiVoice('en-NZ')).toBe(true)
-    expect(isKiwiVoice('en-nz')).toBe(true)
+describe('isAmericanVoice', () => {
+  it('is true only for an actual American voice', () => {
+    expect(isAmericanVoice('en-US')).toBe(true)
+    expect(isAmericanVoice('en-us')).toBe(true)
   })
 
-  it('treats every other tag, and no tag at all, as not Kiwi', () => {
-    for (const lang of ['en-AU', 'en-GB', 'en-US', 'en-IN', '', null, undefined]) {
-      expect(isKiwiVoice(lang)).toBe(false)
+  it('treats every other tag, and no tag at all, as not American', () => {
+    for (const lang of ['en-AU', 'en-GB', 'en-NZ', 'en-IN', '', null, undefined]) {
+      expect(isAmericanVoice(lang)).toBe(false)
     }
   })
 })

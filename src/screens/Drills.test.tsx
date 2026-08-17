@@ -150,7 +150,7 @@ describe('Drills runner', () => {
     }
 
     expect(screen.getByText('You got 10 out of 10')).toBeInTheDocument()
-    expect(screen.getByText(/sweet as/i)).toBeInTheDocument()
+    expect(screen.getByText(/awesome/i)).toBeInTheDocument()
     expect(listening()).toEqual({ correct: 10, total: 10 })
 
     // Play again deals a fresh round; back to Drills returns to the menu.

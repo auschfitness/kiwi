@@ -174,22 +174,21 @@ describe('the authored pair table', () => {
     }
   })
 
-  it('marks the NEAR/SQUARE merges and only those', () => {
+  it('marks the flap-t merges and only those', () => {
     for (const p of MINIMAL_PAIRS) {
-      expect(p.merged, `${p.a}/${p.b}`).toBe(p.group === 'near-square')
+      expect(p.merged, `${p.a}/${p.b}`).toBe(p.group === 'flap-t')
     }
   })
 
-  it('covers the shifts a newcomer to New Zealand actually trips over', () => {
+  it('covers the gaps a Brazilian learning American English actually trips over', () => {
     const has = (a: string, b: string) => MINIMAL_PAIRS.some(p => p.a === a && p.b === b)
-    // DRESS raising, TRAP raising, KIT centralising, the long/short i she has
-    // no equivalent for in Portuguese, the NEAR/SQUARE merge, and the two
-    // classic Portuguese-speaker consonant errors.
-    expect(has('pen', 'pin')).toBe(true)
-    expect(has('bad', 'bed')).toBe(true)
-    expect(has('bit', 'but')).toBe(true)
+    // The long/short i and "th" she has no equivalent for in Portuguese, the
+    // American flap-t merge, full rhoticity, and the two classic
+    // Portuguese-speaker consonant errors.
     expect(has('sheep', 'ship')).toBe(true)
-    expect(has('bear', 'beer')).toBe(true)
+    expect(has('thin', 'tin')).toBe(true)
+    expect(has('latter', 'ladder')).toBe(true)
+    expect(has('walk', 'work')).toBe(true)
     expect(has('three', 'tree')).toBe(true)
     expect(has('very', 'berry')).toBe(true)
   })

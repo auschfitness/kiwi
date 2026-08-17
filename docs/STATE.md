@@ -84,9 +84,9 @@ can change underneath it.
 - `Course.practice` lists which Practice features a course has material for —
   per feature, not per course. Spanish has Dialogues, Shadowing and Role-play
   of its own; it has no Drills (the generator speaks English numbers, times,
-  dates and spelled-out letters) and no Ear training (Kiwi vowel pairs, which
-  a Spanish learner has no use for). A course claiming a feature it cannot
-  fill is caught by a test.
+  dates and spelled-out letters) and no Ear training (American vowel/consonant
+  pairs, which a Spanish learner has no use for). A course claiming a feature
+  it cannot fill is caught by a test.
 
 ## The pronunciation guide is American, on purpose
 
@@ -109,16 +109,62 @@ What the pass covered:
 - `defaultAccent` on the English course is now `en-US`, with `en-US` first in
   the accent list. A profile created before the switch keeps its saved voice.
 
-Three things stayed Kiwi, deliberately:
+At the time, three things stayed Kiwi, deliberately: Ear Training's own vowel
+table (she'd hear that accent, not just speak around it), the vocabulary
+itself (*flat white*, *EFTPOS*, *dairy*, *jandals*, *kia ora* — now
+transcribed with American phonics but still NZ words), and the course name.
+**All three of those exceptions are gone as of 2026-08-17 — see the section
+below.** The rhotic phonetic system itself is unaffected either way.
 
-- **Ear Training** (`authored/minimalPairs.ts`) still teaches the NZ vowels,
-  and its screen now asks for the `en-NZ` voice regardless of her accent
-  setting. That is *hearing*, not *speaking* — it is the accent she will
-  actually meet, and reading a Kiwi lesson in an American voice would pull the
-  two words apart exactly where the lesson is that they are close.
-- **The vocabulary** (*flat white*, *EFTPOS*, *dairy*, *jandals*, *kia ora*),
-  now transcribed with American phonics.
-- The course name, `Inglês → Nova Zelândia`. She is still going there.
+## The course pivoted from New Zealand to the United States
+
+Asked for on 2026-08-17. The reason the 2026-08-03 pronunciation switch gave
+for keeping Ear Training and the vocabulary NZ-flavoured — *his wife is
+moving to New Zealand, she needs that accent* — stopped being true: the
+destination changed to the United States. That removed the last reason to
+keep any NZ-specific *content* around, as opposed to NZ-flavoured
+*pronunciation*, which had already been American since the earlier switch.
+
+**The "Kiwi" name and 🥝 branding are the one deliberate exception**, kept on
+request as an aesthetic choice, not a nod to the destination. Everything else
+that named New Zealand is being replaced. Read `en-nz` as "the course whose
+storage key must never change" (see decision 2 above), not as a claim about
+its content.
+
+Done so far, each its own commit:
+
+- **Branding**: course display name → `Inglês → EUA`, flag → 🇺🇸, the in-app
+  greeting ("Kia ora" → "Hey"), the late-night line ("Ka pai" → "Nice work").
+- **The Kiwi slang deck** (`decks.generated.ts`, deck id `kiwi`, cards
+  `kiwi_0`–`kiwi_15`) rewritten as American slang & customs — same ids on
+  purpose, so nobody's SRS progress on that deck orphans. Jandals, chilly bin,
+  bach and tramping became y'all, cookout, potluck, tailgate and the rest;
+  phonetics rewritten to match; 5 of the deck's photos re-picked (jandals'
+  photo dropped — a photo can't show a pronoun), gathered by
+  `node scripts/fetch-photos.mjs`.
+- **Ear Training** (`authored/minimalPairs.ts`, `screens/EarTraining.tsx`,
+  `audio/accents.ts`'s `isKiwiVoice` → `isAmericanVoice`) rebuilt from
+  scratch. The NZ short-front-vowel-shift table (`pen`/`pin`, `bad`/`bed`,
+  the NEAR/SQUARE merge) doesn't exist as a phenomenon in General American, so
+  this isn't a find-and-replace — it's a new table built around what actually
+  trips up a Brazilian hearing GA: the universal PT gaps (`sheep`/`ship`,
+  `thin`/`tin`, `very`/`berry`) plus two GA-specific features, full rhoticity
+  (`walk`/`work`, `bud`/`bird`) and the flap-t merger (`latter`/`ladder`,
+  `petal`/`pedal` — the new `merged: true` group, replacing NEAR/SQUARE). The
+  screen's hardcoded accent moved from `en-NZ` to `en-US`.
+
+**Not done yet** (large, deliberately staged separately — see the task list
+in the session that made this change if it's still open):
+
+- The NZ-specific words still sitting inside the ~425-card core corpus
+  (`flat`, `dairy`, `EFTPOS`, `footpath`, the NZ emergency number `111` on
+  `emergency_1`, `IRD` on the banking deck, etc.) — these were the ones
+  2026-08-03 explicitly chose to *keep*, and that choice is what changed.
+- The 7 dialogues and ~10 roleplays scripted as New Zealand life (flat-
+  hunting, a GP visit with NZ-specific phrasing, "Kia ora" as their opening
+  line) in `dialogues.generated.ts` and `authored/roleplays.ts`.
+- `content/plan.ts`'s "Life admin in NZ" week and its `IRD`/`bond, flat`
+  copy, which describes decks that haven't changed yet.
 
 ## The study clock
 
