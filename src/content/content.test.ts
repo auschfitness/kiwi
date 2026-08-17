@@ -5,6 +5,7 @@ import {
   DECKS, ALL_CARDS, CARD_INDEX, DIALOGUES, PLAN, PHOTOS, PHOTO_CREDITS,
   decksForLevel, levelOfCard,
 } from './index'
+import { PHOTOS_ES } from './authored/photosEs'
 
 describe('generated content', () => {
   it('has the full v1 corpus', () => {
@@ -83,12 +84,17 @@ describe('card photographs', () => {
   it('ships the file behind every photo path', () => {
     // An entry with no file on disk is a broken image on her screen; a file
     // with no entry is dead weight in the deploy. Both are caught here.
+    //
+    // public/photos/ is shared with the Spanish course (see
+    // content/es/es.test.ts), so the orphan check below is against the union
+    // of both tables rather than PHOTOS alone.
     const onDisk = new Set(readdirSync(join(process.cwd(), 'public', 'photos')))
     for (const [id, src] of Object.entries(PHOTOS)) {
       expect(src, id).toBe(`/photos/${id}.webp`)
       expect(onDisk.has(`${id}.webp`), id).toBe(true)
     }
-    expect(onDisk.size).toBe(Object.keys(PHOTOS).length)
+    const known = new Set([...Object.keys(PHOTOS), ...Object.keys(PHOTOS_ES)].map(id => `${id}.webp`))
+    expect(onDisk.size).toBe(known.size)
   })
 
   it('credits the photographer of every photo', () => {

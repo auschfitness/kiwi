@@ -15,6 +15,7 @@
     "test:e2e": "playwright test",
     "extract": "node scripts/extract-content.mjs",
     "photos": "node scripts/fetch-photos.mjs",
+    "photos:es": "node scripts/fetch-photos.mjs --course=es",
     "photos:verify": "node scripts/fetch-photos.mjs --verify"
   },
   "keywords": [],

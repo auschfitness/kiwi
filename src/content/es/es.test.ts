@@ -1,9 +1,13 @@
 import { describe, it, expect } from 'vitest'
+import { readdirSync } from 'node:fs'
+import { join } from 'node:path'
 import { ES_DECKS } from './index'
 import { ES_ROLEPLAYS } from './roleplays'
 import { ES_DIALOGUES } from './dialogues'
 import { isTypable, isSentence, DEFAULT_TYPABLE_POS } from '../../core/text'
 import { supportedModalities } from '../../core/modality'
+import { PHOTOS_ES } from '../authored/photosEs'
+import { PHOTO_CREDITS_ES } from '../authored/photoCreditsEs'
 import type { PartOfSpeech } from '../../types'
 
 const ES_CARDS = ES_DECKS.flatMap(d => d.cards)
@@ -64,6 +68,42 @@ describe('Spanish corpus', () => {
       /\bvosotros\b|\bvuestro/i.test(`${c.en} ${c.exampleHtml}`),
     )
     expect(peninsular.map(c => c.id)).toEqual([])
+  })
+})
+
+describe('Spanish card photographs', () => {
+  const ES_CARD_INDEX = Object.fromEntries(ES_CARDS.map(c => [c.id, c] as const))
+
+  it('merges the photo onto the card, like PHOTOS does for English', () => {
+    // es_false_0 is "embarazada" — the false friend a photo helps most.
+    expect(ES_CARD_INDEX.es_false_0?.photo).toBe('/photos/es_false_0.webp')
+  })
+
+  it('leaves the phrase, verb and grammar cards alone', () => {
+    // A photograph of "por otro lado" or "tengo" would be a lie, so there is
+    // none, and the card has to keep working without one.
+    expect(ES_CARD_INDEX.es_connect_0?.photo).toBeUndefined()
+    expect(ES_CARD_INDEX.es_core_verbs_0?.photo).toBeUndefined()
+  })
+
+  it('only points at cards that exist', () => {
+    for (const id of Object.keys(PHOTOS_ES)) expect(ES_CARD_INDEX[id], id).toBeDefined()
+  })
+
+  it('ships the file behind every photo path', () => {
+    const onDisk = new Set(readdirSync(join(process.cwd(), 'public', 'photos')))
+    for (const [id, src] of Object.entries(PHOTOS_ES)) {
+      expect(src, id).toBe(`/photos/${id}.webp`)
+      expect(onDisk.has(`${id}.webp`), id).toBe(true)
+    }
+  })
+
+  it('credits the photographer of every photo', () => {
+    expect(Object.keys(PHOTO_CREDITS_ES).sort()).toEqual(Object.keys(PHOTOS_ES).sort())
+    for (const [id, c] of Object.entries(PHOTO_CREDITS_ES)) {
+      expect(c.photographer, id).toBeTruthy()
+      expect(c.url, id).toMatch(/^https:\/\/www\.pexels\.com\//)
+    }
   })
 })
 

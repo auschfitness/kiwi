@@ -1,9 +1,15 @@
 /**
  * fetch-photos.mjs — one photograph per concrete card, from Pexels.
  *
- *   node scripts/fetch-photos.mjs            fetch anything still missing
- *   node scripts/fetch-photos.mjs --verify   only check what is already on disk
- *   node scripts/fetch-photos.mjs --force    re-fetch even if the file exists
+ *   node scripts/fetch-photos.mjs                    English, fetch anything missing
+ *   node scripts/fetch-photos.mjs --course=es         Spanish, fetch anything missing
+ *   node scripts/fetch-photos.mjs --verify            only check what is already on disk
+ *   node scripts/fetch-photos.mjs --force             re-fetch even if the file exists
+ *
+ * `--course` picks which SELECTION table, which corpus to validate ids
+ * against, and which authored/photos*.ts pair to write — see COURSES below.
+ * The two courses' ids never collide (Spanish ids all start `es_`), so both
+ * write into the same public/photos/ directory.
  *
  * Needs a Pexels API key. Put it in `.env.local` (gitignored) as
  *   PEXELS_API_KEY=...
@@ -48,9 +54,8 @@ import sharp from 'sharp'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const PHOTO_DIR = path.join(ROOT, 'public', 'photos')
-const PHOTOS_TS = path.join(ROOT, 'src', 'content', 'authored', 'photos.ts')
-const CREDITS_TS = path.join(ROOT, 'src', 'content', 'authored', 'photoCredits.ts')
-const DECKS_TS = path.join(ROOT, 'src', 'content', 'decks.generated.ts')
+const AUTHORED_DIR = path.join(ROOT, 'src', 'content', 'authored')
+const ES_DIR = path.join(ROOT, 'src', 'content', 'es')
 
 const WIDTH = 480
 const QUALITY = 72
@@ -64,7 +69,7 @@ const MAX_BYTES = 40 * 1024
 // something else to a stock photo library, and a card is only as good as the
 // picture it ends up with. The awkward ones are commented.
 // ───────────────────────────────────────────────────────────────────────────
-const SELECTION = {
+const SELECTION_EN = {
   // ── people · People & family (L1) ──────────────────────────────────────
   // "Husband" and "Wife" are deliberately absent: any honest photo of a
   // husband is also a photo of a man, and the two cards would end up with
@@ -338,10 +343,146 @@ const SELECTION = {
 }
 
 // ───────────────────────────────────────────────────────────────────────────
+// The Spanish selection. Same rule, applied to a corpus that is mostly not
+// concrete: the course exists to drill production of phrases, connectors,
+// verb conjugations and grammar (ser/estar, por/para, subjunctive, discourse
+// markers) — none of which a camera can show. What is left after that filter
+// is small on purpose, not under-effort: a wrong photo on "por otro lado" or
+// "tengo" would be exactly the lie fetch-photos.mjs exists to avoid.
+//
+// False friends (es_false) get priority even where the noun is ordinary,
+// because the photo is not just dual coding there — it is the thing that
+// makes the wrong, Portuguese-shaped guess visibly wrong at a glance.
+// ───────────────────────────────────────────────────────────────────────────
+const SELECTION_ES = {
+  // ── es_things · Coisas e gente (L1) ────────────────────────────────────
+  es_things_0: 'glass of water',
+  es_things_1: 'plate of food meal',
+  es_things_2: 'loaf of bread',
+  es_things_3: 'raw meat cut on board',
+  es_things_4: 'assorted fresh fruit',
+  es_things_5: 'cup of coffee',
+  es_things_6: 'house exterior',
+  es_things_7: 'city street',
+  es_things_9: 'cash banknotes money',
+  es_things_11: 'crowd of people walking',
+  es_things_12: 'two friends laughing together',
+  es_things_13: 'family sitting together at table',
+  es_things_16: 'portrait of a woman',
+  es_things_17: 'portrait of a man',
+  // Adjectives (grande, pequeño, bueno, malo, caro, barato, cerca, lejos) are
+  // comparisons, same call as English's basics colours/sizes: none get one.
+  // "el trabajo" and "la familia" as bare nouns, "el hijo"/"el hermano" as
+  // relations — dropped for the same reason English drops husband/wife: any
+  // honest photo is also a photo of something else and would teach the
+  // wrong word. "el amigo" survives because two people laughing together
+  // reads as "friend" more reliably than family or sibling photos do.
+
+  // ── es_home · Casa e rotina (L2) ───────────────────────────────────────
+  es_home_0: 'modern kitchen interior',
+  es_home_1: 'bedroom interior room',
+  es_home_2: 'bathroom interior',
+  es_home_3: 'living room with sofa',
+  es_home_4: 'apartment building exterior',
+  es_home_7: 'trash can garbage bin',
+  es_home_11: 'kitchen sink with tap',
+  es_home_12: 'light bulb glowing',
+  // "el vecino" (neighbour) is the same trap English hit: every result is
+  // just two people talking, nothing in frame says "lives next door".
+
+  // ── es_work · Trabalho (L3) ────────────────────────────────────────────
+  es_work_0: 'business meeting people around table',
+  es_work_3: 'report document on desk',
+  es_work_23: 'file folder document',
+  es_work_24: 'printed invoice document',
+  es_work_25: 'cardboard package box delivery',
+  // "el plazo", "el presupuesto", "la meta", "la marca" and the rest of the
+  // deck are abstractions a photo can only gesture at, not show.
+
+  // ── es_travel · Viagem e serviços (L2) ─────────────────────────────────
+  es_travel_0: 'restaurant bill receipt on table',
+  es_travel_1: 'tip money on restaurant table',
+  es_travel_3: 'hotel room with two beds',
+  es_travel_4: 'hotel reception counter',
+  es_travel_5: 'bus ticket stub paper',
+  es_travel_6: 'airplane flying in the sky',
+  es_travel_9: 'bus stop shelter sign',
+  es_travel_10: 'train station platform',
+  es_travel_12: 'doctor prescription pad',
+  es_travel_13: 'pharmacy shelves chemist shop',
+  es_travel_17: 'clothing fitting room',
+  es_travel_18: 'clothing size tag',
+  es_travel_19: 'sale discount sign store',
+  es_travel_21: 'paper receipt',
+  es_travel_22: 'cash banknotes in hand',
+  es_travel_23: 'credit card payment',
+  es_travel_24: 'house keys',
+  es_travel_25: 'suitcases luggage',
+  es_travel_26: 'airport customs sign',
+  es_travel_34: 'sandy beach and sea',
+
+  // ── es_false · Falsos amigos (L3) ──────────────────────────────────────
+  // The deck this course most needs pictures in: seeing "embarazada" next to
+  // a pregnant woman does more to kill the "envergonhado" guess than any
+  // amount of explaining "false friend" ever will.
+  es_false_0: 'pregnant woman',
+  es_false_5: 'bald man',
+  es_false_7: 'office workspace desk',
+  es_false_8: 'car repair workshop garage',
+  // "vaso" (glass) kept empty on purpose, so its photo never collides with
+  // es_things_0's glass of water.
+  es_false_9: 'empty drinking glass',
+  es_false_15: 'bowl of tomato sauce',
+  es_false_16: 'fresh parsley herb',
+  es_false_17: 'red paint background texture',
+  es_false_18: 'purple paint background texture',
+  es_false_19: 'dinner table evening meal',
+  es_false_23: 'sliced ham',
+  es_false_24: 'school classroom',
+  // "desnudo" is dropped outright — not a stock-photo query worth running.
+  // "exquisito", "largo", "ancho", "ratos", "apellido", "apodo", "escena" and
+  // "presunto" all defeat the camera test the same way English's abstractions
+  // do: taste, comparison, and naming have no single honest picture.
+
+  // ── es_topics · Assuntos do mundo (L4) ─────────────────────────────────
+  // Almost the whole deck is inflación/desigualdad/tendencia-shaped — the
+  // exact abstractions English's SELECTION comment lists as "however, if".
+  // Only the handful of literal objects survive.
+  es_topics_10: 'office building exterior',
+  es_topics_14: 'hand tools workshop',
+  es_topics_15: 'smartphone tablet devices',
+  es_topics_22: 'recycling bins bottles sorting',
+}
+
+// ───────────────────────────────────────────────────────────────────────────
+
+const COURSES = {
+  en: {
+    selection: SELECTION_EN,
+    photosTs: path.join(AUTHORED_DIR, 'photos.ts'),
+    creditsTs: path.join(AUTHORED_DIR, 'photoCredits.ts'),
+    photosExport: 'PHOTOS',
+    creditsExport: 'PHOTO_CREDITS',
+  },
+  es: {
+    selection: SELECTION_ES,
+    photosTs: path.join(AUTHORED_DIR, 'photosEs.ts'),
+    creditsTs: path.join(AUTHORED_DIR, 'photoCreditsEs.ts'),
+    photosExport: 'PHOTOS_ES',
+    creditsExport: 'PHOTO_CREDITS_ES',
+  },
+}
 
 const args = new Set(process.argv.slice(2))
 const VERIFY_ONLY = args.has('--verify')
 const FORCE = args.has('--force')
+const COURSE_ARG = [...args].find(a => a.startsWith('--course='))
+const COURSE = COURSE_ARG ? COURSE_ARG.slice('--course='.length) : 'en'
+if (!COURSES[COURSE]) {
+  console.error(`unknown --course=${COURSE} (expected "en" or "es")`)
+  process.exit(1)
+}
+const { selection: SELECTION, photosTs: PHOTOS_TS, creditsTs: CREDITS_TS, photosExport: PHOTOS_EXPORT, creditsExport: CREDITS_EXPORT } = COURSES[COURSE]
 
 function readApiKey() {
   if (process.env.PEXELS_API_KEY) return process.env.PEXELS_API_KEY.trim()
@@ -355,14 +496,31 @@ function readApiKey() {
   return null
 }
 
-/** Card ids that really exist, read straight out of the generated deck file. */
+/**
+ * Card ids that really exist. English's deck file is one big JSON-shaped
+ * array, parsed directly; Spanish's decks are hand-authored TypeScript
+ * spread across several files, so those are scanned for `id: '...'` instead.
+ * `\bid:` never matches inside `deckId:` — the two letters before the colon
+ * differ in case, so there is no word boundary there — which is what keeps
+ * this from also collecting every deck's own id.
+ */
 function corpusIds() {
-  let s = fs.readFileSync(DECKS_TS, 'utf8')
-  s = s.slice(s.indexOf('GENERATED_DECKS'))
-  s = s.slice(s.indexOf('= [') + 2)
-  s = s.slice(0, s.lastIndexOf(']') + 1)
-  const decks = JSON.parse(s)
-  return new Map(decks.flatMap(d => d.cards.map(c => [c.id, c])))
+  if (COURSE === 'en') {
+    const DECKS_TS = path.join(ROOT, 'src', 'content', 'decks.generated.ts')
+    let s = fs.readFileSync(DECKS_TS, 'utf8')
+    s = s.slice(s.indexOf('GENERATED_DECKS'))
+    s = s.slice(s.indexOf('= [') + 2)
+    s = s.slice(0, s.lastIndexOf(']') + 1)
+    const decks = JSON.parse(s)
+    return new Set(decks.flatMap(d => d.cards.map(c => c.id)))
+  }
+  const ids = new Set()
+  for (const f of fs.readdirSync(ES_DIR)) {
+    if (!f.endsWith('.ts') || f.endsWith('.test.ts')) continue
+    const s = fs.readFileSync(path.join(ES_DIR, f), 'utf8')
+    for (const m of s.matchAll(/\bid:\s*'([^']+)'/g)) ids.add(m[1])
+  }
+  return ids
 }
 
 /** Read back a generated `export const X = {json}` file, or {} if absent. */
@@ -387,10 +545,10 @@ function writePhotos(ids) {
     PHOTOS_TS,
     HEADER +
       `//\n` +
-      `// Card id -> public path of its photograph. Merged onto the decks in\n` +
-      `// src/content/index.ts, the same way PHONETICS is. A card with no entry\n` +
-      `// here simply renders without a picture.\n` +
-      `export const PHOTOS: Record<string, string> = ${JSON.stringify(map, null, 2)}\n`,
+      `// Card id -> public path of its photograph. Merged onto the ${COURSE === 'en' ? 'English' : 'Spanish'} decks,\n` +
+      `// the same way PHONETICS is for English. A card with no entry here\n` +
+      `// simply renders without a picture.\n` +
+      `export const ${PHOTOS_EXPORT}: Record<string, string> = ${JSON.stringify(map, null, 2)}\n`,
   )
 }
 
@@ -403,7 +561,7 @@ function writeCredits(credits) {
       `// Pexels does not require attribution but asks for it, and the\n` +
       `// photographers gave these away for free. One entry per photo.\n` +
       `import type { PhotoCredit } from '../../types'\n\n` +
-      `export const PHOTO_CREDITS: Record<string, PhotoCredit> = ${JSON.stringify(sorted, null, 2)}\n`,
+      `export const ${CREDITS_EXPORT}: Record<string, PhotoCredit> = ${JSON.stringify(sorted, null, 2)}\n`,
   )
 }
 
@@ -530,7 +688,7 @@ async function main() {
   for (const f of fs.readdirSync(PHOTO_DIR)) {
     if (f.endsWith('.tmp')) fs.rmSync(path.join(PHOTO_DIR, f), { force: true })
   }
-  const credits = readGenerated(CREDITS_TS, 'PHOTO_CREDITS')
+  const credits = readGenerated(CREDITS_TS, CREDITS_EXPORT)
   const have = new Set()
   const failed = []
 

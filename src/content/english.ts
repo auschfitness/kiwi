@@ -4,6 +4,7 @@ import { IRREGULAR_DECK } from './authored/irregular'
 import { B2_DECKS } from './authored/b2'
 import { PHONETICS } from './authored/phonetics'
 import { PHOTOS } from './authored/photos'
+import { photoSrc } from './photoSrc'
 
 const RAW_DECKS: Deck[] = [...GENERATED_DECKS, IRREGULAR_DECK, ...B2_DECKS]
 
@@ -13,17 +14,6 @@ const RAW_DECKS: Deck[] = [...GENERATED_DECKS, IRREGULAR_DECK, ...B2_DECKS]
  * authored/PHONETICS-CONVENTION.md), PHOTOS is written by
  * scripts/fetch-photos.mjs. A card missing from either table just renders
  * without that piece. */
-/** PHOTOS stores root-absolute paths (`/photos/x.webp`), which is right when
- * the app is served from the root of a domain. Hosted in a subfolder — the
- * `base` case the README describes — it has to become `/english/photos/x.webp`
- * or every picture 404s. BASE_URL is `/` unless someone sets `base`, so this
- * is a no-op in the normal deploy and in tests. */
-const BASE = import.meta.env.BASE_URL
-
-function photoSrc(id: string): string | undefined {
-  const p = PHOTOS[id]
-  return p === undefined ? undefined : BASE + p.replace(/^\//, '')
-}
 
 /**
  * The English course's decks, with pronunciation and photographs attached.
@@ -36,7 +26,7 @@ export const ENGLISH_DECKS: Deck[] = RAW_DECKS.map(deck => ({
   cards: deck.cards.map(card => ({
     ...card,
     phonetic: PHONETICS[card.id] ?? card.phonetic,
-    photo: photoSrc(card.id) ?? card.photo,
+    photo: photoSrc(PHOTOS, card.id) ?? card.photo,
   })),
 }))
 
