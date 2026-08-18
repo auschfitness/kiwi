@@ -8,6 +8,7 @@ import { recordSkill } from '../core/stats'
 import { applyStudyTick } from '../core/streak'
 import { addStudyMs } from '../core/studyTime'
 import { shouldUnlockNext } from '../core/leveling'
+import { remedialDue } from '../core/interference'
 import { createInitialState } from './defaults'
 import { readFreeAccess, writeFreeAccess } from './freeAccess'
 import { ACTIVE_COURSE } from '../courses'
@@ -190,7 +191,22 @@ export const useStore = create<Store>()(
         // The scheduler gets her rating untouched; the skill stats only care
         // whether she got there at all, so "hard" still counts as a hit.
         const correct = rating > 0
-        const cards = { ...s.cards, [cardId]: schedule(s.cards[cardId], rating, now) }
+        const card = cardById(cardId)
+        // A caller passing `interferenceHit` for a card that names no trap
+        // (wrong card, or a future modality that gets the check wrong) can
+        // never plant a hit or pull a due date forward — same guard, used
+        // for both effects below.
+        const confirmedTrap = !!interferenceHit && card?.interference?.type === 'false-friend'
+        const scheduled = schedule(s.cards[cardId], rating, now)
+        // See `remedialDue`: a fresh trap hit pulls the next review closer
+        // regardless of what the rating alone earned it, so the specific
+        // contrast doesn't get to drift out just because some other pass
+        // rated "easy". Reuses the same card rather than inventing a new
+        // one — the course's content is static and bundled, not generated.
+        const cards = {
+          ...s.cards,
+          [cardId]: { ...scheduled, due: remedialDue(scheduled.due, now, confirmedTrap) },
+        }
         const skills = recordSkill(s.skills, skillForModality(modality), correct)
         const tick = applyStudyTick(s, now)
         const next = shouldUnlockNext(s.unlockedLevel, cardIdsByLevel[s.unlockedLevel], cards)
@@ -200,15 +216,10 @@ export const useStore = create<Store>()(
         // "overall" against "the ones Portuguese fights him on" without a
         // third full accuracy table. `interferenceHit` (a confirmed trap-word
         // answer) is rarer and stronger evidence, so it gets its own map.
-        const card = cardById(cardId)
         const interferenceStats = card?.interference
           ? { correct: s.interferenceStats.correct + (correct ? 1 : 0), total: s.interferenceStats.total + 1 }
           : s.interferenceStats
-        // Trusts the modality's classification, but only for a card that
-        // actually names a trap — a caller passing `interferenceHit` for the
-        // wrong card (or a future modality that gets the check wrong) can
-        // never plant a hit against a card that was never at risk of one.
-        const trapHits = interferenceHit && card?.interference?.type === 'false-friend'
+        const trapHits = confirmedTrap
           ? { ...s.trapHits, [cardId]: (s.trapHits[cardId] ?? 0) + 1 }
           : s.trapHits
 

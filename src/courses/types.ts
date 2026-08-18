@@ -61,6 +61,14 @@ export interface Course {
   gated: boolean
 
   /**
+   * Whether Learn should fade out the Portuguese scaffolding as he climbs
+   * levels, on cards where it's a crutch rather than the lesson — see
+   * `core/interference.ts`'s `shouldShowPortuguese`. False for English: she
+   * is still building the vocabulary itself, so the translation stays.
+   */
+  weanOffPortuguese: boolean
+
+  /**
    * Which Practice features this course has material for.
    *
    * A list rather than a flag because the answer is per feature, not per

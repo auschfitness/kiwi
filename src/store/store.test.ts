@@ -55,6 +55,14 @@ describe('store', () => {
     expect(s.trapHits.survival_0).toBeUndefined()
   })
 
+  it('never pulls the due date in for a card that carries no interference tag', () => {
+    // Rated "easy" on a first review schedules 4 days out (see core/srs.ts).
+    // If `interferenceHit: true` were wrongly honoured for this untagged
+    // card, remedialDue would clamp that down to about a day.
+    useStore.getState().gradeItem('survival_0', 'type', 3, NOW, true)
+    expect(useStore.getState().cards.survival_0.due).toBe(NOW + 4 * 86_400_000)
+  })
+
   it('counts "hard" as a correct answer for the skill, but schedules it as hard', () => {
     useStore.getState().gradeItem('survival_0', 'listen', 1, NOW)
     const s = useStore.getState()

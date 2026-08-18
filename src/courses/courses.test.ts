@@ -171,6 +171,11 @@ describe('course rules', () => {
     expect(ACTIVE_RULES.spontaneousModality).toBeUndefined()
   })
 
+  it('only Spanish opts into weaning off Portuguese', () => {
+    expect(courseById('en-nz').weanOffPortuguese).toBe(false)
+    expect(courseById('es-latam').weanOffPortuguese).toBe(true)
+  })
+
   it('never offers a Spanish learner a recognition exercise', () => {
     const picks = Array.from({ length: 30 }, (_, i) => pickModality(card(), state(i + 1), true, undefined, ES_RULES))
     expect(picks).not.toContain('recognize')

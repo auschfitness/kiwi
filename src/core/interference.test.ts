@@ -1,6 +1,9 @@
 import { describe, it, expect } from 'vitest'
-import { isTrapAnswer, buildInterferenceProfile } from './interference'
+import { isTrapAnswer, buildInterferenceProfile, shouldShowPortuguese, remedialDue } from './interference'
+import { DAY } from './time'
 import type { Card, Skills } from '../types'
+
+const NOW = 1_700_000_000_000
 
 function card(overrides: Partial<Card> = {}): Card {
   return {
@@ -38,6 +41,50 @@ describe('isTrapAnswer', () => {
 
   it('is false for a similar-different card — there is no single trap word to compare against', () => {
     expect(isTrapAnswer(card({ interference: { type: 'similar-different' } }), 'envergonhada')).toBe(false)
+  })
+})
+
+describe('remedialDue', () => {
+  it('leaves the scheduled due date alone when there was no trap hit', () => {
+    const farOut = NOW + 30 * DAY
+    expect(remedialDue(farOut, NOW, false)).toBe(farOut)
+  })
+
+  it('pulls a distant due date in to about a day out on a confirmed hit', () => {
+    const farOut = NOW + 30 * DAY
+    expect(remedialDue(farOut, NOW, true)).toBe(NOW + DAY)
+  })
+
+  it('never pushes a due date further out — only ever pulls it closer', () => {
+    const soon = NOW + 5 * 60_000 // a ten-minute-step card, already sooner than a day
+    expect(remedialDue(soon, NOW, true)).toBe(soon)
+  })
+})
+
+describe('shouldShowPortuguese', () => {
+  const untagged = card({ interference: undefined })
+  const falseFriend = card() // has interference: false-friend by default
+  const similarDifferent = card({ interference: { type: 'similar-different' } })
+
+  it('is off whenever the setting itself is off, no matter what', () => {
+    expect(shouldShowPortuguese(untagged, 1, false, false)).toBe(false)
+    expect(shouldShowPortuguese(falseFriend, 1, false, true)).toBe(false)
+  })
+
+  it('never fades for a course that has not opted in — English is untouched', () => {
+    expect(shouldShowPortuguese(untagged, 4, true, false)).toBe(true)
+  })
+
+  it('fades an untagged card once he is past the early levels, for a course that opted in', () => {
+    expect(shouldShowPortuguese(untagged, 1, true, true)).toBe(true)
+    expect(shouldShowPortuguese(untagged, 2, true, true)).toBe(true)
+    expect(shouldShowPortuguese(untagged, 3, true, true)).toBe(false)
+    expect(shouldShowPortuguese(untagged, 4, true, true)).toBe(false)
+  })
+
+  it('never fades a tagged card — the contrast is the lesson, not a crutch', () => {
+    expect(shouldShowPortuguese(falseFriend, 4, true, true)).toBe(true)
+    expect(shouldShowPortuguese(similarDifferent, 4, true, true)).toBe(true)
   })
 })
 

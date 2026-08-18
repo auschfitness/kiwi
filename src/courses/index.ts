@@ -23,15 +23,19 @@ const EN_NZ: Course = {
   // forgotten her streak.
   storageKey: 'english-nz',
   // American, to match the written pronunciation guide — she reads `fêrst` and
-  // has to hear `fêrst`. The guide was switched on purpose; the reasoning and
-  // its cost are in `authored/PHONETICS-CONVENTION.md` and `docs/STATE.md`.
-  // A profile created before the switch keeps its saved choice; the NZ voice
-  // is still one tap away in Settings, and Ear Training is still Kiwi.
+  // has to hear `fêrst`. The switch (and the 2026-08-17 pivot that took Ear
+  // Training and the rest of the course American too) is recorded in
+  // `authored/PHONETICS-CONVENTION.md` and `docs/STATE.md`. A profile created
+  // before either switch keeps its saved accent choice; the NZ voice is still
+  // one tap away in Settings.
   defaultAccent: 'en-US',
   accents: ['en-US', 'en-NZ', 'en-AU', 'en-GB'],
   modalities: ['recognize', 'listen', 'type', 'build', 'dictate', 'speak'],
   speakDirection: 'repeat',
   gated: true,
+  // She is still building the vocabulary itself — the translation is the
+  // thing being learned, not a crutch to fade out.
+  weanOffPortuguese: false,
   practice: ['dialogues', 'shadowing', 'roleplay', 'drills', 'earTraining'],
   decks: ENGLISH_DECKS,
   roleplays: ROLEPLAYS,
@@ -62,10 +66,14 @@ const ES_LATAM: Course = {
   // are different abilities. So he starts at A1 like anyone else, and the
   // seven-tap gesture is there the day he wants to jump ahead.
   gated: true,
+  // He already reads Spanish; the goal is to stop mentally translating it.
+  // Portuguese fades out on cards where it isn't the lesson itself — see
+  // `core/interference.ts`.
+  weanOffPortuguese: true,
   // Dialogues, Shadowing and Role-play have Spanish material of their own.
-  // Drills speak English numbers, times and dates, and Ear training is Kiwi
-  // vowel pairs; both are left out rather than shown speaking the wrong
-  // language.
+  // Drills speak English numbers, times and dates, and Ear training is
+  // American vowel/consonant pairs; both are left out rather than shown
+  // speaking the wrong language.
   practice: ['dialogues', 'shadowing', 'roleplay'],
   decks: ES_DECKS,
   roleplays: ES_ROLEPLAYS,
