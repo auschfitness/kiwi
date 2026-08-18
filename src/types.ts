@@ -6,6 +6,31 @@ export type PartOfSpeech =
 
 export type Level = 1 | 2 | 3 | 4
 
+/**
+ * How this card relates to what a Portuguese speaker already has in her head.
+ *
+ * `false-friend`: the word looks like a Portuguese word but means something
+ * else — `trap` names the meaning her brain will reach for by mistake
+ * ("embarazada" looks like "envergonhada", but means "grávida").
+ *
+ * `similar-different`: not a lexical trap, a structural one — Portuguese
+ * makes a different choice here (ser/estar, por/para, a verb tense) and the
+ * two languages' rules genuinely diverge, even though the sentence looks
+ * almost identical. No single `trap` word applies; the card's own `pt` is
+ * the contrast.
+ *
+ * Most cards have neither, on purpose: tagging every card would just teach
+ * him to distrust everything instead of flagging the specific places
+ * Portuguese actually causes errors.
+ */
+export type InterferenceType = 'false-friend' | 'similar-different'
+
+export interface Interference {
+  type: InterferenceType
+  /** `false-friend` only: the Portuguese word/meaning this gets mistaken for. */
+  trap?: string
+}
+
 export interface Card {
   id: string
   deckId: string
@@ -18,6 +43,8 @@ export interface Card {
   /** Public path of the card's photograph, e.g. `/photos/food_0.webp`.
    * Only concrete cards have one — see scripts/fetch-photos.mjs. */
   photo?: string
+  /** Set only where Portuguese specifically causes an error — see `Interference`. */
+  interference?: Interference
 }
 
 /** Who took a card's photograph, and where it lives on Pexels. */

@@ -107,6 +107,45 @@ describe('Spanish card photographs', () => {
   })
 })
 
+describe('Portuguese-interference tags', () => {
+  it('names the trap on every false-friend card', () => {
+    for (const c of ES_CARDS) {
+      if (c.interference?.type !== 'false-friend') continue
+      expect(c.interference.trap?.trim(), c.id).toBeTruthy()
+    }
+  })
+
+  it('leaves similar-different cards to their own pt field, with no trap', () => {
+    for (const c of ES_CARDS) {
+      if (c.interference?.type !== 'similar-different') continue
+      expect(c.interference.trap, c.id).toBeUndefined()
+    }
+  })
+
+  it('tags a meaningful chunk of the false-friends deck, not all of it', () => {
+    // The deck also carries the "safe" companion word for each trap
+    // (ancho next to largo, jugar next to brincar) — those should stay
+    // untagged. Both bounds catch the deck drifting either way.
+    const falseFriendsDeck = ES_CARDS.filter(c => c.deckId === 'es_false')
+    const tagged = falseFriendsDeck.filter(c => c.interference?.type === 'false-friend')
+    expect(tagged.length).toBeGreaterThan(10)
+    expect(tagged.length).toBeLessThan(falseFriendsDeck.length)
+  })
+
+  it('tags every card in the four contrast-grammar decks as similar-different', () => {
+    for (const deckId of ['es_ser_estar', 'es_por_para', 'es_subj', 'es_past']) {
+      const cards = ES_CARDS.filter(c => c.deckId === deckId)
+      expect(cards.length, deckId).toBeGreaterThan(0)
+      for (const c of cards) expect(c.interference?.type, c.id).toBe('similar-different')
+    }
+  })
+
+  it('leaves most of the corpus untagged — the flag means something because it is rare', () => {
+    const taggedRatio = ES_CARDS.filter(c => c.interference).length / ES_CARDS.length
+    expect(taggedRatio).toBeLessThan(0.3)
+  })
+})
+
 describe('Spanish practice material', () => {
   it('ships scenes and conversations', () => {
     expect(ES_ROLEPLAYS.length).toBeGreaterThanOrEqual(6)

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Card, CardPhoto, SpeakerButton, Button } from '../ui'
+import { Card, CardPhoto, InterferenceNote, SpeakerButton, Button } from '../ui'
 import { useStore } from '../../store/useStore'
 import { stripTags } from '../../core/text'
 import { speak } from '../../audio/speak'
@@ -33,6 +33,7 @@ export function Learn({ card, onAnswer }: ModalityProps) {
         </div>
         {card.phonetic && <p className="text-muted">/{card.phonetic}/</p>}
         {showPortuguese && <p className="text-lg text-muted">{card.pt}</p>}
+        <InterferenceNote card={card} />
         {/* Learn is where the memory is actually formed, so this is the one
          * screen that shows the picture up front, beside the word. */}
         <CardPhoto card={card} />
