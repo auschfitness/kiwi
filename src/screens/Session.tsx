@@ -67,10 +67,10 @@ export function Session({ deckId, onDone }: SessionProps) {
    * "easy"; it is gone, because she now says so herself and a second opinion
    * from a stopwatch could only overrule her.
    */
-  function handleAnswer(rating: Rating) {
+  function handleAnswer(rating: Rating, interferenceHit?: boolean) {
     const item = queue[index]
     if (!item) return
-    gradeItem(item.cardId, item.modality, rating, Date.now())
+    gradeItem(item.cardId, item.modality, rating, Date.now(), interferenceHit)
     if (rating === 0) setQueue(q => requeueWrong(q, index))
     setIndex(i => i + 1)
   }
@@ -125,7 +125,7 @@ export function Session({ deckId, onDone }: SessionProps) {
 function renderModality(
   item: QueueItem,
   card: NonNullable<ReturnType<typeof cardById>>,
-  onAnswer: (rating: Rating) => void,
+  onAnswer: (rating: Rating, interferenceHit?: boolean) => void,
   onSkip: () => void,
   index: number,
 ) {

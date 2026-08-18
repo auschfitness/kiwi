@@ -5,6 +5,9 @@ import { levelProgress, LEVEL_NAMES, LEVEL_EMOJI, LEVEL_TITLES } from '../core/l
 import { skillSummary, weakestSkill, levelBreakdown } from '../core/stats'
 import { studySummary, formatDuration, formatCompact, type StudyDay } from '../core/studyTime'
 import { visibleStreak } from '../core/streak'
+import { buildInterferenceProfile } from '../core/interference'
+import { DECKS } from '../content'
+import { ACTIVE_COURSE } from '../courses'
 import { Card, Chip, Meter, ScreenHeader } from '../components/ui'
 
 export interface DashboardProps {
@@ -94,6 +97,8 @@ export function Dashboard({ onBack }: DashboardProps) {
   const streak = useStore(s => visibleStreak(s, Date.now()))
   const bestDay = useStore(s => s.bestDay)
   const studyLog = useStore(s => s.studyLog)
+  const interferenceStats = useStore(s => s.interferenceStats)
+  const trapHits = useStore(s => s.trapHits)
 
   const now = Date.now()
   const time = studySummary(studyLog, now)
@@ -104,6 +109,12 @@ export function Dashboard({ onBack }: DashboardProps) {
   const breakdown = levelBreakdown(cards, cardIdsByLevel)
   const atTopLevel = unlockedLevel >= 4
   const progress = levelProgress(cardIdsByLevel[unlockedLevel], cards)
+  // Only the Spanish course tags any cards with `interference`, so this is
+  // always empty on the English profile — gated on the course id anyway,
+  // rather than on the data happening to be empty, so the section can never
+  // flicker on for the wrong course from a stale value mid-render.
+  const allCards = DECKS.flatMap(d => d.cards)
+  const interference = buildInterferenceProfile(allCards, skills, interferenceStats, trapHits)
 
   return (
     <div className="flex flex-col gap-5 pt-2">
@@ -183,6 +194,38 @@ export function Dashboard({ onBack }: DashboardProps) {
           <SkillRow key={row.skill} skill={row.skill} total={row.total} accuracy={row.accuracy} />
         ))}
       </Card>
+
+      {ACTIVE_COURSE.id === 'es-latam' &&
+        (interference.taggedAccuracy !== null || interference.traps.length > 0) && (
+          <Card className="flex flex-col gap-4">
+            <p className="font-bold text-ink">Portuguese interference</p>
+            {interference.taggedAccuracy !== null && (
+              <div className="flex justify-between gap-2 text-center">
+                <div className="flex-1">
+                  <p className="text-lg font-extrabold text-ink">
+                    {interference.restAccuracy === null ? '—' : `${interference.restAccuracy}%`}
+                  </p>
+                  <p className="text-xs text-muted">rest of the course</p>
+                </div>
+                <div className="flex-1">
+                  <p className="text-lg font-extrabold text-ink">{interference.taggedAccuracy}%</p>
+                  <p className="text-xs text-muted">flagged cards</p>
+                </div>
+              </div>
+            )}
+            {interference.traps.length > 0 && (
+              <div className="flex flex-col gap-2">
+                <p className="text-sm text-muted">Traps you keep reaching for:</p>
+                {interference.traps.slice(0, 5).map(t => (
+                  <div key={t.cardId} className="flex items-center justify-between text-sm">
+                    <span className="text-ink">{t.en}</span>
+                    <span className="text-muted">&ldquo;{t.trap}&rdquo; × {t.hits}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
+        )}
 
       <Card className="flex flex-col gap-3">
         <div className="flex items-center justify-between">

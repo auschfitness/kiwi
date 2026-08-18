@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Card, Button } from '../ui'
 import { clozeExample, looseMatch } from '../../core/text'
+import { isTrapAnswer } from '../../core/interference'
 import { RatingButtons } from './RatingButtons'
 import type { Rating } from '../../types'
 import type { ModalityProps } from './types'
@@ -20,7 +21,9 @@ export function Type({ card, onAnswer }: ModalityProps) {
   function finish(rating: Rating) {
     if (answered) return
     setAnswered(true)
-    onAnswer(rating)
+    // Read at grading time, not at check time: `value` is what he actually
+    // typed for this card regardless of which button he then taps.
+    onAnswer(rating, isTrapAnswer(card, value))
   }
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {

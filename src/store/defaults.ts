@@ -30,6 +30,8 @@ export function createInitialState(now: number): AppState {
     doneDate: null,
     bestDay: 0,
     studyLog: {},
+    interferenceStats: { correct: 0, total: 0 },
+    trapHits: {},
     startedAt: now,
     updatedAt: now,
   }

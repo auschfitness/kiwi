@@ -121,6 +121,20 @@ export interface AppState {
    * See `src/core/studyTime.ts` for why it is a log and not a total.
    */
   studyLog: StudyLog
+  /**
+   * How he does on cards tagged `interference` versus the rest of the
+   * course — see `core/interference.ts`. Tracked the same shape as `skills`
+   * on purpose, so the two numbers read the same way: "77% overall, 54% on
+   * the ones Portuguese actively fights him on."
+   */
+  interferenceStats: SkillStat
+  /**
+   * cardId -> number of times a `type` answer loosely matched the card's
+   * own `interference.trap` rather than the Spanish target — the one signal
+   * precise enough to name the exact word his brain reached for, not just
+   * that he got the card wrong. Only false-friend cards ever get an entry.
+   */
+  trapHits: Record<string, number>
   startedAt: number
   updatedAt: number
 }

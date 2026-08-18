@@ -1,4 +1,4 @@
-import type { AppState, CardState, Skill, Skills } from '../types'
+import type { AppState, CardState, Skill, Skills, SkillStat } from '../types'
 import { mergeStudyLogs } from './studyTime'
 
 /** Deterministic and symmetric: prefers the more-progressed state on every tie. */
@@ -20,6 +20,22 @@ function mergeSkills(a: Skills, b: Skills): Skills {
       correct: Math.max(a[skill].correct, b[skill].correct),
       total: Math.max(a[skill].total, b[skill].total),
     }
+  }
+  return out
+}
+
+/** Same convention as `mergeSkills`: each device's counter only grows, so the
+ * higher one is the more-progressed one, not a double-count to add together. */
+function mergeStat(a: SkillStat, b: SkillStat): SkillStat {
+  return { correct: Math.max(a.correct, b.correct), total: Math.max(a.total, b.total) }
+}
+
+/** Per-card, like `cards` — a trap hit tracked on one device must survive a
+ * merge even if the other device never saw that card at all. */
+function mergeTrapHits(a: Record<string, number>, b: Record<string, number>): Record<string, number> {
+  const out: Record<string, number> = {}
+  for (const id of new Set([...Object.keys(a), ...Object.keys(b)])) {
+    out[id] = Math.max(a[id] ?? 0, b[id] ?? 0)
   }
   return out
 }
@@ -163,6 +179,13 @@ export function mergeSnapshots(local: AppState, remote: AppState): AppState {
     // `scalarKey`. `?? {}` covers a snapshot written before the study clock
     // existed, the same problem `scalar()` solves for the three fields above.
     studyLog: mergeStudyLogs(local.studyLog ?? {}, remote.studyLog ?? {}),
+    // `?? ...` covers a snapshot written before the interference profile
+    // existed, the same problem `scalar()` solves for speechRate and friends.
+    interferenceStats: mergeStat(
+      local.interferenceStats ?? { correct: 0, total: 0 },
+      remote.interferenceStats ?? { correct: 0, total: 0 },
+    ),
+    trapHits: mergeTrapHits(local.trapHits ?? {}, remote.trapHits ?? {}),
     startedAt: Math.min(local.startedAt, remote.startedAt),
     updatedAt: Math.max(local.updatedAt, remote.updatedAt),
   }

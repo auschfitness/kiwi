@@ -172,7 +172,9 @@ describe('Type', () => {
     expect(rating(/^Good/)).toHaveAttribute('data-suggested', 'true')
     await userEvent.click(rating(/^Good/))
     // Was `true`; the single Continue button is now the four ratings.
-    expect(onAnswer).toHaveBeenCalledWith(2)
+    // The second argument is the interference-trap check — false here since
+    // this card carries no `interference` tag at all.
+    expect(onAnswer).toHaveBeenCalledWith(2, false)
   })
 
   it('shows the answer after a miss and suggests Again', async () => {
@@ -183,7 +185,7 @@ describe('Type', () => {
     expect(screen.getByText(/water/)).toBeInTheDocument()
     expect(rating(/^Again/)).toHaveAttribute('data-suggested', 'true')
     await userEvent.click(rating(/^Again/))
-    expect(onAnswer).toHaveBeenCalledWith(0)
+    expect(onAnswer).toHaveBeenCalledWith(0, false)
   })
 
   it('lets her overrule the suggestion', async () => {
@@ -193,7 +195,7 @@ describe('Type', () => {
     await userEvent.click(screen.getByRole('button', { name: /check/i }))
     // The app suggested Good; she says it was hard work.
     await userEvent.click(rating(/^Hard/))
-    expect(onAnswer).toHaveBeenCalledWith(1)
+    expect(onAnswer).toHaveBeenCalledWith(1, false)
   })
 
   it('blanks the target in the example sentence', () => {
@@ -215,6 +217,6 @@ describe('Type', () => {
     await userEvent.click(rating(/^Easy/))
     await userEvent.click(rating(/^Again/))
     expect(onAnswer).toHaveBeenCalledTimes(1)
-    expect(onAnswer).toHaveBeenCalledWith(3)
+    expect(onAnswer).toHaveBeenCalledWith(3, false)
   })
 })

@@ -44,6 +44,17 @@ describe('store', () => {
     expect(s.cards.survival_0.lapses).toBe(1)
   })
 
+  it('leaves the interference profile untouched for a card that carries no interference tag', () => {
+    useStore.getState().gradeItem('survival_0', 'type', 0, NOW, true)
+    const s = useStore.getState()
+    // `interferenceHit: true` came from the modality anyway (it shouldn't,
+    // for an untagged card — see `core/interference.ts`), but the stats
+    // must not move for a card whose own `interference` is unset. Trap
+    // hits are keyed by card id, not asserted blind.
+    expect(s.interferenceStats).toEqual({ correct: 0, total: 0 })
+    expect(s.trapHits.survival_0).toBeUndefined()
+  })
+
   it('counts "hard" as a correct answer for the skill, but schedules it as hard', () => {
     useStore.getState().gradeItem('survival_0', 'listen', 1, NOW)
     const s = useStore.getState()
@@ -274,9 +285,9 @@ describe('persisted-state migration (v1/v2 -> v3, the placement test removed)', 
     return rest
   }
 
-  it('is on version 4 — removing a field is a real bump too, not a shallow-merge accident', () => {
-    expect(PERSIST_VERSION).toBe(4)
-    expect(useStore.persist.getOptions().version).toBe(4)
+  it('is on version 5 — removing a field is a real bump too, not a shallow-merge accident', () => {
+    expect(PERSIST_VERSION).toBe(5)
+    expect(useStore.persist.getOptions().version).toBe(5)
   })
 
   it('rehydrates a v1 profile with the reminder defaults and every scrap of progress intact', async () => {
@@ -371,7 +382,35 @@ describe('persisted-state migration (v1/v2 -> v3, the placement test removed)', 
     expect(migrate(withHours, 3).studyLog).toEqual({ '2026-7-29': 1_800_000 })
   })
 
-  it('leaves a v4 profile exactly as saved, reminder settings included', async () => {
+  /** v4: the study clock had shipped, but the interference profile had not. */
+  function v4Profile(): Omit<AppState, 'interferenceStats' | 'trapHits'> {
+    const { interferenceStats: _stats, trapHits: _hits, ...rest } = createInitialState(NOW)
+    return { ...rest, streak: 12, bestDay: 44, unlockedLevel: 3, reminderTime: '07:30' }
+  }
+
+  it('gives a v4 profile an empty interference profile without disturbing anything it earned', async () => {
+    const old = v4Profile()
+    localStorage.setItem('english-nz', JSON.stringify({ state: old, version: 4 }))
+
+    await useStore.persist.rehydrate()
+    const s = useStore.getState()
+
+    expect(s.interferenceStats).toEqual({ correct: 0, total: 0 })
+    expect(s.trapHits).toEqual({})
+    expect(s.streak).toBe(12)
+    expect(s.bestDay).toBe(44)
+    expect(s.unlockedLevel).toBe(3)
+    expect(s.reminderTime).toBe('07:30')
+  })
+
+  it('keeps interference stats a saved profile already has', () => {
+    const withStats = { ...v4Profile(), interferenceStats: { correct: 3, total: 5 }, trapHits: { es_false_0: 2 } }
+    const out = migrate(withStats, 4)
+    expect(out.interferenceStats).toEqual({ correct: 3, total: 5 })
+    expect(out.trapHits).toEqual({ es_false_0: 2 })
+  })
+
+  it('leaves a v5 profile exactly as saved, reminder settings included', async () => {
     const current = { ...createInitialState(NOW), profileName: 'Ana', reminderEnabled: true, reminderTime: '07:30', streak: 4 }
     localStorage.setItem('english-nz', JSON.stringify({ state: current, version: PERSIST_VERSION }))
 

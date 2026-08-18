@@ -17,6 +17,7 @@ function snap(over: Partial<AppState> = {}): AppState {
     reminderEnabled: false, reminderTime: '19:00',
     streak: 0, lastStudyDay: null, doneToday: 0, doneDate: null, bestDay: 0,
     studyLog: {},
+    interferenceStats: { correct: 0, total: 0 }, trapHits: {},
     startedAt: T, updatedAt: T, ...over,
   }
 }
@@ -46,6 +47,26 @@ describe('mergeSnapshots', () => {
     const local = snap({ skills: { ...snap().skills, vocab: { correct: 10, total: 20 } } })
     const remote = snap({ skills: { ...snap().skills, vocab: { correct: 4, total: 30 } } })
     expect(mergeSnapshots(local, remote).skills.vocab).toEqual({ correct: 10, total: 30 })
+  })
+
+  it('takes the max of each interference stat, the same way as skills', () => {
+    const local = snap({ interferenceStats: { correct: 3, total: 5 } })
+    const remote = snap({ interferenceStats: { correct: 1, total: 8 } })
+    expect(mergeSnapshots(local, remote).interferenceStats).toEqual({ correct: 3, total: 8 })
+  })
+
+  it('unions trap hits and keeps the higher count per card', () => {
+    const local = snap({ trapHits: { es_false_0: 2, es_false_5: 1 } })
+    const remote = snap({ trapHits: { es_false_0: 1, es_false_9: 4 } })
+    expect(mergeSnapshots(local, remote).trapHits).toEqual({ es_false_0: 2, es_false_5: 1, es_false_9: 4 })
+  })
+
+  it('falls back to zero for a snapshot written before the interference profile existed', () => {
+    const { interferenceStats: _s, trapHits: _h, ...withoutProfile } = snap({ interferenceStats: { correct: 2, total: 3 }, trapHits: { es_false_0: 1 } })
+    const local = withoutProfile as AppState
+    const remote = snap({ interferenceStats: { correct: 2, total: 3 }, trapHits: { es_false_0: 1 } })
+    expect(mergeSnapshots(local, remote).interferenceStats).toEqual({ correct: 2, total: 3 })
+    expect(mergeSnapshots(local, remote).trapHits).toEqual({ es_false_0: 1 })
   })
 
   it('takes the higher streak, best day and unlocked level', () => {

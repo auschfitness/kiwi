@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { AppState, Level, Modality, Rating } from '../types'
-import { DECKS } from '../content'
+import { DECKS, cardById } from '../content'
 import { schedule } from '../core/srs'
 import { skillForModality } from '../core/modality'
 import { recordSkill } from '../core/stats'
@@ -32,8 +32,14 @@ interface Actions {
   freeAccess: boolean
   setFreeAccess: (on: boolean) => void
   setName: (name: string) => void
-  /** `rating` is hers: 0 again, 1 hard, 2 good, 3 easy. Anything above 0 counts as correct. */
-  gradeItem: (cardId: string, modality: Modality, rating: Rating, now: number) => void
+  /**
+   * `rating` is hers: 0 again, 1 hard, 2 good, 3 easy. Anything above 0
+   * counts as correct. `interferenceHit` is set only by a modality that
+   * compared the raw typed answer against the card's own Portuguese trap
+   * and found a match — see `core/interference.ts`. Only the Spanish
+   * course's cards ever carry that trap, so this is a no-op elsewhere.
+   */
+  gradeItem: (cardId: string, modality: Modality, rating: Rating, now: number, interferenceHit?: boolean) => void
   /**
    * Feed one speaking or listening rep from a Practice feature (Shadowing,
    * Role-play, Drills, ...) into the same skill stats gradeItem writes to —
@@ -72,14 +78,15 @@ export type Store = AppState & Actions
 /**
  * 2 when the daily reminder shipped (`reminderEnabled`, `reminderTime`);
  * 3 when the placement test was removed (`placed`, `cefrLevel`);
- * 4 when the study clock shipped (`studyLog`). Bump this
+ * 4 when the study clock shipped (`studyLog`); 5 when the Portuguese-
+ * interference profile shipped (`interferenceStats`, `trapHits`). Bump this
  * every time `AppState` gains, loses or changes a field and teach `migrate`
  * below how to handle it — do not lean on zustand's shallow merge to paper
  * over the gap, the way `speechRate` once did. She has real progress in
  * localStorage; a migration that drops a key looks to her like the app forgot
  * her streak.
  */
-export const PERSIST_VERSION = 4
+export const PERSIST_VERSION = 5
 
 /** Fields that used to live in `AppState` and no longer do. */
 type RetiredFields = { placed?: boolean; cefrLevel?: number }
@@ -126,6 +133,11 @@ export function migrate(persisted: unknown, version: number): Store {
     // card counts are untouched — the hours simply begin today, and the
     // Progress screen says so rather than implying she has never studied.
     studyLog: kept.studyLog ?? defaults.studyLog,
+    // v4 -> v5: the interference profile. Nothing to backfill from — a
+    // profile that already has real review history simply starts counting
+    // from today, the same way the study clock did.
+    interferenceStats: kept.interferenceStats ?? defaults.interferenceStats,
+    trapHits: kept.trapHits ?? defaults.trapHits,
   } as Store
 }
 
@@ -173,7 +185,7 @@ export const useStore = create<Store>()(
         set({ profileName: trimmed, updatedAt: Date.now() })
       },
 
-      gradeItem: (cardId, modality, rating, now) => {
+      gradeItem: (cardId, modality, rating, now, interferenceHit) => {
         const s = get()
         // The scheduler gets her rating untouched; the skill stats only care
         // whether she got there at all, so "hard" still counts as a hit.
@@ -182,9 +194,29 @@ export const useStore = create<Store>()(
         const skills = recordSkill(s.skills, skillForModality(modality), correct)
         const tick = applyStudyTick(s, now)
         const next = shouldUnlockNext(s.unlockedLevel, cardIdsByLevel[s.unlockedLevel], cards)
+
+        // Tagged separately from `skills`: a card with `interference` set
+        // gets its correctness counted here too, so Dashboard can compare
+        // "overall" against "the ones Portuguese fights him on" without a
+        // third full accuracy table. `interferenceHit` (a confirmed trap-word
+        // answer) is rarer and stronger evidence, so it gets its own map.
+        const card = cardById(cardId)
+        const interferenceStats = card?.interference
+          ? { correct: s.interferenceStats.correct + (correct ? 1 : 0), total: s.interferenceStats.total + 1 }
+          : s.interferenceStats
+        // Trusts the modality's classification, but only for a card that
+        // actually names a trap — a caller passing `interferenceHit` for the
+        // wrong card (or a future modality that gets the check wrong) can
+        // never plant a hit against a card that was never at risk of one.
+        const trapHits = interferenceHit && card?.interference?.type === 'false-friend'
+          ? { ...s.trapHits, [cardId]: (s.trapHits[cardId] ?? 0) + 1 }
+          : s.trapHits
+
         set({
           cards,
           skills,
+          interferenceStats,
+          trapHits,
           ...tick,
           ...(next ? { unlockedLevel: next, unlocked: next } : {}),
           updatedAt: now,
