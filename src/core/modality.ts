@@ -17,6 +17,16 @@ export interface CourseRules {
   typablePos: ReadonlySet<PartOfSpeech>
   /** Longest target still worth typing. See `DEFAULT_TYPABLE_MAX`. */
   typableMaxChars: number
+  /**
+   * The one modality this course treats as genuinely spontaneous — nothing
+   * on screen to reconstruct from, just the Portuguese and his own head.
+   * Weighted into `pickModality`'s wheel the same way a weak-skill `bias`
+   * is, so a card cannot coast on easy `build`/`type` passes forever without
+   * ever being asked to actually produce it. Unset means "no course opinion
+   * here" — English's wheel is untouched, exactly as it was before this
+   * field existed.
+   */
+  spontaneousModality?: Modality
 }
 
 /** The English course's rules, and the answer when a caller passes none. */
@@ -87,6 +97,13 @@ export function pickModality(
   if (isNew(state)) return 'learn'
   const supported = supportedModalities(card, canSpeak, rules)
   const extra = bias ? supported.filter(m => SKILL_OF[m] === bias) : []
-  const wheel = [...supported, ...extra]
+  // Same "pull, don't replace" reasoning as the skill bias above: the
+  // spontaneous modality goes round a second time rather than swapping out
+  // the rotation, so `build`/`type`/`dictate` still come up just as often as
+  // each other — only their combined share against the spontaneous one shrinks.
+  const spontaneous = rules.spontaneousModality && supported.includes(rules.spontaneousModality)
+    ? [rules.spontaneousModality]
+    : []
+  const wheel = [...supported, ...extra, ...spontaneous]
   return wheel[state!.reps % wheel.length]
 }

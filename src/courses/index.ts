@@ -103,4 +103,9 @@ export const ACTIVE_RULES: CourseRules = {
   // Spanish targets are expressions, not words, and the idiomatic ones are the
   // longest. 24 fits "hacer la vista gorda" without letting a sentence in.
   typableMaxChars: ACTIVE_COURSE.id === 'es-latam' ? 24 : DEFAULT_TYPABLE_MAX,
+  // Only Spanish has an opinion here. `speak` is the one modality with
+  // nothing to reconstruct from — `speakDirection: 'produce'` already means
+  // it shows the Portuguese and asks for the Spanish out loud — so it is
+  // what "spontaneous" means for this course specifically.
+  spontaneousModality: ACTIVE_COURSE.id === 'es-latam' ? 'speak' : undefined,
 }

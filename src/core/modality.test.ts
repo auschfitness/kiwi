@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { supportedModalities, pickModality, skillForModality } from './modality'
+import { supportedModalities, pickModality, skillForModality, DEFAULT_RULES } from './modality'
 import type { Card, CardState, Modality } from '../types'
 
 function card(over: Partial<Card> = {}): Card {
@@ -104,6 +104,40 @@ describe('pickModality', () => {
   it('ignores a bias the card cannot serve', () => {
     const c = card({ exampleHtml: '<b>Water</b>.' }) // typable, not a sentence
     expect(pickModality(c, state(1), false, 'grammar')).not.toBe('build')
+  })
+
+  describe('spontaneousModality', () => {
+    const rules = { ...DEFAULT_RULES, spontaneousModality: 'speak' as const }
+
+    it('does nothing when the course names no spontaneous modality — English is untouched', () => {
+      const c = card()
+      const withRule = Array.from({ length: 40 }, (_, i) => pickModality(c, state(i + 1), true, undefined, rules))
+      const without = Array.from({ length: 40 }, (_, i) => pickModality(c, state(i + 1), true))
+      const speakShare = (picks: Modality[]) => picks.filter(m => m === 'speak').length
+      expect(speakShare(withRule)).toBeGreaterThan(speakShare(without))
+    })
+
+    it('still shows every other supported modality — it pulls, it does not replace', () => {
+      const c = card()
+      const supported = supportedModalities(c, true)
+      const seen = new Set<string>()
+      for (let reps = 1; reps <= 40; reps++) seen.add(pickModality(c, state(reps), true, undefined, rules))
+      expect(seen).toEqual(new Set(supported))
+    })
+
+    it('is a no-op for a card that cannot speak at all', () => {
+      const c = card()
+      const withRule = pickModality(c, state(1), false, undefined, rules)
+      const without = pickModality(c, state(1), false)
+      expect(withRule).toBe(without)
+    })
+
+    it('stacks with a skill bias rather than fighting it', () => {
+      const c = card()
+      const picks = Array.from({ length: 40 }, (_, i) => pickModality(c, state(i + 1), true, 'grammar', rules))
+      expect(picks).toContain('build')
+      expect(picks).toContain('speak')
+    })
   })
 })
 

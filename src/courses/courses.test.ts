@@ -167,6 +167,10 @@ describe('course rules', () => {
     expect(supportedModalities(card(), false, ACTIVE_RULES)).not.toContain('type')
   })
 
+  it('names no spontaneous modality for English — the wheel-weighting is Spanish only', () => {
+    expect(ACTIVE_RULES.spontaneousModality).toBeUndefined()
+  })
+
   it('never offers a Spanish learner a recognition exercise', () => {
     const picks = Array.from({ length: 30 }, (_, i) => pickModality(card(), state(i + 1), true, undefined, ES_RULES))
     expect(picks).not.toContain('recognize')
