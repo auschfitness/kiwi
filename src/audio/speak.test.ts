@@ -45,6 +45,34 @@ describe('pickVoice', () => {
     const voices = [voice('en-NZ'), voice('en-GB')]
     expect(pickVoice(voices, 'en-GB')?.lang).toBe('en-GB')
   })
+
+  // The reported bug: on a device with no Spanish voice installed at all,
+  // Spanish content was read in an English voice — an English accent reading
+  // Spanish words, not silence and not a Spanish accent. The fallback chain
+  // was hardcoded to English regardless of what was actually requested.
+  describe('Spanish accents', () => {
+    it('falls back within Spanish — Mexican before Argentine or Spain', () => {
+      const voices = [voice('es-AR'), voice('es-ES'), voice('es-MX')]
+      expect(pickVoice(voices, 'es-419')?.lang).toBe('es-MX')
+    })
+
+    it('falls back to Argentine before Spain', () => {
+      expect(pickVoice([voice('es-ES'), voice('es-AR')], 'es-419')?.lang).toBe('es-AR')
+    })
+
+    it('accepts any Spanish voice as a last resort, not just the four named ones', () => {
+      expect(pickVoice([voice('es-CO')], 'es-419')?.lang).toBe('es-CO')
+    })
+
+    it('never falls back to an English voice for a Spanish request — the actual bug', () => {
+      const voices = [voice('en-US'), voice('en-GB')]
+      expect(pickVoice(voices, 'es-419')).toBeNull()
+    })
+
+    it('never falls back to a Spanish voice for an English request either', () => {
+      expect(pickVoice([voice('es-MX')], 'en-US')).toBeNull()
+    })
+  })
 })
 
 // jsdom has no speechSynthesis / SpeechSynthesisUtterance, so we stub the

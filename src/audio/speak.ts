@@ -2,7 +2,20 @@ import type { Accent } from '../types'
 import { speechSynthesisAvailable } from './capabilities'
 import { speakable, clampRate, DEFAULT_RATE } from '../core/speech'
 
-const FALLBACKS: Accent[] = ['en-US', 'en-NZ', 'en-AU', 'en-GB']
+/**
+ * Fallback order within each language family — never across families. The
+ * app used to have only English accents, and the fallback chain stayed
+ * hardcoded to English after Spanish shipped: a device with no Spanish voice
+ * at all would read Spanish content in an English voice rather than a
+ * Spanish one with the wrong region. An English voice cannot speak Spanish
+ * sounds correctly at all, whereas es-ES standing in for es-419 is at worst
+ * a different accent of the same language — so the fix is per-family
+ * fallback, not a shared list.
+ */
+const FALLBACKS: Record<string, Accent[]> = {
+  en: ['en-US', 'en-NZ', 'en-AU', 'en-GB'],
+  es: ['es-419', 'es-MX', 'es-AR', 'es-ES'],
+}
 
 // Module-level default so this file never has to import the Zustand store
 // (the store imports content and core; importing it back from here would be
@@ -20,15 +33,20 @@ function byLang(voices: SpeechSynthesisVoice[], lang: string): SpeechSynthesisVo
   return voices.find(v => v.lang.toLowerCase() === lang.toLowerCase())
 }
 
-/** Exact accent, then US → NZ → AU → GB, then any English voice, then null. */
+/**
+ * Exact accent, then the rest of its language family in the order above,
+ * then any voice at all in that family, then null — never a voice from a
+ * different language, which would mispronounce every word in it.
+ */
 export function pickVoice(voices: SpeechSynthesisVoice[], accent: Accent): SpeechSynthesisVoice | null {
   const exact = byLang(voices, accent)
   if (exact) return exact
-  for (const lang of FALLBACKS) {
+  const family = accent.split('-')[0].toLowerCase()
+  for (const lang of FALLBACKS[family] ?? []) {
     const hit = byLang(voices, lang)
     if (hit) return hit
   }
-  return voices.find(v => v.lang.toLowerCase().startsWith('en')) ?? null
+  return voices.find(v => v.lang.toLowerCase().startsWith(`${family}-`) || v.lang.toLowerCase() === family) ?? null
 }
 
 let warmed = false
