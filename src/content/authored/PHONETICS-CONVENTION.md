@@ -317,3 +317,41 @@ formas**, mantendo a seta: `gôu → uént`, `fínk → fót`.
 
 Uma chave errada **não dá erro**: simplesmente não aparece pronúncia nenhuma.
 Confira o `id` no ficheiro de origem antes de escrever a entrada.
+
+---
+
+## 9. Polonês — o que muda
+
+O polonês usa o mesmo princípio ("leia como se fosse português"), mas a
+ortografia polonesa já é bem mais regular que a do inglês: cada letra (ou
+dígrafo fixo) quase sempre soa do mesmo jeito, e o acento tônico **cai
+sempre na penúltima sílaba, sem exceção** — por isso a tabela abaixo não
+marca acento tônico em nenhuma palavra, diferente da tabela do inglês.
+
+| Letra polonesa | Escrevemos | Nota |
+|---|---|---|
+| a | a | |
+| ą | `on` (antes de p/b: `om`) | vogal nasal |
+| e | é | |
+| ę | `en` (antes de p/b: `em`) | vogal nasal |
+| i | i | |
+| o | ó | |
+| ó, u | u | |
+| y | y | mantido como letra própria — um som mais fechado/central que `i`, sem letra equivalente em português |
+| ć, ń, ś, ź | mantidas como estão | o único grupo que o português genuinamente não tem — `ń` por acaso é exatamente o nosso `nh` |
+| c | ts | |
+| cz | tch | |
+| sz | x | |
+| ż, rz | j | |
+| dz | dz | |
+| dż | dj | |
+| ch, h | rr | (o r gutural de "carro") |
+| w | v | |
+| ł | u | o "l escuro" soa como um "u" |
+| j | vira parte da vogal ao lado (`ja`→`ia`, `je`→`ié`) | não é uma consoante isolada aqui |
+| "ni/si/zi/dzi" + vogal | vira `ń/ś/ź/dź` + vogal | é assim que essa grafia se lê em polonês |
+
+**Exemplo:** `dziękuję` (obrigado) → `dźenkuién`. `cześć` (oi) → `tchéść`.
+
+Cobertura desta tabela: `authored/phoneticsPl.ts`, nível A1 (Fase 1 do curso
+de polonês). Ver `docs/superpowers/specs/2026-09-01-polish-course-design.md`.
