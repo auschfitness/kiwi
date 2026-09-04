@@ -69,4 +69,17 @@ export const PHONETICS_PL: Record<string, string> = {
   pl_people_11: 'dźévtchyna',
   pl_people_12: 'rruópak',
   pl_people_13: 'tchuóviék',
+  // ── pl_emergency · Emergências e ajuda ───────────────────────────────────
+  pl_emergency_0: 'pómótsy',
+  pl_emergency_1: 'pómóts',
+  pl_emergency_2: 'pólitsia',
+  pl_emergency_3: 'xpital',
+  pl_emergency_4: 'lékaj',
+  pl_emergency_5: 'karétka',
+  pl_emergency_6: 'pójar',
+  pl_emergency_7: 'ńébézpiétchéństvó',
+  pl_emergency_8: 'zgubiuém śen',
+  pl_emergency_9: 'pótjébujén pómótsy',
+  pl_emergency_10: 'zadzvóń pó pómóts',
+  pl_emergency_11: 'iéstém rróry',
 }
