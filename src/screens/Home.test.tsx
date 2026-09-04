@@ -157,6 +157,27 @@ describe('Home', () => {
   })
 })
 
+describe('course switcher', () => {
+  it('opens a chip for every other course on tap, not just one', async () => {
+    const user = userEvent.setup()
+    render(<Home onNavigate={vi.fn()} onStudy={vi.fn()} syncStatus="unconfigured" />)
+    await user.click(screen.getByTestId('course-switch'))
+    // The active course (English, in these tests) is es-latam and pl-pl's
+    // sibling — both of the others must be reachable, not just whichever
+    // ALL_COURSES happens to list first.
+    expect(screen.getByTestId('course-switch-es-latam')).toBeInTheDocument()
+    expect(screen.getByTestId('course-switch-pl-pl')).toBeInTheDocument()
+  })
+
+  it('switches straight to the tapped course', async () => {
+    const user = userEvent.setup()
+    render(<Home onNavigate={vi.fn()} onStudy={vi.fn()} syncStatus="unconfigured" />)
+    await user.click(screen.getByTestId('course-switch'))
+    await user.click(screen.getByTestId('course-switch-pl-pl'))
+    expect(localStorage.getItem('english-nz.course')).toBe('pl-pl')
+  })
+})
+
 /**
  * Home is the screen she opens every day, so it is the only place a "is my
  * work actually backed up?" answer reliably reaches her. Settings is a place

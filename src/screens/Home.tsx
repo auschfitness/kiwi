@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import type { Screen } from '../App'
 import type { Level } from '../types'
 import { useStore, cardIdsByLevel } from '../store/useStore'
@@ -82,27 +82,59 @@ function SyncLine({ status, onOpen }: { status: SyncStatus; onOpen: () => void }
  * One tap to change language, on the screen he opens every day.
  *
  * Settings has the same switch with an explanation beside it; this is the
- * shortcut for someone who moves between the two courses often. It reloads —
- * see src/courses/active.ts for why that is the whole trick — and it does not
- * confirm, because there is nothing to confirm any more: the name and sync
- * code follow the person now, and no progress is touched by moving.
+ * shortcut for someone who moves between courses often. With only two
+ * courses this used to jump straight to "the other one" — that assumption
+ * broke the day a third course existed, since there is no longer a single
+ * "other" to jump to. So this opens a small chip for each course that isn't
+ * the active one, and tapping a chip does what the old button did: writes
+ * the choice and reloads (see src/courses/active.ts for why that's the whole
+ * trick), no confirmation, because there is nothing to confirm any more —
+ * the name and sync code follow the person now, and no progress is touched
+ * by moving.
  */
 function CourseSwitch() {
-  const other = ALL_COURSES.find(c => c.id !== ACTIVE_COURSE.id)
-  if (!other) return null
+  const [open, setOpen] = useState(false)
+  const others = ALL_COURSES.filter(c => c.id !== ACTIVE_COURSE.id)
+  if (others.length === 0) return null
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        data-testid="course-switch"
+        aria-label={`Studying ${ACTIVE_COURSE.name}. Change course`}
+        onClick={() => setOpen(true)}
+        className="flex h-11 shrink-0 items-center gap-1 rounded-full bg-card2 px-3 text-lg transition active:scale-[0.98]"
+      >
+        <span aria-hidden="true">{ACTIVE_COURSE.flag}</span>
+        <span aria-hidden="true" className="text-xs text-muted">⇄</span>
+      </button>
+    )
+  }
 
   return (
-    <button
-      type="button"
-      data-testid="course-switch"
-      aria-label={`Studying ${ACTIVE_COURSE.name}. Switch to ${other.name}`}
-      onClick={() => { if (writeActiveCourseId(other.id)) window.location.reload() }}
-      className="flex h-11 shrink-0 items-center gap-1 rounded-full bg-card2 px-3 text-lg transition active:scale-[0.98]"
-    >
-      <span aria-hidden="true">{ACTIVE_COURSE.flag}</span>
-      <span aria-hidden="true" className="text-xs text-muted">⇄</span>
-      <span aria-hidden="true" className="opacity-40">{other.flag}</span>
-    </button>
+    <div className="flex h-11 shrink-0 items-center gap-1 rounded-full bg-card2 px-2">
+      {others.map(course => (
+        <button
+          key={course.id}
+          type="button"
+          data-testid={`course-switch-${course.id}`}
+          aria-label={`Switch to ${course.name}`}
+          onClick={() => { if (writeActiveCourseId(course.id)) window.location.reload() }}
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-lg transition active:scale-[0.98]"
+        >
+          <span aria-hidden="true">{course.flag}</span>
+        </button>
+      ))}
+      <button
+        type="button"
+        aria-label="Cancel"
+        onClick={() => setOpen(false)}
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs text-muted"
+      >
+        ✕
+      </button>
+    </div>
   )
 }
 
