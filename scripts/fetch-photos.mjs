@@ -441,6 +441,35 @@ const SELECTION_ES = {
 }
 
 // ───────────────────────────────────────────────────────────────────────────
+// The Polish selection. Same rule, applied to the concrete A1 course.
+// Only the concrete nouns get a query — family members and the emergency
+// services, the same restraint SELECTION_ES uses: an adjective like "duży"
+// (big) or a function word like "gdzie" (where) has no single honest photo,
+// so it is left out on purpose rather than given a misleading stock image.
+// ───────────────────────────────────────────────────────────────────────────
+const SELECTION_PL = {
+  pl_people_0: 'family portrait outdoors',
+  pl_people_1: 'mother smiling',
+  pl_people_2: 'father smiling',
+  pl_people_3: 'brother siblings',
+  pl_people_4: 'sister siblings',
+  pl_people_5: 'son child boy',
+  pl_people_6: 'daughter child girl',
+  pl_people_7: 'husband and wife',
+  pl_people_8: 'wife and husband',
+  pl_people_9: 'child playing',
+  pl_emergency_2: 'police car',
+  pl_emergency_3: 'hospital building exterior',
+  pl_emergency_4: 'doctor in white coat',
+  pl_emergency_5: 'ambulance vehicle',
+  pl_emergency_6: 'house fire flames',
+  pl_basics_0: 'red paint background texture',
+  pl_basics_1: 'blue paint background texture',
+  pl_basics_2: 'green paint background texture',
+  pl_basics_3: 'yellow paint background texture',
+}
+
+// ───────────────────────────────────────────────────────────────────────────
 
 const COURSES = {
   en: {
@@ -457,6 +486,13 @@ const COURSES = {
     photosExport: 'PHOTOS_ES',
     creditsExport: 'PHOTO_CREDITS_ES',
   },
+  pl: {
+    selection: SELECTION_PL,
+    photosTs: path.join(AUTHORED_DIR, 'photosPl.ts'),
+    creditsTs: path.join(AUTHORED_DIR, 'photoCreditsPl.ts'),
+    photosExport: 'PHOTOS_PL',
+    creditsExport: 'PHOTO_CREDITS_PL',
+  },
 }
 
 const args = new Set(process.argv.slice(2))
@@ -465,7 +501,7 @@ const FORCE = args.has('--force')
 const COURSE_ARG = [...args].find(a => a.startsWith('--course='))
 const COURSE = COURSE_ARG ? COURSE_ARG.slice('--course='.length) : 'en'
 if (!COURSES[COURSE]) {
-  console.error(`unknown --course=${COURSE} (expected "en" or "es")`)
+  console.error(`unknown --course=${COURSE} (expected "en", "es", or "pl")`)
   process.exit(1)
 }
 const { selection: SELECTION, photosTs: PHOTOS_TS, creditsTs: CREDITS_TS, photosExport: PHOTOS_EXPORT, creditsExport: CREDITS_EXPORT } = COURSES[COURSE]
