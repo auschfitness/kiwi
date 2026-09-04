@@ -8,6 +8,7 @@ import { ES_ROLEPLAYS } from '../content/es/roleplays'
 import { ES_DIALOGUES } from '../content/es/dialogues'
 import { ROLEPLAYS } from '../content/authored/roleplays'
 import { DIALOGUES } from '../content/dialogues.generated'
+import { PL_DECKS } from '../content/pl'
 
 export type { Course, CourseId } from './types'
 export { readActiveCourseId, writeActiveCourseId, ACTIVE_COURSE_KEY, DEFAULT_COURSE } from './active'
@@ -80,12 +81,43 @@ const ES_LATAM: Course = {
   dialogues: ES_DIALOGUES,
 }
 
+const PL_PL: Course = {
+  id: 'pl-pl',
+  name: 'Polonês',
+  shortName: 'Polonês',
+  emoji: '🦅',
+  flag: '🇵🇱',
+  storageKey: 'polski',
+  // A single standard accent — no picker needed, the same as any course
+  // with one sensible voice. pickVoice's family-fallback already handles an
+  // unlisted family correctly (see speak.ts), so no FALLBACKS entry either.
+  defaultAccent: 'pl-PL',
+  accents: ['pl-PL'],
+  // Lucas has never seen a word of Polish — this is English's shape, not
+  // Spanish's: recognition before production, and a real gate, because
+  // there is nothing to skip ahead to yet.
+  modalities: ['recognize', 'listen', 'type', 'build', 'dictate', 'speak'],
+  speakDirection: 'repeat',
+  gated: true,
+  // No interference layer exists for Polish — there is no lexical
+  // relationship to Portuguese to defend against, so this flag (which only
+  // means something for interference-tagged cards) stays off.
+  weanOffPortuguese: false,
+  // Phase 1 ships vocabulary only. Grows in a later phase once a specific
+  // feature has material of its own — see the design doc.
+  practice: [],
+  decks: PL_DECKS,
+  roleplays: [],
+  dialogues: [],
+}
+
 const COURSES: Record<CourseId, Course> = {
   'en-nz': EN_NZ,
   'es-latam': ES_LATAM,
+  'pl-pl': PL_PL,
 }
 
-export const ALL_COURSES: Course[] = [EN_NZ, ES_LATAM]
+export const ALL_COURSES: Course[] = [EN_NZ, ES_LATAM, PL_PL]
 
 export function courseById(id: CourseId): Course {
   return COURSES[id] ?? COURSES[DEFAULT_COURSE]

@@ -23,6 +23,7 @@ export interface SettingsProps {
 const ACCENT_LABELS: Record<Accent, string> = {
   'en-NZ': '🇳🇿 NZ', 'en-AU': '🇦🇺 AU', 'en-GB': '🇬🇧 UK', 'en-US': '🇺🇸 US',
   'es-419': '🌎 LatAm', 'es-MX': '🇲🇽 MX', 'es-AR': '🇦🇷 AR', 'es-ES': '🇪🇸 ES',
+  'pl-PL': '🇵🇱 PL',
 }
 
 /** Only the voices this course has any use for. */

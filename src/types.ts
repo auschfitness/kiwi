@@ -86,6 +86,7 @@ export type Modality =
 export type Accent =
   | 'en-NZ' | 'en-AU' | 'en-GB' | 'en-US'
   | 'es-419' | 'es-MX' | 'es-AR' | 'es-ES'
+  | 'pl-PL'
 
 export interface AppState {
   profileName: string

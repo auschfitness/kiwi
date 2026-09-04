@@ -19,7 +19,7 @@ export const ACTIVE_COURSE_KEY = 'english-nz.course'
 
 export const DEFAULT_COURSE: CourseId = 'en-nz'
 
-const KNOWN: readonly CourseId[] = ['en-nz', 'es-latam']
+const KNOWN: readonly CourseId[] = ['en-nz', 'es-latam', 'pl-pl']
 
 function isCourseId(value: string | null): value is CourseId {
   return value !== null && (KNOWN as readonly string[]).includes(value)

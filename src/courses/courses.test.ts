@@ -52,8 +52,8 @@ describe('active course', () => {
 })
 
 describe('course registry', () => {
-  it('offers exactly the two courses', () => {
-    expect(ALL_COURSES.map(c => c.id)).toEqual(['en-nz', 'es-latam'])
+  it('offers all three courses', () => {
+    expect(ALL_COURSES.map(c => c.id)).toEqual(['en-nz', 'es-latam', 'pl-pl'])
   })
 
   /**
@@ -143,6 +143,24 @@ describe('course registry', () => {
 
   it('loads the English course by default in tests', () => {
     expect(ACTIVE_COURSE.id).toBe('en-nz')
+  })
+
+  it('starts the Polish course in its own voice, with no accent picker', () => {
+    const pl = courseById('pl-pl')
+    expect(pl.defaultAccent).toBe('pl-PL')
+    expect(pl.accents).toEqual(['pl-PL'])
+  })
+
+  it('gives Polish English\'s beginner shape, not Spanish\'s', () => {
+    const pl = courseById('pl-pl')
+    expect(pl.modalities).toContain('recognize')
+    expect(pl.speakDirection).toBe('repeat')
+    expect(pl.gated).toBe(true)
+    expect(pl.weanOffPortuguese).toBe(false)
+  })
+
+  it('ships no practice feature for Polish yet — Phase 1 is vocabulary only', () => {
+    expect(courseById('pl-pl').practice).toEqual([])
   })
 })
 

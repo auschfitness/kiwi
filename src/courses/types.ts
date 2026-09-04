@@ -4,7 +4,7 @@ import type { Roleplay } from '../content/authored/roleplays'
 /** A Practice screen a course can offer. */
 export type PracticeFeature = 'dialogues' | 'shadowing' | 'roleplay' | 'drills' | 'earTraining'
 
-export type CourseId = 'en-nz' | 'es-latam'
+export type CourseId = 'en-nz' | 'es-latam' | 'pl-pl'
 
 /**
  * A course is a language, its content, and how it should be practised.
