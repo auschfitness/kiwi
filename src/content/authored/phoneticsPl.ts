@@ -97,4 +97,17 @@ export const PHONETICS_PL: Record<string, string> = {
   pl_feelings_11: 'vólny',
   pl_feelings_12: 'dóbje',
   pl_feelings_13: 'źlé',
+  // ── pl_questions · Perguntas e conectivos ────────────────────────────────
+  pl_questions_0: 'tsó',
+  pl_questions_1: 'któ',
+  pl_questions_2: 'gdźé',
+  pl_questions_3: 'kiédy',
+  pl_questions_4: 'dlatchégó',
+  pl_questions_5: 'iak',
+  pl_questions_6: 'ilé',
+  pl_questions_7: 'ktury',
+  pl_questions_8: 'i',
+  pl_questions_9: 'alé',
+  pl_questions_10: 'albó',
+  pl_questions_11: 'bó',
 }
