@@ -8,7 +8,7 @@ export const PL_EMERGENCY_DECK: Deck = {
   desc: 'Pedir ajuda e nomear os serviços de emergência',
   level: 1,
   cards: [
-    { id: 'pl_emergency_0', deckId: 'pl_emergency', en: 'pomocy!', pt: 'socorro!', exampleHtml: '<b>Pomocy</b>! Ktoś mi pomóż!', examplePt: 'Socorro! Alguém me ajude!', pos: 'noun' },
+    { id: 'pl_emergency_0', deckId: 'pl_emergency', en: 'pomocy!', pt: 'socorro!', exampleHtml: '<b>Pomocy</b>! Niech ktoś mi pomoże!', examplePt: 'Socorro! Alguém me ajude!', pos: 'noun' },
     { id: 'pl_emergency_1', deckId: 'pl_emergency', en: 'pomoc', pt: 'ajuda', exampleHtml: 'Dziękuję za <b>pomoc</b>.', examplePt: 'Obrigado pela ajuda.', pos: 'noun' },
     { id: 'pl_emergency_2', deckId: 'pl_emergency', en: 'policja', pt: 'polícia', exampleHtml: '<b>Policja</b> już jedzie.', examplePt: 'A polícia já está a caminho.', pos: 'noun' },
     { id: 'pl_emergency_3', deckId: 'pl_emergency', en: 'szpital', pt: 'hospital', exampleHtml: '<b>Szpital</b> jest niedaleko.', examplePt: 'O hospital fica perto.', pos: 'noun' },

@@ -17,7 +17,7 @@ export const PL_NUMBERS_DECK: Deck = {
     { id: 'pl_numbers_7', deckId: 'pl_numbers', en: 'siedem', pt: 'sete', exampleHtml: '<b>Siedem</b> dni w tygodniu.', examplePt: 'Sete dias na semana.', pos: 'number' },
     { id: 'pl_numbers_8', deckId: 'pl_numbers', en: 'osiem', pt: 'oito', exampleHtml: 'Mam <b>osiem</b> lat.', examplePt: 'Eu tenho oito anos.', pos: 'number' },
     { id: 'pl_numbers_9', deckId: 'pl_numbers', en: 'dziewięć', pt: 'nove', exampleHtml: '<b>Dziewięć</b> razy próbowałem.', examplePt: 'Tentei nove vezes.', pos: 'number' },
-    { id: 'pl_numbers_10', deckId: 'pl_numbers', en: 'dziesięć', pt: 'dez', exampleHtml: 'Liczę do <b>dziesięć</b>.', examplePt: 'Eu conto até dez.', pos: 'number' },
+    { id: 'pl_numbers_10', deckId: 'pl_numbers', en: 'dziesięć', pt: 'dez', exampleHtml: 'Liczę do <b>dziesięciu</b>.', examplePt: 'Eu conto até dez.', pos: 'number' },
     { id: 'pl_numbers_11', deckId: 'pl_numbers', en: 'dzisiaj', pt: 'hoje', exampleHtml: '<b>Dzisiaj</b> jest piękny dzień.', examplePt: 'Hoje é um dia lindo.', pos: 'word' },
     { id: 'pl_numbers_12', deckId: 'pl_numbers', en: 'jutro', pt: 'amanhã', exampleHtml: 'Zobaczymy się <b>jutro</b>.', examplePt: 'Nos vemos amanhã.', pos: 'word' },
     { id: 'pl_numbers_13', deckId: 'pl_numbers', en: 'wczoraj', pt: 'ontem', exampleHtml: '<b>Wczoraj</b> było zimno.', examplePt: 'Ontem estava frio.', pos: 'word' },
