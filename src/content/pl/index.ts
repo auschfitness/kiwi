@@ -26,7 +26,7 @@ const RAW_DECKS: Deck[] = [
  * The Polish course's decks, with pronunciation and photographs attached —
  * the same merge english.ts and content/es/index.ts each do for their own
  * course. PHONETICS_PL is hand-authored (see
- * authored/PHONETICS-CONVENTION.md §2); PHOTOS_PL is written by
+ * authored/PHONETICS-CONVENTION.md §9); PHOTOS_PL is written by
  * `node scripts/fetch-photos.mjs --course=pl` (Task 13) and starts empty, so
  * this file is correct before that script has ever run.
  */

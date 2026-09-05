@@ -1,5 +1,5 @@
 /**
- * Pronúncia do polonês escrita "à brasileira" — ver a seção 2 de
+ * Pronúncia do polonês escrita "à brasileira" — ver a seção 9 de
  * PHONETICS-CONVENTION.md (mesma pasta). Chave = `Card.id`. Uma chave
  * errada não dá erro: apenas não aparece pronúncia. A junção com os
  * baralhos acontece em `src/content/pl/index.ts`.
