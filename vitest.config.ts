@@ -13,6 +13,10 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test-setup.ts'],
     passWithNoTests: true,
-    exclude: ['**/node_modules/**', '**/dist/**', '**/tests/e2e/**'],
+    // .worktrees/ holds sibling checkouts of this same repo (see
+    // docs/superpowers/... worktree-based plan execution) — without this,
+    // running the suite from the main checkout doubles every test that also
+    // exists in an active worktree.
+    exclude: ['**/node_modules/**', '**/dist/**', '**/tests/e2e/**', '**/.worktrees/**'],
   },
 })
