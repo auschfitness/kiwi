@@ -7,6 +7,14 @@ import { PL_EMERGENCY_DECK } from './emergency'
 import { PL_FEELINGS_DECK } from './feelings'
 import { PL_QUESTIONS_DECK } from './questions'
 import { PL_BASICS_DECK } from './basics'
+import { PL_FOOD_DECK } from './food'
+import { PL_SHOPPING_DECK } from './shopping'
+import { PL_HOUSE_DECK } from './house'
+import { PL_CLOTHES_DECK } from './clothes'
+import { PL_BODY_DECK } from './body'
+import { PL_TOWN_DECK } from './town'
+import { PL_VERBS2_DECK } from './verbs2'
+import { PL_POWER_DECK } from './power'
 import { PHONETICS_PL } from '../authored/phoneticsPl'
 import { PHOTOS_PL } from '../authored/photosPl'
 import { photoSrc } from '../photoSrc'
@@ -20,6 +28,14 @@ const RAW_DECKS: Deck[] = [
   PL_FEELINGS_DECK,
   PL_QUESTIONS_DECK,
   PL_BASICS_DECK,
+  PL_FOOD_DECK,
+  PL_SHOPPING_DECK,
+  PL_HOUSE_DECK,
+  PL_CLOTHES_DECK,
+  PL_BODY_DECK,
+  PL_TOWN_DECK,
+  PL_VERBS2_DECK,
+  PL_POWER_DECK,
 ]
 
 /**

@@ -5,8 +5,12 @@ import { isSentence } from '../../core/text'
 const PL_CARDS = PL_DECKS.flatMap(d => d.cards)
 
 describe('Polish corpus', () => {
-  it('ships an A1 floor worth studying', () => {
-    expect(PL_CARDS.length).toBeGreaterThanOrEqual(100)
+  it('ships an A1+A2 floor worth studying', () => {
+    expect(PL_CARDS.length).toBeGreaterThanOrEqual(220)
+  })
+
+  it('has grown past Phase 1 alone — 16 decks now, not 8', () => {
+    expect(PL_DECKS.length).toBeGreaterThanOrEqual(16)
   })
 
   it('gives every card the fields a session needs', () => {
