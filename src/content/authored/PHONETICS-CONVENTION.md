@@ -353,5 +353,25 @@ marca acento tônico em nenhuma palavra, diferente da tabela do inglês.
 
 **Exemplo:** `dziękuję` (obrigado) → `dźenkuién`. `cześć` (oi) → `tchéść`.
 
-Cobertura desta tabela: `authored/phoneticsPl.ts`, nível A1 (Fase 1 do curso
-de polonês). Ver `docs/superpowers/specs/2026-09-01-polish-course-design.md`.
+### Limitação conhecida: `j` também marca um glide inserido
+
+A tabela acima define `j` só como o som de `ż/rz` (o "j" fechado do
+português, tipo "já"). Mas várias entradas em `phoneticsPl.ts` também usam
+`j` para marcar um glide palatal *inserido* depois de uma consoante labial
+antes de `ę`/`e` — por exemplo `mięso`→`mjensó`, `śpię`→`śpjen`,
+`robię`→`róbjen`, `pięć`→`pjeńć`. Esse `j` não é o som de `ż/rz`; é mais perto
+do "i" de "pai" dito rápido. Um leitor brasileiro vai ler os dois com o
+mesmo som fechado, o que é impreciso para o segundo caso — mas o significado
+da palavra continua correto, só a nuance do som é que fica imprecisa (o
+mesmo tipo de concessão já aceito na tabela do inglês pra `th`→`f`/`d`).
+
+Isso foi identificado na revisão de conteúdo da Fase 2 (2026-09-08) e
+**decidido, por ora, como simplificação aceita** — não vale reescrever essas
+entradas ou inventar um símbolo novo sem necessidade real. Se isso incomodar
+na prática (o dono relatar que está lendo errado), o ajuste é adicionar uma
+linha nova nesta tabela (`Cj+vogal` → um símbolo distinto de `j`) e revisar
+as poucas entradas afetadas — não é urgente.
+
+Cobertura desta tabela: `authored/phoneticsPl.ts`, níveis A1+A2 (Fases 1-2
+do curso de polonês). Ver
+`docs/superpowers/specs/2026-09-01-polish-course-design.md`.
