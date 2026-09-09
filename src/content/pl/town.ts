@@ -5,7 +5,7 @@ export const PL_TOWN_DECK: Deck = {
   name: 'Cidade',
   emoji: '🏙️',
   desc: 'Lugares e transporte pela cidade',
-  level: 1,
+  level: 2,
   cards: [
     { id: 'pl_town_0', deckId: 'pl_town', en: 'miasto', pt: 'cidade', exampleHtml: 'To jest moje <b>miasto</b>.', examplePt: 'Essa é minha cidade.', pos: 'noun' },
     { id: 'pl_town_1', deckId: 'pl_town', en: 'ulica', pt: 'rua', exampleHtml: 'To jest moja <b>ulica</b>.', examplePt: 'Essa é minha rua.', pos: 'noun' },

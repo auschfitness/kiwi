@@ -5,7 +5,7 @@ export const PL_VERBS2_DECK: Deck = {
   name: 'Mais verbos do dia a dia',
   emoji: '🔁',
   desc: 'Ver, ler, escrever, comer, beber, dormir, trabalhar',
-  level: 1,
+  level: 2,
   cards: [
     { id: 'pl_verbs2_0', deckId: 'pl_verbs2', en: 'widzieć', pt: 'ver', exampleHtml: 'Chcę cię <b>widzieć</b>.', examplePt: 'Eu quero te ver.', pos: 'verb' },
     { id: 'pl_verbs2_1', deckId: 'pl_verbs2', en: 'widzę', pt: 'eu vejo', exampleHtml: '<b>Widzę</b> cię.', examplePt: 'Eu te vejo.', pos: 'verb' },

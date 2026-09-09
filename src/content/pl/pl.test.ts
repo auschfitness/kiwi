@@ -34,8 +34,18 @@ describe('Polish corpus', () => {
     expect(new Set(ids).size).toBe(ids.length)
   })
 
-  it('starts every deck at level 1 — this phase is the A1 floor only', () => {
-    for (const deck of PL_DECKS) expect(deck.level, deck.id).toBe(1)
+  // LEVEL_NAMES/LEVEL_TITLES (src/core/leveling.ts) are shared across every
+  // course and hardcode level 1 = "A1", level 2 = "A2" in the UI — a course
+  // can't put A2 content at level 1 without the Home screen mislabelling it
+  // "A1" (which is exactly what Phase 2 shipped, and this test is the fix).
+  it('puts A1 decks at level 1 and A2 decks at level 2, matching the CEFR labels the UI actually shows', () => {
+    const A1_DECK_IDS = new Set([
+      'pl_hello', 'pl_numbers', 'pl_verbs', 'pl_people',
+      'pl_emergency', 'pl_feelings', 'pl_questions', 'pl_basics',
+    ])
+    for (const deck of PL_DECKS) {
+      expect(deck.level, deck.id).toBe(A1_DECK_IDS.has(deck.id) ? 1 : 2)
+    }
   })
 
   it('gives most cards a sentence to build and dictate', () => {

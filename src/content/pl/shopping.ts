@@ -6,7 +6,7 @@ export const PL_SHOPPING_DECK: Deck = {
   name: 'Compras e mercado',
   emoji: '🛒',
   desc: 'Loja, preço, pagar, comprar',
-  level: 1,
+  level: 2,
   cards: [
     { id: 'pl_shopping_0', deckId: 'pl_shopping', en: 'sklep', pt: 'loja', exampleHtml: 'Idę do <b>sklepu</b>.', examplePt: 'Eu vou à loja.', pos: 'noun' },
     { id: 'pl_shopping_1', deckId: 'pl_shopping', en: 'supermarket', pt: 'supermercado', exampleHtml: 'Idę do <b>supermarketu</b>.', examplePt: 'Eu vou ao supermercado.', pos: 'noun' },

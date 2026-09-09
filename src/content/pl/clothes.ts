@@ -6,7 +6,7 @@ export const PL_CLOTHES_DECK: Deck = {
   name: 'Roupas e clima',
   emoji: '🧥',
   desc: 'O que vestir e como está o tempo',
-  level: 1,
+  level: 2,
   cards: [
     { id: 'pl_clothes_0', deckId: 'pl_clothes', en: 'ubranie', pt: 'roupa', exampleHtml: 'To jest moje <b>ubranie</b>.', examplePt: 'Essa é minha roupa.', pos: 'noun' },
     { id: 'pl_clothes_1', deckId: 'pl_clothes', en: 'koszula', pt: 'camisa', exampleHtml: 'To jest moja <b>koszula</b>.', examplePt: 'Essa é minha camisa.', pos: 'noun' },

@@ -12,7 +12,7 @@ export const PL_POWER_DECK: Deck = {
   name: 'Frases de uso frequente',
   emoji: '💬',
   desc: 'Frases prontas pro dia a dia',
-  level: 1,
+  level: 2,
   cards: [
     { id: 'pl_power_0', deckId: 'pl_power', en: 'proszę o rachunek', pt: 'a conta, por favor', exampleHtml: '<b>Proszę o rachunek</b>, dziękuję.', examplePt: 'A conta, por favor, obrigado.', pos: 'phrase' },
     { id: 'pl_power_1', deckId: 'pl_power', en: 'ile to kosztuje?', pt: 'quanto custa isso?', exampleHtml: 'Przepraszam, <b>ile to kosztuje</b>?', examplePt: 'Com licença, quanto custa isso?', pos: 'phrase' },

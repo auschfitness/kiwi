@@ -5,7 +5,7 @@ export const PL_BODY_DECK: Deck = {
   name: 'Corpo',
   emoji: '🧍',
   desc: 'Partes do corpo, dizer onde dói',
-  level: 1,
+  level: 2,
   cards: [
     { id: 'pl_body_0', deckId: 'pl_body', en: 'głowa', pt: 'cabeça', exampleHtml: 'Boli mnie <b>głowa</b>.', examplePt: 'Minha cabeça dói.', pos: 'noun' },
     { id: 'pl_body_1', deckId: 'pl_body', en: 'ręka', pt: 'mão / braço', exampleHtml: 'To jest moja <b>ręka</b>.', examplePt: 'Essa é minha mão.', pos: 'noun' },

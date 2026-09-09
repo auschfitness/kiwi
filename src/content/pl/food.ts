@@ -5,7 +5,7 @@ export const PL_FOOD_DECK: Deck = {
   name: 'Comida e restaurante',
   emoji: '🍽️',
   desc: 'Comidas e bebidas do dia a dia, café da manhã, almoço, jantar',
-  level: 1,
+  level: 2,
   cards: [
     { id: 'pl_food_0', deckId: 'pl_food', en: 'chleb', pt: 'pão', exampleHtml: 'Lubię <b>chleb</b>.', examplePt: 'Eu gosto de pão.', pos: 'noun' },
     { id: 'pl_food_1', deckId: 'pl_food', en: 'woda', pt: 'água', exampleHtml: '<b>Woda</b> jest zimna.', examplePt: 'A água está fria.', pos: 'noun' },

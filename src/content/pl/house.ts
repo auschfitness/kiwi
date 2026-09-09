@@ -6,7 +6,7 @@ export const PL_HOUSE_DECK: Deck = {
   name: 'Casa',
   emoji: '🏠',
   desc: 'Cômodos, móveis e objetos da casa',
-  level: 1,
+  level: 2,
   cards: [
     { id: 'pl_house_0', deckId: 'pl_house', en: 'dom', pt: 'casa', exampleHtml: 'To jest mój <b>dom</b>.', examplePt: 'Essa é minha casa.', pos: 'noun' },
     { id: 'pl_house_1', deckId: 'pl_house', en: 'mieszkanie', pt: 'apartamento', exampleHtml: 'To jest moje <b>mieszkanie</b>.', examplePt: 'Esse é meu apartamento.', pos: 'noun' },
