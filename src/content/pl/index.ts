@@ -15,6 +15,14 @@ import { PL_BODY_DECK } from './body'
 import { PL_TOWN_DECK } from './town'
 import { PL_VERBS2_DECK } from './verbs2'
 import { PL_POWER_DECK } from './power'
+import { PL_MONEY_DECK } from './money'
+import { PL_HOUSING_DECK } from './housing'
+import { PL_HEALTH_DECK } from './health'
+import { PL_TRANSPORT_DECK } from './transport'
+import { PL_WORK_DECK } from './work'
+import { PL_SMALLTALK_DECK } from './smalltalk'
+import { PL_ADMIN_DECK } from './admin'
+import { PL_AIRPORT_DECK } from './airport'
 import { PHONETICS_PL } from '../authored/phoneticsPl'
 import { PHOTOS_PL } from '../authored/photosPl'
 import { photoSrc } from '../photoSrc'
@@ -36,6 +44,14 @@ const RAW_DECKS: Deck[] = [
   PL_TOWN_DECK,
   PL_VERBS2_DECK,
   PL_POWER_DECK,
+  PL_MONEY_DECK,
+  PL_HOUSING_DECK,
+  PL_HEALTH_DECK,
+  PL_TRANSPORT_DECK,
+  PL_WORK_DECK,
+  PL_SMALLTALK_DECK,
+  PL_ADMIN_DECK,
+  PL_AIRPORT_DECK,
 ]
 
 /**

@@ -5,12 +5,12 @@ import { isSentence } from '../../core/text'
 const PL_CARDS = PL_DECKS.flatMap(d => d.cards)
 
 describe('Polish corpus', () => {
-  it('ships an A1+A2 floor worth studying', () => {
-    expect(PL_CARDS.length).toBeGreaterThanOrEqual(220)
+  it('ships an A1+A2+B1 floor worth studying', () => {
+    expect(PL_CARDS.length).toBeGreaterThanOrEqual(340)
   })
 
-  it('has grown past Phase 1 alone — 16 decks now, not 8', () => {
-    expect(PL_DECKS.length).toBeGreaterThanOrEqual(16)
+  it('has grown past Phase 2 alone — 24 decks now, not 16', () => {
+    expect(PL_DECKS.length).toBeGreaterThanOrEqual(24)
   })
 
   it('gives every card the fields a session needs', () => {
@@ -38,13 +38,17 @@ describe('Polish corpus', () => {
   // course and hardcode level 1 = "A1", level 2 = "A2" in the UI — a course
   // can't put A2 content at level 1 without the Home screen mislabelling it
   // "A1" (which is exactly what Phase 2 shipped, and this test is the fix).
-  it('puts A1 decks at level 1 and A2 decks at level 2, matching the CEFR labels the UI actually shows', () => {
-    const A1_DECK_IDS = new Set([
-      'pl_hello', 'pl_numbers', 'pl_verbs', 'pl_people',
-      'pl_emergency', 'pl_feelings', 'pl_questions', 'pl_basics',
-    ])
+  it('puts each deck at the level matching the CEFR label the UI actually shows for it', () => {
+    const LEVEL_BY_DECK: Record<string, number> = {
+      pl_hello: 1, pl_numbers: 1, pl_verbs: 1, pl_people: 1,
+      pl_emergency: 1, pl_feelings: 1, pl_questions: 1, pl_basics: 1,
+      pl_food: 2, pl_shopping: 2, pl_house: 2, pl_clothes: 2,
+      pl_body: 2, pl_town: 2, pl_verbs2: 2, pl_power: 2,
+      pl_money: 3, pl_housing: 3, pl_health: 3, pl_transport: 3,
+      pl_work: 3, pl_smalltalk: 3, pl_admin: 3, pl_airport: 3,
+    }
     for (const deck of PL_DECKS) {
-      expect(deck.level, deck.id).toBe(A1_DECK_IDS.has(deck.id) ? 1 : 2)
+      expect(deck.level, deck.id).toBe(LEVEL_BY_DECK[deck.id])
     }
   })
 
