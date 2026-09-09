@@ -349,9 +349,17 @@ marca acento tônico em nenhuma palavra, diferente da tabela do inglês.
 | w | v | |
 | ł | u | o "l escuro" soa como um "u" |
 | j | vira parte da vogal ao lado (`ja`→`ia`, `je`→`ié`) | não é uma consoante isolada aqui |
-| "ni/si/zi/dzi" + vogal | vira `ń/ś/ź/dź` + vogal | é assim que essa grafia se lê em polonês |
+| "ni/si/zi/dzi/ci" + vogal | vira `ń/ś/ź/dź/ć` + vogal | é assim que essa grafia se lê em polonês |
+| "ni/si/zi/dzi/ci" + **consoante ou fim** | também vira `ńi/śi/źi/dźi/ći` | o `i` continua sendo vogal, mas a consoante antes dele é sempre molhada |
 
 **Exemplo:** `dziękuję` (obrigado) → `dźenkuién`. `cześć` (oi) → `tchéść`.
+
+A segunda linha é a que mais escapa: em polonês, `n/s/z/dz/c` **sempre** amolecem
+antes de `i`, não só quando vem outra vogal depois. Por isso `lotnisko` →
+`lótńiskó`, `granica` → `grańitsa`, `musimy` → `muśimy`, `rodzina` → `ródźina`,
+`zimno` → `źimnó`. Escrever `lótnisko`/`ródzina` faz o brasileiro ler um `n`/`dz`
+duro que o polonês não tem ali. (Excepção: a grafia `sj/cj/zj` — `pensja`,
+`policja`, `stacja` — **não** amolece: `pénsia`, `pólitsia`, `statsia`.)
 
 ### Limitação conhecida: `j` também marca um glide inserido
 
@@ -372,6 +380,16 @@ na prática (o dono relatar que está lendo errado), o ajuste é adicionar uma
 linha nova nesta tabela (`Cj+vogal` → um símbolo distinto de `j`) e revisar
 as poucas entradas afetadas — não é urgente.
 
-Cobertura desta tabela: `authored/phoneticsPl.ts`, níveis A1+A2 (Fases 1-2
+Cobertura desta tabela: `authored/phoneticsPl.ts`, níveis A1+A2+B1 (Fases 1-3
 do curso de polonês). Ver
 `docs/superpowers/specs/2026-09-01-polish-course-design.md`.
+
+### O `j` do `rz` depois de consoante surda
+
+Terceiro uso do `j` nesta tabela, também aceito de propósito: em `prz`/`trz`
+(`przystanek`, `trzymaj`, `zastrzyk`) o `rz` na verdade **ensurdece** e soa como
+`sz` — `przychodnia` é `[pʂɘˈxɔdɲa]`, não `[pʐ…]`. Ainda assim escrevemos
+`pjystanék`, `tjymai`, `pjyrródńa`, porque a regra `rz → j` é a única que ela
+precisa decorar e a palavra continua sendo reconhecida. Escrever `pxystanék`
+seria mais exato e menos legível. Identificado na revisão da Fase 3
+(2026-09-09), mantido como está.

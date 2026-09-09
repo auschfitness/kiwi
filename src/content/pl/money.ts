@@ -18,7 +18,7 @@ export const PL_MONEY_DECK: Deck = {
     { id: 'pl_money_7', deckId: 'pl_money', en: 'bankomat', pt: 'caixa eletrônico', exampleHtml: 'Gdzie jest <b>bankomat</b>?', examplePt: 'Onde fica o caixa eletrônico?', pos: 'noun' },
     { id: 'pl_money_8', deckId: 'pl_money', en: 'płacić', pt: 'pagar', exampleHtml: 'Muszę <b>płacić</b> rachunki.', examplePt: 'Eu preciso pagar as contas.', pos: 'verb' },
     { id: 'pl_money_9', deckId: 'pl_money', en: 'płacę', pt: 'eu pago', exampleHtml: '<b>Płacę</b> kartą.', examplePt: 'Eu pago com cartão.', pos: 'verb' },
-    { id: 'pl_money_10', deckId: 'pl_money', en: 'pin', pt: 'PIN', exampleHtml: 'To jest mój <b>PIN</b>.', examplePt: 'Esse é o meu PIN.', pos: 'noun' },
+    { id: 'pl_money_10', deckId: 'pl_money', en: 'PIN', pt: 'PIN', exampleHtml: 'To jest mój <b>PIN</b>.', examplePt: 'Esse é o meu PIN.', pos: 'noun' },
     { id: 'pl_money_11', deckId: 'pl_money', en: 'podatek', pt: 'imposto', exampleHtml: 'To jest <b>podatek</b>.', examplePt: 'Isso é um imposto.', pos: 'noun' },
     { id: 'pl_money_12', deckId: 'pl_money', en: 'pensja', pt: 'salário', exampleHtml: 'Moja <b>pensja</b> jest niska.', examplePt: 'Meu salário é baixo.', pos: 'noun' },
     { id: 'pl_money_13', deckId: 'pl_money', en: 'rata', pt: 'parcela', exampleHtml: 'Płacę <b>ratę</b> co miesiąc.', examplePt: 'Eu pago uma parcela todo mês.', pos: 'noun' },
