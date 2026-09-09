@@ -1,6 +1,30 @@
 import type { Accent } from '../types'
 import { speechRecognitionAvailable } from './capabilities'
 
+/**
+ * `Accent` includes `es-419` — a real BCP-47 tag, but a UN M.49 *region*
+ * code ("Latin America"), not a country. `speechSynthesis` voices are
+ * sometimes tagged with it (and `speak.ts` already falls back through a
+ * chain of concrete accents when a device has no such voice), but speech
+ * *recognition* engines are keyed to concrete country locales — there is no
+ * "es-419 recognizer" to fall back from, so a browser asked to recognise
+ * `es-419` just hears nothing, silently, every time. `es-419` is also
+ * `ES_LATAM.defaultAccent` (`src/courses/index.ts`), so this was not a rare
+ * misconfiguration: it was the experience of anyone who never changed the
+ * Spanish course's accent away from its default.
+ *
+ * The fix is narrow on purpose: translate only the one accent that isn't
+ * already a real country locale. Every other `Accent` value is a concrete
+ * BCP-47 country tag a recognition engine can be asked for directly.
+ */
+const RECOGNITION_LANG: Partial<Record<Accent, Accent>> = {
+  'es-419': 'es-MX',
+}
+
+function recognitionLang(accent: Accent): Accent {
+  return RECOGNITION_LANG[accent] ?? accent
+}
+
 type RecognitionCtor = new () => {
   lang: string
   interimResults: boolean
@@ -43,7 +67,7 @@ export function recognizeOnce(accent: Accent, timeoutMs = 6000): Promise<string>
 
     try {
       rec = new Ctor()
-      rec.lang = accent
+      rec.lang = recognitionLang(accent)
       rec.interimResults = false
       rec.maxAlternatives = 1
       rec.continuous = false
